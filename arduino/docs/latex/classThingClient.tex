@@ -1,0 +1,154 @@
+\hypertarget{classThingClient}{\section{Thing\-Client Class Reference}
+\label{classThingClient}\index{Thing\-Client@{Thing\-Client}}
+}
+
+
+A class for communication between thing and gateway.  
+
+
+
+
+{\ttfamily \#include $<$thing\-\_\-client.\-h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classThingClient_a771f683ab76f89a2b22c85a5647df1e3}{Thing\-Client} (const char $\ast$id, Stream \&serial)
+\item 
+\hypertarget{classThingClient_a4f21f41869c7b1e01c62ef7939b247b5}{void {\bfseries Add} (\hyperlink{classCapitalValue}{Capital\-Value} \&v)}\label{classThingClient_a4f21f41869c7b1e01c62ef7939b247b5}
+
+\item 
+\hypertarget{classThingClient_ab2f23f07a087ef56bd57cdf77bac9b4f}{void {\bfseries Add} (\hyperlink{classCapitalFunction}{Capital\-Function} \&f)}\label{classThingClient_ab2f23f07a087ef56bd57cdf77bac9b4f}
+
+\item 
+void \hyperlink{classThingClient_aedab0c0ee3c96530eb6beed1f2a459b6}{set\-\_\-serial} (Stream \&serial)
+\item 
+void \hyperlink{classThingClient_afbfe83248b51bbbf484d19c11e8202a7}{set\-\_\-connect\-\_\-handler} (void($\ast$connect\-Handler)())
+\item 
+void \hyperlink{classThingClient_a598656f81507d9e295149379a06d6cbc}{set\-\_\-disconnect\-\_\-handler} (void($\ast$disconnect\-Handler)())
+\item 
+\hypertarget{classThingClient_a61c3913c2a50be164e9a239d1ac42363}{void {\bfseries set\-\_\-client\-\_\-id} (const char $\ast$id)}\label{classThingClient_a61c3913c2a50be164e9a239d1ac42363}
+
+\item 
+void \hyperlink{classThingClient_a9afef6f565bd4277939406ef6a324bfe}{Setting} ()
+\item 
+void \hyperlink{classThingClient_a27695ee5231952c6aa1d9431b1ea884d}{Do\-Loop} (int pub\-\_\-period=100)
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classThingClient_a7c3221f6d72ce2e47a783a0815171345}{virtual void {\bfseries pingreq\-Handler} ()}\label{classThingClient_a7c3221f6d72ce2e47a783a0815171345}
+
+\item 
+\hypertarget{classThingClient_ac4ab103343209f93a0cbeab0d5761a1c}{virtual void {\bfseries pingresp\-Handler} ()}\label{classThingClient_ac4ab103343209f93a0cbeab0d5761a1c}
+
+\item 
+\hypertarget{classThingClient_ac66bac1316dfe88086278835cca1e1d2}{virtual void {\bfseries suback\-Handler} (const \hyperlink{structmsg__suback}{msg\-\_\-suback} $\ast$msg)}\label{classThingClient_ac66bac1316dfe88086278835cca1e1d2}
+
+\item 
+\hypertarget{classThingClient_ab807f216f8c25cd40800959ebec71dab}{virtual void {\bfseries disconnect\-Handler} (const \hyperlink{structmsg__disconnect}{msg\-\_\-disconnect} $\ast$msg)}\label{classThingClient_ab807f216f8c25cd40800959ebec71dab}
+
+\item 
+\hypertarget{classThingClient_ab8bc8252846e50800c5dc0543e7b0309}{void {\bfseries regack} (const uint16\-\_\-t topic\-Id, const uint16\-\_\-t message\-Id, const return\-\_\-code\-\_\-t return\-\_\-code)}\label{classThingClient_ab8bc8252846e50800c5dc0543e7b0309}
+
+\item 
+\hypertarget{classThingClient_aca0d151dc7fafd12c564810a4a57d353}{void {\bfseries puback} (const uint16\-\_\-t topic\-Id, const uint16\-\_\-t message\-Id, const return\-\_\-code\-\_\-t return\-\_\-code)}\label{classThingClient_aca0d151dc7fafd12c564810a4a57d353}
+
+\item 
+\hypertarget{classThingClient_a672b424a4c7db25c6c9c851ab65688a3}{void {\bfseries subscribe} (const uint8\-\_\-t flags, const uint16\-\_\-t topic\-Id)}\label{classThingClient_a672b424a4c7db25c6c9c851ab65688a3}
+
+\item 
+\hypertarget{classThingClient_a3c0f6a25ffa7b1cfa5c17b82a4b1125b}{void {\bfseries unsubscribe} (const uint8\-\_\-t flags, const uint16\-\_\-t topic\-Id)}\label{classThingClient_a3c0f6a25ffa7b1cfa5c17b82a4b1125b}
+
+\item 
+\hypertarget{classThingClient_a0b2105ce5421f8859664cac4b32e6478}{void {\bfseries devreg\-Handler} ()}\label{classThingClient_a0b2105ce5421f8859664cac4b32e6478}
+
+\item 
+\hypertarget{classThingClient_ad627f7e69476311017ef903144d6a505}{void {\bfseries devregack\-Handler} (const \hyperlink{structmsg__devregack}{msg\-\_\-devregack} $\ast$msg)}\label{classThingClient_ad627f7e69476311017ef903144d6a505}
+
+\item 
+\hypertarget{classThingClient_a08b89371ea7017864a53e4973109a178}{void {\bfseries regack\-Handler} (const \hyperlink{structmsg__regack}{msg\-\_\-regack} $\ast$msg)}\label{classThingClient_a08b89371ea7017864a53e4973109a178}
+
+\item 
+\hypertarget{classThingClient_acc74fdf4e099d0e9bb8ca4b5c431b11a}{void {\bfseries publish\-Handler} (const \hyperlink{structmsg__publish}{msg\-\_\-publish} $\ast$msg)}\label{classThingClient_acc74fdf4e099d0e9bb8ca4b5c431b11a}
+
+\item 
+\hypertarget{classThingClient_aa99dbe36483893c9c68533f1f6f037ab}{void {\bfseries advertise\-Handler} (const \hyperlink{structmsg__advertise}{msg\-\_\-advertise} $\ast$msg)}\label{classThingClient_aa99dbe36483893c9c68533f1f6f037ab}
+
+\item 
+\hypertarget{classThingClient_a2080616403d90b82f2ccf64198c8c156}{void {\bfseries gwinfo\-Handler} (const \hyperlink{structmsg__gwinfo}{msg\-\_\-gwinfo} $\ast$msg)}\label{classThingClient_a2080616403d90b82f2ccf64198c8c156}
+
+\item 
+\hypertarget{classThingClient_a6a460a7dc9e59e39fe6e3c25b742281a}{void {\bfseries connack\-Handler} (const \hyperlink{structmsg__connack}{msg\-\_\-connack} $\ast$msg)}\label{classThingClient_a6a460a7dc9e59e39fe6e3c25b742281a}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+A class for communication between thing and gateway. 
+
+A programmer should declare this class and set id, set serial, add values and functions. then call .Setting on setting tab, and Publish in loop(). it acts like as a bridge between thing and middleware. it is very similar to the Class Client in thing\-\_\-client. please refer that documentation. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classThingClient_a771f683ab76f89a2b22c85a5647df1e3}{\index{Thing\-Client@{Thing\-Client}!Thing\-Client@{Thing\-Client}}
+\index{Thing\-Client@{Thing\-Client}!ThingClient@{Thing\-Client}}
+\subsubsection[{Thing\-Client}]{\setlength{\rightskip}{0pt plus 5cm}Thing\-Client\-::\-Thing\-Client (
+\begin{DoxyParamCaption}
+\item[{const char $\ast$}]{id, }
+\item[{Stream \&}]{serial}
+\end{DoxyParamCaption}
+)}}\label{classThingClient_a771f683ab76f89a2b22c85a5647df1e3}
+programmer can easily set client id and zigbee serial with this constructor. 
+
+\subsection{Member Function Documentation}
+\hypertarget{classThingClient_a27695ee5231952c6aa1d9431b1ea884d}{\index{Thing\-Client@{Thing\-Client}!Do\-Loop@{Do\-Loop}}
+\index{Do\-Loop@{Do\-Loop}!ThingClient@{Thing\-Client}}
+\subsubsection[{Do\-Loop}]{\setlength{\rightskip}{0pt plus 5cm}void Thing\-Client\-::\-Do\-Loop (
+\begin{DoxyParamCaption}
+\item[{int}]{pub\-\_\-period = {\ttfamily 100}}
+\end{DoxyParamCaption}
+)}}\label{classThingClient_a27695ee5231952c6aa1d9431b1ea884d}
+Call it in the loop() tab on Arduino I\-D\-E Environment. \hypertarget{classThingClient_afbfe83248b51bbbf484d19c11e8202a7}{\index{Thing\-Client@{Thing\-Client}!set\-\_\-connect\-\_\-handler@{set\-\_\-connect\-\_\-handler}}
+\index{set\-\_\-connect\-\_\-handler@{set\-\_\-connect\-\_\-handler}!ThingClient@{Thing\-Client}}
+\subsubsection[{set\-\_\-connect\-\_\-handler}]{\setlength{\rightskip}{0pt plus 5cm}void Thing\-Client\-::set\-\_\-connect\-\_\-handler (
+\begin{DoxyParamCaption}
+\item[{void($\ast$)()}]{connect\-Handler}
+\end{DoxyParamCaption}
+)}}\label{classThingClient_afbfe83248b51bbbf484d19c11e8202a7}
+set function that acts when arduino connects to the gateway 
+\begin{DoxyParams}{Parameters}
+{\em connect\-Handler} & the void function that programmer wants to activate when arduino connects to the gateway. \\
+\hline
+\end{DoxyParams}
+\hypertarget{classThingClient_a598656f81507d9e295149379a06d6cbc}{\index{Thing\-Client@{Thing\-Client}!set\-\_\-disconnect\-\_\-handler@{set\-\_\-disconnect\-\_\-handler}}
+\index{set\-\_\-disconnect\-\_\-handler@{set\-\_\-disconnect\-\_\-handler}!ThingClient@{Thing\-Client}}
+\subsubsection[{set\-\_\-disconnect\-\_\-handler}]{\setlength{\rightskip}{0pt plus 5cm}void Thing\-Client\-::set\-\_\-disconnect\-\_\-handler (
+\begin{DoxyParamCaption}
+\item[{void($\ast$)()}]{disconnect\-Handler}
+\end{DoxyParamCaption}
+)}}\label{classThingClient_a598656f81507d9e295149379a06d6cbc}
+set function that acts when arduino disconnects from the gateway 
+\begin{DoxyParams}{Parameters}
+{\em disconnect\-Handler} & the void function that programmer wants to activate when arduino disconnects from the gateway. \\
+\hline
+\end{DoxyParams}
+\hypertarget{classThingClient_aedab0c0ee3c96530eb6beed1f2a459b6}{\index{Thing\-Client@{Thing\-Client}!set\-\_\-serial@{set\-\_\-serial}}
+\index{set\-\_\-serial@{set\-\_\-serial}!ThingClient@{Thing\-Client}}
+\subsubsection[{set\-\_\-serial}]{\setlength{\rightskip}{0pt plus 5cm}void Thing\-Client\-::set\-\_\-serial (
+\begin{DoxyParamCaption}
+\item[{Stream \&}]{serial}
+\end{DoxyParamCaption}
+)}}\label{classThingClient_aedab0c0ee3c96530eb6beed1f2a459b6}
+set serial that connected to the zigbee output and input \hypertarget{classThingClient_a9afef6f565bd4277939406ef6a324bfe}{\index{Thing\-Client@{Thing\-Client}!Setting@{Setting}}
+\index{Setting@{Setting}!ThingClient@{Thing\-Client}}
+\subsubsection[{Setting}]{\setlength{\rightskip}{0pt plus 5cm}void Thing\-Client\-::\-Setting (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classThingClient_a9afef6f565bd4277939406ef6a324bfe}
+Call it after setting serial, setting client id, and Adding every function and value. Do not forget call this function after (zigbee serial).begin(9600)! it should be called in the setting() tab on Arduino I\-D\-E Environment. 
+
+The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+\hyperlink{thing__client_8h}{thing\-\_\-client.\-h}\item 
+thing\-\_\-client.\-cpp\end{DoxyCompactItemize}
