@@ -1,11 +1,5 @@
-1. Run Gateway
+### Arduino
 
-cd Gateway/GATEWAY/
-make
-./st.sh
+import XBEE, Thing libraries (move libs into Arduino/libraries)
 
-2. Arduino
-
-Before compile arduino, you have to launch XBEE library
-move CAPIOT to Arduino/libraries
-run sketch_Light.ino and launch!
+run *.ino and launch!
