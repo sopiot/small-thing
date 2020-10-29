@@ -18,9 +18,9 @@
 #include <XBee.h>
 #include "thing_defines.h"
 
-#define CAPITAL_MAX_VALUE		10
-#define CAPITAL_MAX_FUNCTION	5
-#define CAPITAL_MAX_ATTRIBUTE	5
+#define CAPITAL_MAX_VALUE 10
+#define CAPITAL_MAX_FUNCTION 5
+#define CAPITAL_MAX_ATTRIBUTE 5
 #define CAPITAL_MAX_NAME_LENGTH 20
 #define CAPITAL_MAX_BUFFER_SIZE 60
 
@@ -31,10 +31,9 @@
  * @details A programmer can add Value to the Supervisor by using this class.
  * int | double | bool f(void) - only 3 types can be handled
  */
-class Value 
+class Value
 {
 public:
-		
 	/** @} */
 	/**
 	 * @name complete Constructors
@@ -45,61 +44,57 @@ public:
 	/**
 	 * constructor with name, integer value, min, max
 	 */
-	Value(const char* name, IntegerValue value, int min, int max, int sleep_ms_interval);
+	Value(const char *name, IntegerValue value, int min, int max, int sleep_ms_interval);
 	/**
 	* constructor with name, char* value, min, max
 	*/
-	Value(const char* name, StringValue value, int min, int max, int sleep_ms_interval);
+	Value(const char *name, StringValue value, int min, int max, int sleep_ms_interval);
 	/**
 	 * constructor with name, double value, min, max
 	 */
-	Value(const char* name, DoubleValue value, double min, double max, int sleep_ms_interval);
+	Value(const char *name, DoubleValue value, double min, double max, int sleep_ms_interval);
 	/**
 	 * constructor with name, bool value. bool value does not need to set min and max.
 	 */
-	Value(const char* name, BoolValue value, int sleep_ms_interval);
-	/** @} */	
+	Value(const char *name, BoolValue value, int sleep_ms_interval);
+	/** @} */
 	/**
 	 * A destructor
 	 */
 	~Value();
-	
 
 	/**
 	 * get name's pointer of the value
 	 */
-	char* name();
+	char *name();
 
 	void *value();
-	bool value_changed(void* cur);
-
-
+	bool value_changed(void *cur);
 
 	/**
 	 * internal function to set sleep interval of each values/ 
 	 */
-    void set_sleep_interval(const int sleep_ms_interval);
+	void set_sleep_interval(const int sleep_ms_interval);
 
 	/**
 	 * internal function to get sleep interval of each values/ 
 	 */
-    int get_sleep_ms_interval();
+	int get_sleep_ms_interval();
 
 	/**
 	 * internal function to set last sent time of each value to publish its value periodically / 
 	 */
-    void set_last_sent_time();
-
+	void set_last_sent_time();
 
 	/**
 	 * internal function to get last sent time of each value to publish its value periodically / 
 	 */
-    unsigned long get_last_sent_time();
+	unsigned long get_last_sent_time();
 	/**
 	 * Get a string that contains information of the value
 	 * @param buffer output buffer 
 	 */
-	void GetInformation(char* buffer);
+	void GetInformation(char *buffer);
 
 	/**
 	 * set a publish id(common00) that registered to the gateway
@@ -110,11 +105,10 @@ public:
 	 * get a publish id that registered to the gateway
 	 */
 	uint16_t publish_id();
-	
-	bool capVal2str(char* buffer);
 
+	bool capVal2str(char *buffer);
 
-	CapType value_classifier(void); 
+	CapType value_classifier(void);
 
 	char *user_string_buffer_;
 
@@ -173,15 +167,14 @@ private:
 	void *min_;
 	void *max_;
 	void *prev_;
-    int sleep_ms_interval_;
-    unsigned long last_sent_time_;
-	CapType value_classifier_;	
+	int sleep_ms_interval_;
+	unsigned long last_sent_time_;
+	CapType value_classifier_;
 };
 
 class Attribute
 {
 public:
-
 	/**
 	* @name complete Constructors
 	* @brief while using 3 Constructors below, it can be added to the Client without any function calls
@@ -192,11 +185,11 @@ public:
 	/**
 	* constructor with name and real value.
 	*/
-	Attribute(const char* name, double attribute_value, CapType attribute_type);
+	Attribute(const char *name, double attribute_value, CapType attribute_type);
 	/**
 	* constructor with name and string value.
 	*/
-	Attribute(const char* name, char *attribute_value, CapType attribute_type);
+	Attribute(const char *name, char *attribute_value, CapType attribute_type);
 
 	/** @} */
 	/**
@@ -211,7 +204,7 @@ public:
 	/**
 	* get name's pointer of the attribute
 	*/
-	char* name();
+	char *name();
 
 	/**
 	* set string or binary value of the attribute
@@ -226,7 +219,7 @@ public:
 	/**
 	* get json_object* to register to the middleware, it will not be used in user level
 	*/
-	void GetInformation(char* buffer);
+	void GetInformation(char *buffer);
 
 	/**
 	* get type status of the attribute, it also not be used in user level
@@ -240,11 +233,9 @@ private:
 	void Initialize();
 	double real_value_;
 	char *string_value_;
-	char *name_; /** < A name of the value*/
+	char *name_;			 /** < A name of the value*/
 	CapType attribute_type_; /** < represents type of the value */
-
 };
-
 
 class Argument
 {
@@ -253,12 +244,12 @@ public:
 	* constructor for int or char array or bool argument
 	* @param name means the name of the Argument
 	*/
-	Argument(const char* name, int min, int max, CapType arg_type);
+	Argument(const char *name, int min, int max, CapType arg_type);
 	/**
 	* constructor for double-argument function
 	* @param name means the name of the function
 	*/
-	Argument(const char* name, double min, double max, CapType arg_type);
+	Argument(const char *name, double min, double max, CapType arg_type);
 
 	/** @} */
 	/**
@@ -273,8 +264,8 @@ public:
 	/**
 	* get name's pointer of the function
 	*/
-	char* name();
-	void* value();
+	char *name();
+	void *value();
 
 	/**
 	* @}
@@ -297,9 +288,9 @@ public:
 	*/
 	CapType arg_type(void);
 
-	void GetInformation(char * buf);
+	void GetInformation(char *buf);
 
-	bool Check_valid_and_set(char* val);
+	bool Check_valid_and_set(char *val);
 
 private:
 	/**
@@ -328,8 +319,8 @@ private:
 	void *value_;
 	void *min_;
 	void *max_;
-	CapType arg_type_;	 /** < represents type of the argument */
-	int order_; /** < represents order of argument */
+	CapType arg_type_; /** < represents type of the argument */
+	int order_;		   /** < represents order of argument */
 };
 
 /**
@@ -337,7 +328,7 @@ private:
  * @details A programmer can add Functions to the Supervisor by using this class.
  * void f(void | int | double | bool) - only 4 types can be handled
  */
-class Function 
+class Function
 {
 public:
 	/**
@@ -354,9 +345,9 @@ public:
 	 */
 
 	/* only one type of constructor is allowed*/
-	Function(const char* name, VoidFunction func, int nArguments, int nFunctionAttributes);
+	Function(const char *name, VoidFunction func, int nArguments, int nFunctionAttributes);
 
-	/** @} */	
+	/** @} */
 	/**
 	 * A destructor
 	 */
@@ -366,9 +357,9 @@ public:
 	* add a function-dependent value
 	*/
 
-	void Add_argument(Argument& argument);
+	void Add_argument(Argument &argument);
 
-	void Add_functionattribute(Attribute& function_attribute);
+	void Add_functionattribute(Attribute &function_attribute);
 
 	/**
 	 * set name of the function
@@ -377,7 +368,7 @@ public:
 	/**
 	 * get name's pointer of the function
 	 */
-	char* name();
+	char *name();
 
 	/**
 	 * @name set function
@@ -385,15 +376,15 @@ public:
 	 * @{
 	 */
 	int ncurArguments() { return ncurArguments_; }
-	Argument* getIdxArgument(int idx) { return ptsArguments_[idx]; }
-  
-  //Dowhan added
-Attribute* getIdxFunctionAttribute(int idx) {return ptsFunctionAttributes_[idx]; }
-  //End
-  int ncurFunctionAttributes() { return ncurFunctionAttributes_; }
-	
-	void GetInformation(char* buffer);
-	void Execute(char* args, int* success) const;
+	Argument *getIdxArgument(int idx) { return ptsArguments_[idx]; }
+
+	//Dowhan added
+	Attribute *getIdxFunctionAttribute(int idx) { return ptsFunctionAttributes_[idx]; }
+	//End
+	int ncurFunctionAttributes() { return ncurFunctionAttributes_; }
+
+	void GetInformation(char *buffer);
+	void Execute(char *args, int *success) const;
 	/**
 	 * set a registered id of topic name from MT1003 (returns id_1003)
 	 */
@@ -424,20 +415,18 @@ private:
 	void *function_;
 	int nmaxArguments_;
 	int ncurArguments_;
-	Argument** ptsArguments_;
-  //Dowhan added
-  Attribute** ptsFunctionAttributes_;
-  int ncurFunctionAttributes_;
-  //End
+	Argument **ptsArguments_;
+	//Dowhan added
+	Attribute **ptsFunctionAttributes_;
+	int ncurFunctionAttributes_;
+	//End
 
 	uint16_t id_1003_;
 	uint16_t id_2004_deprecated_;
 	uint16_t id_2004_;
 
-	CapType function_classifier_;	
-
+	CapType function_classifier_;
 };
-
 
 /**
  * @brief A class for communication between thing and gateway. 
@@ -449,24 +438,24 @@ private:
  * it is very similar to the Class Client in thing_client. please refer that documentation.
  */
 
-class ThingClient{
+class ThingClient
+{
 public:
 	ThingClient();
 	~ThingClient();
 	/**
 	 * programmer can easily set client id and zigbee serial with this constructor.
 	 */
-	ThingClient(const char* class_name, int alive_cycle, Stream& serial);
-	ThingClient(const char* class_name, Stream& serial);
+	ThingClient(const char *class_name, int alive_cycle, Stream &serial);
+	ThingClient(const char *class_name, Stream &serial);
 
-
-	void Add(Value& v);
-	void Add(Function& f);
-	void Add(Attribute& a);
+	void Add(Value &v);
+	void Add(Function &f);
+	void Add(Attribute &a);
 	/**
 	 * set serial that connected to the zigbee output and input
 	 */
-	void set_serial(Stream& serial);
+	void set_serial(Stream &serial);
 	/**
 	 * set function that acts when arduino connects to the gateway
 	 * @param connectHandler the void function that programmer wants to activate when arduino connects to the gateway.
@@ -477,7 +466,7 @@ public:
 	 * @param disconnectHandler the void function that programmer wants to activate when arduino disconnects from the gateway.
 	 */
 	void set_disconnect_handler(void (*disconnectHandler)());
-	
+
 	/**
      * Initialize client id with class name and mac address
 	 */
@@ -486,13 +475,13 @@ public:
 	/**
      * get mac address of zigbee for client id
      */
-    void get_mac_address();
+	void get_mac_address();
 
-    /**
+	/**
      * set class name of client
 	 */
-    
-    void set_class_name(const char* class_name);
+
+	void set_class_name(const char *class_name);
 	/**
 	 * Call it after setting serial, setting client id, and Adding every function and value.
 	 * Do not forget call this function after (zigbee serial).begin(9600)!
@@ -500,19 +489,18 @@ public:
 	 */
 	void Setting();
 
-    /**
+	/**
      *Send Alive message to middleware for every alive cycle
      */
-    void sendAliveMessage();
+	void sendAliveMessage();
 	/**
 	 * Call it in the loop() tab on Arduino IDE Environment.
 	 */
 	//void DoLoop();
 	void DoLoop(int pub_period = 100);
-	
-	
+
 protected:
-/*
+	/*
 	virtual void subscribeByName(const uint8_t flags, const char* topic_name) = 0;
 	virtual	void unsubscribeByName(const uint8_t flags, const char* topic_name) = 0;
 	
@@ -524,13 +512,13 @@ protected:
 	virtual void pubackHandler(const msg_puback* msg) = 0;
 
 */
-	#ifdef USE_QOS2
-	void pubrecHandler(const msg_pubqos2* msg);
-	void pubrelHandler(const msg_pubqos2* msg);
-  void pubcompHandler(const msg_pubqos2* msg);
-	#endif
-	
-/*	
+#ifdef USE_QOS2
+	void pubrecHandler(const msg_pubqos2 *msg);
+	void pubrelHandler(const msg_pubqos2 *msg);
+	void pubcompHandler(const msg_pubqos2 *msg);
+#endif
+
+	/*	
 	virtual void unsubackHandler(const msg_unsuback* msg) = 0; // it is needed, but will not be used in this library
 	
 	virtual void willtopicrespHandler(const msg_willtopicresp* msg) = 0;
@@ -538,30 +526,29 @@ protected:
 */
 	virtual void pingreqHandler();
 	virtual void pingrespHandler();
-	virtual void subackHandler(const msg_suback* msg);
-	virtual void disconnectHandler(const msg_disconnect* msg);
+	virtual void subackHandler(const msg_suback *msg);
+	virtual void disconnectHandler(const msg_disconnect *msg);
 	void regack(const uint16_t topicId, const uint16_t messageId, const return_code_t return_code);
 	void puback(const uint16_t topicId, const uint16_t messageId, const return_code_t return_code);
 	void subscribe(const uint8_t flags, const uint16_t topicId);
-	void subscribe(const uint8_t flags, const char* name);
+	void subscribe(const uint8_t flags, const char *name);
 	void unsubscribe(const uint8_t flags, const uint16_t topicId);
-	void unsubscribe(const uint8_t flags, const char* name);
+	void unsubscribe(const uint8_t flags, const char *name);
 	void devregHandler();
-	void devregackHandler(const msg_devregack* msg);
-	void regackHandler(const msg_regack* msg);
-	void publishHandler(const msg_publish* msg);
-	void advertiseHandler(const msg_advertise* msg);
-	void gwinfoHandler(const msg_gwinfo* msg);
-	void connackHandler(const msg_connack* msg);
+	void devregackHandler(const msg_devregack *msg);
+	void regackHandler(const msg_regack *msg);
+	void publishHandler(const msg_publish *msg);
+	void advertiseHandler(const msg_advertise *msg);
+	void gwinfoHandler(const msg_gwinfo *msg);
+	void connackHandler(const msg_connack *msg);
+
 private:
-
-
-	#ifdef USE_QOS2
-	void pubrec(const msg_publish* msg);
-	void pubrel(const msg_pubqos2* msg);
-	void pubcomp(const msg_pubqos2* msg);
-	#endif
-/*	
+#ifdef USE_QOS2
+	void pubrec(const msg_publish *msg);
+	void pubrel(const msg_pubqos2 *msg);
+	void pubcomp(const msg_pubqos2 *msg);
+#endif
+	/*	
 	void willtopic(const uint8_t flags, const char* will_topic, const bool update = false);
 	void willmsg(const void* will_msg, const uint8_t will_msg_len, const bool update = false);
 */
@@ -569,71 +556,70 @@ private:
 	bool waitForResponse();
 	bool connected();
 	bool valid();
-	
+
 	void searchgw(const uint8_t radius);
-	void connect(const uint8_t flags, const uint16_t duration, const char* client_id_);
-	bool registerTopic(const char* name);
-	void publish(const uint8_t flags, const uint16_t topicId, const void* data, const uint8_t data_len);
+	void connect(const uint8_t flags, const uint16_t duration, const char *client_id_);
+	bool registerTopic(const char *name);
+	void publish(const uint8_t flags, const uint16_t topicId, const void *data, const uint8_t data_len);
 	void devreg(void);
-	
+
 	void checkSerial();
-    void checkSerialForValue();
+	void checkSerialForValue();
 
 	void pingreq();
 	void pingresp(int flag);
 	void disconnect(const uint16_t duration);
 
-	void parseStream(char* buf, uint16_t len);
+	void parseStream(char *buf, uint16_t len);
 	void dispatch();
 	uint16_t bswap(const uint16_t val);
-	
+
 	void unicast();
 	void broadcast();
 	void sendPacket();
-	
+
 	//f~ : function pointers
 
-    bool compareTimeStamp(Value *t);
+	bool compareTimeStamp(Value *t);
 
 	void (*connect_handler_)();
 
 	void (*disconnect_handler_)();
 
 	//data members
-	
+
 	uint8_t num_values_;
 	uint8_t num_functions_;
 	uint8_t num_attributes_;
 
-	Value* values_[CAPITAL_MAX_VALUE];
-	Function* functions_[CAPITAL_MAX_FUNCTION];
-	Attribute* attributes_[CAPITAL_MAX_ATTRIBUTE];
-
+	Value *values_[CAPITAL_MAX_VALUE];
+	Function *functions_[CAPITAL_MAX_FUNCTION];
+	Attribute *attributes_[CAPITAL_MAX_ATTRIBUTE];
 
 	uint16_t id_1001_;
 	uint16_t id_1002_;
 	uint16_t id_2001_;
 	uint16_t id_2002_;
 	uint16_t id_2003_;
-	// 
+	//
 
 	char buffer[CAPITAL_MAX_BUFFER_SIZE];
 	char save_buffer[CAPITAL_MAX_BUFFER_SIZE];
-    uint8_t mac_address[10];
-	
-	const char* client_id_;
-    const char* class_name_; 
-    unsigned long alive_cycle_;
+	uint8_t mac_address[10];
 
-    /////// MQTT-SN
+	const char *client_id_;
+	const char *class_name_;
+	unsigned long alive_cycle_;
+
+	/////// MQTT-SN
 	XBee zbee_;
-	
+
 	bool connected_;
 	XBeeAddress64 gateway_address_64_;
 	uint16_t gateway_address_16_;
 	uint8_t gateway_id_;
 	ZBTxRequest zbee_tx_;
-	ZBRxResponse zbee_rx_;	
+	ZBRxResponse zbee_rx_;
 	// Set to true when we're waiting for some sort of acknowledgement from the
 	//server that will transition our state.
 	bool waiting_for_response_;
@@ -645,9 +631,9 @@ private:
 	uint8_t response_wait_for_;
 
 	uint16_t message_id_;
-	
+
 	uint8_t message_buffer_[CAPITAL_MAX_BUFFER_SIZE];
-	
+
 	uint32_t response_timer_;
 	uint8_t response_retries_;
 
@@ -679,6 +665,5 @@ int GetDoubleArgumentByName(void *pData, const char *name, double *pdbOut);
 * handle mqtt connlost mesage
 */
 void brokerConnLost(void *context, char *cause);
-
 
 #endif

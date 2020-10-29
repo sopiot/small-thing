@@ -17,7 +17,6 @@
 #define TM2004_DEPRECATED "TM/RESULT/FUNCTION/%s"
 #define TM2004 "TM/RESULT/FUNCTION/%s/%s"
 
-
 #define QOS 2
 #define TIMEOUT 10000L
 
@@ -48,9 +47,9 @@
 #define N_RETRY 5
 #define CAP_DEBUG
 #ifdef CAP_DEBUG
-	#define CPDBG(...) Serial.println(__VA_ARGS__)
+#define CPDBG(...) Serial.println(__VA_ARGS__)
 #else
-	#define CPDBG(...)
+#define CPDBG(...)
 #endif
 
 #define DOUBLE_EPSILON (0.0000001)
@@ -64,30 +63,33 @@
 #define QOS_FLAG 0
 #endif
 
-typedef enum _captype{
-	UNDEFINED = 0,
-	VOID,
-	INTEGER,
-	DOUBLE,
-	BOOL,
-	STRING,
+typedef enum _captype
+{
+    UNDEFINED = 0,
+    VOID,
+    INTEGER,
+    DOUBLE,
+    BOOL,
+    STRING,
 } CapType;
 
-typedef enum _capdevreg {
-	VALUE = 0,
-	ATTRIBUTE,
-	FUNCTION,
-	ARGUMENT,
-  //DOWHAN ADDEED
-  FUNCTION_ATTRIBUTE,
-  //END
-	DURATION,
-	FINISH,	
+typedef enum _capdevreg
+{
+    VALUE = 0,
+    ATTRIBUTE,
+    FUNCTION,
+    ARGUMENT,
+    //DOWHAN ADDEED
+    FUNCTION_ATTRIBUTE,
+    //END
+    DURATION,
+    FINISH,
 } CapRegStatus;
 
-typedef enum _capstate{
-	UNREGISTERED = 0,
-	REGISTERED,
+typedef enum _capstate
+{
+    UNREGISTERED = 0,
+    REGISTERED,
 } CapState;
 
 typedef void (*VoidFunction)(void *);
@@ -98,18 +100,18 @@ typedef bool (*BoolFunction)(void *);
 typedef int (*IntegerValue)(void);
 typedef double (*DoubleValue)(void);
 typedef bool (*BoolValue)(void);
-typedef char* (*StringValue)(char *, int);
+typedef char *(*StringValue)(char *, int);
 
-
-
-enum return_code_t {
+enum return_code_t
+{
     ACCEPTED,
     REJECTED_CONGESTION,
     REJECTED_INVALID_TOPIC_ID,
     REJECTED_NOT_SUPPORTED
 };
 
-enum message_type {
+enum message_type
+{
     ADVERTISE,
     SEARCHGW,
     GWINFO,
@@ -137,88 +139,104 @@ enum message_type {
     WILLTOPICRESP,
     WILLMSGUPD,
     WILLMSGRESP,
-	DEVREG,
-	DEVREGACK
+    DEVREG,
+    DEVREGACK
 };
 
-struct message_header {
+struct message_header
+{
     uint8_t length;
     uint8_t type;
 };
 
-struct msg_advertise : public message_header {
+struct msg_advertise : public message_header
+{
     uint8_t gw_id;
     uint16_t duration;
 };
 
-struct msg_searchgw : public message_header {
+struct msg_searchgw : public message_header
+{
     uint8_t radius;
 };
 
-struct msg_gwinfo : public message_header {
+struct msg_gwinfo : public message_header
+{
     uint8_t gw_id;
     char gw_add[0];
 };
 
-struct msg_connect : public message_header {
+struct msg_connect : public message_header
+{
     uint8_t flags;
     uint8_t protocol_id;
     uint16_t duration;
     char client_id[0];
 };
 
-struct msg_connack : public message_header {
+struct msg_connack : public message_header
+{
     return_code_t return_code;
 };
 
-struct msg_willtopic : public message_header {
+struct msg_willtopic : public message_header
+{
     uint8_t flags;
     char will_topic[0];
 };
 
-struct msg_willmsg : public message_header {
+struct msg_willmsg : public message_header
+{
     char willmsg[0];
 };
 
-struct msg_register : public message_header {
+struct msg_register : public message_header
+{
     uint16_t topic_id;
     uint16_t message_id;
     char topic_name[0];
 };
 
-struct msg_regack : public message_header {
+struct msg_regack : public message_header
+{
     uint16_t topic_id;
     uint16_t message_id;
     uint8_t return_code;
 };
 
-struct msg_publish : public message_header {
+struct msg_publish : public message_header
+{
     uint8_t flags;
     uint16_t topic_id;
     uint16_t message_id;
     char data[0];
 };
 
-struct msg_puback : public message_header {
+struct msg_puback : public message_header
+{
     uint16_t topic_id;
     uint16_t message_id;
     uint8_t return_code;
 };
 
-struct msg_pubqos2 : public message_header {
+struct msg_pubqos2 : public message_header
+{
     uint16_t message_id;
 };
 
-struct msg_subscribe : public message_header {
+struct msg_subscribe : public message_header
+{
     uint8_t flags;
     uint16_t message_id;
-    union {
+    union
+    {
         char topic_name[0];
         uint16_t topic_id;
     };
 };
 
-struct msg_suback : public message_header {
+struct msg_suback : public message_header
+{
     uint8_t flags;
     uint16_t topic_id;
     uint16_t message_id;
@@ -227,49 +245,58 @@ struct msg_suback : public message_header {
 
 //
 
-struct msg_devreg : public message_header {
-	uint16_t pub_id;
-	uint16_t message_id;
-	uint8_t status;
-	char data[0];
+struct msg_devreg : public message_header
+{
+    uint16_t pub_id;
+    uint16_t message_id;
+    uint8_t status;
+    char data[0];
 };
 
 // status -> 0 : continue 1 : last
 
-struct msg_devregack : public message_header {
-	uint8_t flags;
-	uint16_t message_id;
-	uint8_t return_code;
+struct msg_devregack : public message_header
+{
+    uint8_t flags;
+    uint16_t message_id;
+    uint8_t return_code;
 };
 
 // added
 
-struct msg_unsubscribe : public message_header {
+struct msg_unsubscribe : public message_header
+{
     uint8_t flags;
     uint16_t message_id;
-    union {
+    union
+    {
         char topic_name[0];
         uint16_t topic_id;
     };
 };
 
-struct msg_unsuback : public message_header {
+struct msg_unsuback : public message_header
+{
     uint16_t message_id;
 };
 
-struct msg_pingreq : public message_header {
+struct msg_pingreq : public message_header
+{
     char client_id[0];
 };
 
-struct msg_disconnect : public message_header {
+struct msg_disconnect : public message_header
+{
     uint16_t duration;
 };
 
-struct msg_willtopicresp : public message_header {
+struct msg_willtopicresp : public message_header
+{
     uint8_t return_code;
 };
 
-struct msg_willmsgresp : public message_header {
+struct msg_willmsgresp : public message_header
+{
     uint8_t return_code;
 };
 
