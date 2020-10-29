@@ -143,6 +143,13 @@ enum message_type
     DEVREGACK
 };
 
+/*********************************************************
+At ARM board, struct packing structure is divide by 4 byte
+so you have to use pragma(1) like that
+**********************************************************/
+#if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM)
+#pragma pack(push, 1)
+#endif
 struct message_header
 {
     uint8_t length;
@@ -299,5 +306,8 @@ struct msg_willmsgresp : public message_header
 {
     uint8_t return_code;
 };
+#if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM)
+#pragma pack(pop)
+#endif
 
 #endif

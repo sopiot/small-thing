@@ -542,6 +542,10 @@ protected:
 	void gwinfoHandler(const msg_gwinfo *msg);
 	void connackHandler(const msg_connack *msg);
 
+	//for debug
+	void print_message_buffer_();
+	void print_message_buffer_(void *buf, int length);
+	void print_message_buffer_(int start, int length);
 private:
 #ifdef USE_QOS2
 	void pubrec(const msg_publish *msg);

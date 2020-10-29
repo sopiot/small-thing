@@ -1,5 +1,16 @@
 #include "thing_client.h"
 
+// for ARM board support
+char *dtostrf_cap(double val, signed char width, unsigned char prec, char *sout)
+{
+	asm(".global _printf_float");
+
+	char fmt[20];
+	sprintf(fmt, "%%%d.%df", width, prec);
+	sprintf(sout, fmt, val);
+	return sout;
+}
+
 //  class Value
 void Value::Initialize()
 {
@@ -222,8 +233,8 @@ void Value::GetInformation(char *buffer)
 	{
 		char min_temp[10];
 		char max_temp[10];
-		dtostrf(*(double *)min_, 8, 2, min_temp);
-		dtostrf(*(double *)max_, 8, 2, max_temp);
+		dtostrf_cap(*(double *)min_, 8, 2, min_temp);
+		dtostrf_cap(*(double *)max_, 8, 2, max_temp);
 		sprintf(buffer, "%s\tdouble\t%s\t%s", name_, min_temp, max_temp);
 		break;
 	}
@@ -258,7 +269,7 @@ bool Value::capVal2str(char *buffer)
 	{
 		char val_temp[10];
 		dval = ((DoubleValue)value_)();
-		dtostrf(dval, 8, 2, val_temp);
+		dtostrf_cap(dval, 8, 2, val_temp);
 		len = sprintf(buffer, "{\"type\" : \"double\" , \"value\" : %s}", val_temp);
 		val = &dval;
 		break;
@@ -365,21 +376,21 @@ void Attribute::GetInformation(char *buffer)
 	case BOOL:
 	{
 		char min_temp[10];
-		dtostrf(real_value_, 8, 2, min_temp);
+		dtostrf_cap(real_value_, 8, 2, min_temp);
 		sprintf(buffer, "%s\tbool\t%s", name_, min_temp);
 		break;
 	}
 	case INTEGER:
 	{
 		char min_temp[10];
-		dtostrf(real_value_, 8, 2, min_temp);
+		dtostrf_cap(real_value_, 8, 2, min_temp);
 		sprintf(buffer, "%s\tint\t%s", name_, min_temp);
 		break;
 	}
 	case DOUBLE:
 	{
 		char min_temp[10];
-		dtostrf(real_value_, 8, 2, min_temp);
+		dtostrf_cap(real_value_, 8, 2, min_temp);
 		sprintf(buffer, "%s\tdouble\t%s", name_, min_temp);
 		break;
 	}
@@ -580,8 +591,8 @@ void Argument::GetInformation(char *buffer)
 	{
 		char min_temp[10];
 		char max_temp[10];
-		dtostrf(*(double *)min_, 8, 2, min_temp);
-		dtostrf(*(double *)max_, 8, 2, max_temp);
+		dtostrf_cap(*(double *)min_, 8, 2, min_temp);
+		dtostrf_cap(*(double *)max_, 8, 2, max_temp);
 		sprintf(buffer, "%s\tdouble\t%s\t%s\t", name_, min_temp, max_temp);
 		break;
 	}
@@ -741,7 +752,7 @@ void Function::GetInformation(char *buffer)
 		CPDBG(F("ERROR!"));
 		break;
 	}
-	CPDBG(F("Get Information!"));
+	CPDBG(F("Get Function Information!"));
 	//CPDBG(index);
 }
 
@@ -1095,7 +1106,7 @@ void ThingClient::sendAliveMessage()
 	static unsigned long curr_time = 0;
 	static unsigned long last_sent_time = 0;
 	unsigned long diff_time = 0;
-	char *pszDummy = "dummy";
+	char *pszDummy = (char *)"dummy";
 
 	curr_time = millis();
 
@@ -1291,6 +1302,7 @@ void ThingClient::dispatch()
 		break;
 
 	case REGACK:
+		CPDBG(F("REGACK"));
 		if (!waiting_for_response_ || response_wait_for_ != REGACK)
 			return;
 		regackHandler((msg_regack *)message_buffer_);
@@ -1302,30 +1314,31 @@ void ThingClient::dispatch()
 			CPDBG(F("Ignore PUBLISH message for waiting previous publish message"));
 			return;
 		}
-		CPDBG(F("<PUBLISH>"));
+		CPDBG(F("PUBLISH"));
 		publishHandler((msg_publish *)message_buffer_);
 		break;
 
 	case SUBACK:
 		if (!waiting_for_response_ || response_wait_for_ != SUBACK)
 			return;
-		/*		CPDBG(F("<SUBACK>"));*/
+		CPDBG(F("SUBACK"));
 		subackHandler((msg_suback *)message_buffer_);
 		break;
 
 	case PINGREQ:
+		CPDBG(F("PINGREQ"));
 		pingreqHandler();
 		break;
 
 	case PINGRESP:
 		if (!waiting_for_response_ || response_wait_for_ != PINGRESP)
 			return;
-		/*		CPDBG(F("<PINGRESP>"));*/
+		CPDBG(F("PINGRESP"));
 		pingrespHandler();
 		break;
 
 	case DISCONNECT:
-		/*		CPDBG(F("<DISCONNECT>"));*/
+		CPDBG(F("DISCONNECT"));
 		disconnectHandler((msg_disconnect *)message_buffer_);
 		break;
 
@@ -1360,7 +1373,8 @@ void ThingClient::broadcast()
 	message_header *hdr = reinterpret_cast<message_header *>(message_buffer_);
 	uint16_t addr16 = ZB_BROADCAST_ADDRESS;
 	XBeeAddress64 addr64 = XBeeAddress64(0, 0xffff);
-	zbee_tx_ = ZBTxRequest(addr64, addr16, 10, ZB_TX_BROADCAST, message_buffer_, hdr->length, DEFAULT_FRAME_ID);
+	//zbee_tx_ = ZBTxRequest(addr64, addr16, 10, ZB_TX_BROADCAST, message_buffer_, hdr->length, DEFAULT_FRAME_ID);
+	zbee_tx_ = ZBTxRequest(addr64, message_buffer_, hdr->length);
 	sendPacket();
 }
 
@@ -1822,6 +1836,44 @@ void ThingClient::subscribe(const uint8_t flags, const uint16_t topicId)
 	}
 }
 
+//for debug
+void ThingClient::print_message_buffer_(int start, int length)
+{
+	//print message_buffer_ BYTE message_buffer_[start] to message_buffer_[start + length]
+	if (length == -1)
+		length = CAPITAL_MAX_BUFFER_SIZE;
+	for (int i = start; i < start + length; i++)
+	{
+		Serial.print(message_buffer_[i], HEX);
+		Serial.print(" ");
+	}
+	Serial.println("");
+}
+
+void ThingClient::print_message_buffer_(void *buf, int length)
+{
+	//print message_buffer_ BYTE *buf to *(buf + length)
+	char *tmp = (char *)buf;
+	if (length == -1)
+		length = CAPITAL_MAX_BUFFER_SIZE;
+	for (int i = 0; i < length; i++)
+	{
+		Serial.print(*(tmp + i), HEX);
+		Serial.print(" ");
+	}
+	Serial.println("");
+}
+
+void ThingClient::print_message_buffer_()
+{
+	//print all message_buffer_ BYTE
+	for (int i = 0; i < CAPITAL_MAX_BUFFER_SIZE; i++)
+	{
+		Serial.print(message_buffer_[i], HEX);
+		Serial.print(" ");
+	}
+	Serial.println("");
+}
 void ThingClient::subscribe(const uint8_t flags, const char *name)
 {
 	++message_id_;
