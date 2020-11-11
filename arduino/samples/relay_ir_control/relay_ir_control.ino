@@ -4,13 +4,11 @@
 #define DHT_TYPE DHT11
 
 #define LIGHT_PIN A0
-#define DISTANCE_TRIGGER_PIN 4
-#define DISTANCE_RECEIVE_PIN 5
-#define RELAY_PIN 7
+#define DISTANCE_TRIGGER_PIN 2
+#define DISTANCE_RECEIVE_PIN 3
+#define RELAY_PIN 4
+#define SEND_PIN 5
 
-//IRsend irsend;
-
-//IR_signals...
 unsigned int ON[] = {9096, 4508, 576, 544, 576, 536, 580, 540, 568, 548, 568, 536, 580, 540, 572, 540, 576, 544, 572, 1644, 576, 1652, 580, 1652, 580, 1648, 576, 1648, 576, 1656, 576, 1652, 576, 1652, 580, 1652, 572, 532, 576, 1652, 576, 544, 576, 536, 580, 540, 576, 1652, 568, 536, 576, 544, 576, 1652, 576, 544, 576, 1652, 572, 1652, 576, 1652, 576, 544, 572, 1644, 584};
 unsigned int OFF[] = {9096, 4516, 572, 540, 580, 540, 568, 540, 580, 540, 576, 544, 576, 544, 568, 544, 576, 540, 576, 1652, 568, 1652, 580, 1652, 576, 1656, 576, 1644, 576, 1652, 576, 1648, 580, 1652, 564, 1656, 576, 1656, 572, 1652, 572, 536, 580, 540, 576, 540, 568, 1652, 576, 544, 576, 540, 576, 536, 576, 540, 580, 1652, 580, 1652, 576, 1644, 576, 544, 576, 1656, 576};
 unsigned int TIMER_OFF[] = {9096, 4504, 576, 540, 580, 536, 576, 544, 576, 544, 576, 536, 572, 544, 576, 540, 576, 540, 580, 1652, 580, 1652, 576, 1644, 576, 1656, 568, 1648, 580, 1652, 568, 1660, 568, 1656, 572, 544, 576, 1652, 576, 1648, 572, 536, 580, 540, 576, 540, 576, 1656, 576, 532, 576, 1652, 576, 540, 580, 536, 572, 1648, 576, 1656, 576, 1656, 576, 540, 568, 1648, 580};
@@ -30,6 +28,72 @@ unsigned int MODE_SW_LEFT[] = {9100, 4504, 580, 540, 576, 540, 576, 532, 576, 54
 unsigned int MODE_SW_RIGHT[] = {9096, 4508, 576, 544, 576, 532, 576, 540, 576, 544, 576, 540, 568, 548, 568, 536, 580, 540, 576, 1644, 576, 1644, 576, 1644, 576, 1652, 580, 1652, 568, 1652, 576, 1652, 576, 1660, 572, 536, 572, 1652, 576, 540, 580, 1644, 576, 1648, 576, 544, 576, 1652, 576, 540, 568, 1652, 568, 544, 576, 1652, 576, 532, 576, 544, 576, 1652, 576, 540, 568, 1652, 576};
 unsigned int BRIGHTNESS_UP[] = {9100, 4504, 580, 536, 576, 544, 576, 544, 576, 536, 576, 544, 576, 540, 576, 540, 580, 540, 572, 1652, 572, 1652, 576, 1644, 584, 1640, 576, 1652, 580, 1652, 576, 1644, 584, 1644, 576, 544, 572, 1648, 580, 540, 568, 540, 576, 532, 576, 544, 576, 1644, 584, 532, 576, 1652, 580, 536, 580, 1652, 576, 1644, 576, 1652, 576, 1652, 580, 536, 580, 1640, 580};
 unsigned int BRIGHTNESS_DOWN[] = {9088, 4504, 580, 540, 572, 540, 572, 540, 576, 544, 572, 532, 576, 540, 576, 540, 576, 536, 572, 1648, 580, 1652, 576, 1644, 576, 1656, 572, 1652, 580, 1652, 568, 1652, 576, 1652, 576, 532, 576, 1652, 580, 540, 580, 1644, 580, 540, 576, 540, 576, 1648, 576, 544, 576, 1652, 576, 540, 568, 1652, 580, 540, 576, 1648, 572, 1652, 576, 540, 576, 1648, 572};
+
+void send_ir(unsigned int *signal)
+{
+    digitalWrite(SEND_PIN, LOW);
+
+    for (unsigned int i = 0; i < sizeof(signal) / sizeof(signal[0]); i++)
+    {
+        unsigned long Start = micros();
+        if (i & 1)
+        {
+            space(signal[i]);
+        }
+        else
+        {
+            mark(signal[i]);
+        }
+    }
+
+    digitalWrite(SEND_PIN, LOW);
+
+    delay(1000);
+}
+
+void custom_delay_usec(unsigned long uSecs)
+{
+
+    unsigned long Start = micros();
+    unsigned long endMicros = Start + uSecs;
+    if (endMicros < Start)
+    { // Check if overflow
+        while (micros() > Start)
+        {
+        } // wait until overflow
+    }
+    while (micros() < endMicros)
+    {
+    } // normal wait
+}
+
+void space(unsigned int Time)
+{
+    digitalWrite(SEND_PIN, LOW);
+    if (Time > 0)
+    {
+        unsigned long Start = micros();
+        unsigned long endMicros = Start + Time - 4;
+        custom_delay_usec(Time);
+    }
+}
+
+void mark(unsigned int Time)
+{
+    unsigned long Start = micros();
+    unsigned long endMicros = Start + Time;
+    int count = 0;
+
+    while (micros() < endMicros)
+    {
+        digitalWrite(SEND_PIN, HIGH);
+        custom_delay_usec(10);
+        digitalWrite(SEND_PIN, LOW);
+        custom_delay_usec(9);
+        count++;
+    }
+    //Serial.println("count : " + count);
+}
 
 int getDistance(long time)
 {
@@ -64,15 +128,27 @@ int DistanceSensor()
     return Distance_mm;
 }
 
-void testRaw(unsigned int *rawbuf, int rawlen)
-{
-    //irsend.sendRaw(rawbuf, rawlen, 38 /* kHz */);
-    delay(100);
-}
-
 //CLIENT_NAME format : Arduino_BOARDNAME_NUMBER,
 //if board name have space, replace it to '_'(under bar)
-#define CLIENT_NAME "Arduino_MKR_Zero_1"
+
+/*
+Arduino_Nano_1
+Arduino_Micro_1
+Arduino_Mega_1
+Arduino_Mega_2
+Arduino_Mega_3
+Arduino_Mega_4
+Arduino_MKR1000_1
+Arduino_MKR_Zero_1
+Arduino_MKR_WiFi_1010_1
+Arduino_WAN_1310_1
+Arduino_Nano_33_IoT_1
+Arduino_Nano_33_BLE_Sense_1
+Arduino_YUN_1
+Arduino_DUE_1
+*/
+
+#define CLIENT_NAME "Arduino_Nano_33_BLE_Sense_1"
 #define LIGHT_VALUE "light"
 #define DISTANCE_VALUE "distance"
 #define IR_RELAY_FUNCTION "ir_relay"
@@ -92,12 +168,16 @@ void turn_on_relay_ir(void *pData)
     else if (power == 0)
         digitalWrite(RELAY_PIN, LOW);
     else if (power == 3)
-        testRaw(ON, sizeof(ON) / sizeof(int));
+        send_ir(ON);
     else if (power == 2)
-        testRaw(OFF, sizeof(OFF) / sizeof(int));
+        send_ir(OFF);
 }
 
+#if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED)
 ThingClient client_A3(CLIENT_NAME, 60, Serial1);
+#elif
+ThingClient client_A3(CLIENT_NAME, 60, Serial);
+#endif
 
 Value lightValue(LIGHT_VALUE, LightSensor, 0, 2000, 5000);
 Value distanceValue(DISTANCE_VALUE, DistanceSensor, 0, 30000, 5000);
@@ -105,13 +185,24 @@ Function IR_Relay_Fucntion(IR_RELAY_FUNCTION, turn_on_relay_ir, 1, 1);
 Argument argLightRelaySwitch(ARG_LIGHT_RELAY_SWITCH, 0, 4, INTEGER);
 Attribute Ir_Relay_Function_EnergyAttribute("light_Energy[J]", 50, DOUBLE);
 
-String client_name(CLIENT_NAME);
-
 void setup()
 {
-    Serial1.begin(9600);
+#if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED)
+    Serial1.begin(115200);
+#elif
+    Serial.begin(115200);
+#endif
+    pinMode(SEND_PIN, OUTPUT);
+    pinMode(RELAY_PIN, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);
 
-    delay(1000);
+    for (int i = 0; i < 4; i++)
+    {
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(100);
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(100);
+    }
 
     IR_Relay_Fucntion.Add_argument(argLightRelaySwitch);
     IR_Relay_Fucntion.Add_functionattribute(Ir_Relay_Function_EnergyAttribute);

@@ -1,14 +1,19 @@
 #include "thing_client.h"
 
 // for ARM board support
+
 char *dtostrf_cap(double val, signed char width, unsigned char prec, char *sout)
 {
+#if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED)
 	asm(".global _printf_float");
 
 	char fmt[20];
 	sprintf(fmt, "%%%d.%df", width, prec);
 	sprintf(sout, fmt, val);
 	return sout;
+#else
+	return dtostrf(val, width, prec, sout);
+#endif
 }
 
 //  class Value
@@ -1002,6 +1007,9 @@ void ThingClient::Setting()
 		checkSerial();
 	} while ((id_2001_ = registered_id_) == -1);
 
+	CPDBG(F("1 ID2001:"));
+	CPDBG(id_2001_);
+
 	do
 	{
 		sprintf(buffer, TM2002, client_id_); // id_2002_
@@ -1009,12 +1017,18 @@ void ThingClient::Setting()
 		checkSerial();
 	} while ((id_2002_ = registered_id_) == -1);
 
+	CPDBG(F("2 ID2001:"));
+	CPDBG(id_2001_);
+
 	do
 	{
 		sprintf(buffer, TM2003, client_id_); // id_2003_
 		registerTopic(buffer);
 		checkSerial();
 	} while ((id_2003_ = registered_id_) == -1);
+
+	CPDBG(F("3 ID2001:"));
+	CPDBG(id_2001_);
 
 	//related to values_
 	for (i = 0; i < num_values_; i++)
@@ -1026,6 +1040,9 @@ void ThingClient::Setting()
 			checkSerial();
 		} while ((values_[i]->set_publish_id(registered_id_)) == -1);
 	}
+
+	CPDBG(F("4 ID2001:"));
+	CPDBG(id_2001_);
 
 	for (i = 0; i < num_functions_; i++)
 	{
@@ -1060,6 +1077,9 @@ void ThingClient::Setting()
 	}
 
 	CPDBG(F("Registering & Subscribe_topic finished\n"));
+
+	CPDBG(F("5 ID2001:"));
+	CPDBG(id_2001_);
 
 	devreg();
 
@@ -1171,7 +1191,7 @@ void ThingClient::checkSerial()
 		{
 			zbee_.getResponse().getZBRxResponse(zbee_rx_);
 			parseStream((char *)zbee_rx_.getData(), zbee_rx_.getDataLength());
-			timeout = 100;
+			timeout = 50;
 		}
 		else if (zbee_.getResponse().isError())
 			CPDBG(F("Error"));
@@ -1373,8 +1393,11 @@ void ThingClient::broadcast()
 	message_header *hdr = reinterpret_cast<message_header *>(message_buffer_);
 	uint16_t addr16 = ZB_BROADCAST_ADDRESS;
 	XBeeAddress64 addr64 = XBeeAddress64(0, 0xffff);
-	//zbee_tx_ = ZBTxRequest(addr64, addr16, 10, ZB_TX_BROADCAST, message_buffer_, hdr->length, DEFAULT_FRAME_ID);
-	zbee_tx_ = ZBTxRequest(addr64, message_buffer_, hdr->length);
+
+	//what is diffrence between ZB_TX_UNICAST, ZB_TX_BROADCAST??
+	zbee_tx_ = ZBTxRequest(addr64, addr16, 10, ZB_TX_UNICAST, message_buffer_, hdr->length, DEFAULT_FRAME_ID);
+	//zbee_tx_ = ZBTxRequest(addr64, message_buffer_, hdr->length);
+
 	sendPacket();
 }
 
@@ -1798,6 +1821,9 @@ void ThingClient::devreg()
 		msg->length = sizeof(msg_devreg);
 		msg->status = FINISH;
 		//	delay(5000);
+
+		CPDBG(F("[debug] : \n"));
+		print_message_buffer_();
 		unicast();
 		checkSerial();
 	}

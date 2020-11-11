@@ -147,7 +147,7 @@ enum message_type
 At ARM board, struct packing structure is divide by 4 byte
 so you have to use pragma(1) like that
 **********************************************************/
-#if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM)
+#if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED)
 #pragma pack(push, 1)
 #endif
 struct message_header
@@ -306,7 +306,7 @@ struct msg_willmsgresp : public message_header
 {
     uint8_t return_code;
 };
-#if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM)
+#if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED)
 #pragma pack(pop)
 #endif
 
