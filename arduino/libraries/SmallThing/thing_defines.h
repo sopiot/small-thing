@@ -110,12 +110,13 @@ enum return_code_t
     REJECTED_NOT_SUPPORTED
 };
 
+//0x03, 0x11, 0x19, 0x1E~0xFD, 0xFF is reserved
 enum message_type
 {
     ADVERTISE,
     SEARCHGW,
     GWINFO,
-    CONNECT = 0x04,
+    CONNECT = 0x04,     //for 0x03 reserved
     CONNACK,
     WILLTOPICREQ,
     WILLTOPIC,
@@ -128,14 +129,14 @@ enum message_type
     PUBCOMP,
     PUBREC,
     PUBREL,
-    SUBSCRIBE = 0x12,
+    SUBSCRIBE = 0x12,   //for 0x11 reserved
     SUBACK,
     UNSUBSCRIBE,
     UNSUBACK,
     PINGREQ,
     PINGRESP,
     DISCONNECT,
-    WILLTOPICUPD = 0x1a,
+    WILLTOPICUPD = 0x1a,    //for 0x19 reserved
     WILLTOPICRESP,
     WILLMSGUPD,
     WILLMSGRESP,

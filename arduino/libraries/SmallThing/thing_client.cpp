@@ -754,7 +754,7 @@ void Function::GetInformation(char *buffer)
 		sprintf(buffer, "%s\t%d", name_, ncurArguments_);
 		break;
 	default: // error!
-		CPDBG(F("ERROR!"));
+		CPDBG(F("Function::GetInformation -> ERROR!"));
 		break;
 	}
 	CPDBG(F("Get Function Information!"));
@@ -780,24 +780,26 @@ ThingClient::ThingClient() : waiting_for_response_(true),
 
 ThingClient::~ThingClient()
 {
+	free(client_id_);
+	free(class_name_);
 }
 
 //Default alive_cycle is 60
-ThingClient::ThingClient(const char *class_name, Stream &serial)
+ThingClient::ThingClient(char *class_name, Stream &serial)
 {
 	ThingClient(class_name, 60, serial);
 }
 
-ThingClient::ThingClient(const char *class_name, int alive_cycle, Stream &serial) : waiting_for_response_(true),
-																					response_wait_for_(ADVERTISE),
-																					connected_(false),
-																					message_id_(0),
-																					gateway_id_(0),
-																					valid_(0),
-																					response_retries_(0),
-																					registered_(0),
-																					registered_id_(-1),
-																					zbee_()
+ThingClient::ThingClient(char *class_name, int alive_cycle, Stream &serial) : waiting_for_response_(true),
+																			  response_wait_for_(ADVERTISE),
+																			  connected_(false),
+																			  message_id_(0),
+																			  gateway_id_(0),
+																			  valid_(0),
+																			  response_retries_(0),
+																			  registered_(0),
+																			  registered_id_(-1),
+																			  zbee_()
 {
 	zbee_.setSerial(serial);
 	this->class_name_ = class_name;
@@ -817,35 +819,37 @@ void ThingClient::set_serial(Stream &serial)
 void ThingClient::init_client_id()
 {
 	int len = 0;
-	char temp_mac_address[17];
-	char *client_id = NULL;
+	char temp_mac_address[17] = "";
 	int nLen = 0;
 
 	get_mac_address();
 
-	client_id = (char *)malloc(sizeof(char) * (strlen(class_name_) + strlen(temp_mac_address)) + 2);
+	// TO DO
+	// FIX ME!!!!!!!!!
+	// client_id_ = (char *)malloc(sizeof(char) * (strlen(class_name_) + strlen(temp_mac_address) + 2));
+	client_id_ = (char *)malloc(sizeof(char) * (60));
 
 	for (int i = 0; i < 8; i++)
 	{
 		len += sprintf(temp_mac_address + len, "%.2X", (unsigned char)mac_address[i]);
 	}
 
-	sprintf(client_id, "%s_%s", class_name_, temp_mac_address);
+	//sprintf(client_id_, "%s_%s", class_name_, temp_mac_address);
+	sprintf(client_id_, "%s", class_name_);
 
 	/*
-    for(int i = 0; i < strlen(client_id); i++){
-        Serial.print(client_id[i]);
+    for(int i = 0; i < strlen(client_id_); i++){
+        Serial.print(client_id_[i]);
     }
     Serial.print("\n"));
     */
-
-	client_id_ = (const char *)client_id;
 
 	nLen = strlen(client_id_);
 	for (int i = 0; i < strlen(client_id_); i++)
 	{
 		Serial.print(client_id_[i]);
 	}
+
 	CPDBG();
 }
 
@@ -913,7 +917,7 @@ void ThingClient::get_mac_address()
 	}
 }
 
-void ThingClient::set_class_name(const char *class_name)
+void ThingClient::set_class_name(char *class_name)
 {
 	class_name_ = class_name;
 }
@@ -957,11 +961,14 @@ void ThingClient::Add(Attribute &a)
 void ThingClient::Setting()
 {
 	uint8_t i;
+	char debug_log[100];
 
 	init_client_id();
 	//ToDo
 	//1.search GW & connect
-	CPDBG(F("searchGW..."));
+	//SEARCHGW, GWINFO
+
+	CPDBG(F("SEARCHGW"));
 	checkSerial();
 	while (!valid())
 	{
@@ -969,6 +976,8 @@ void ThingClient::Setting()
 		checkSerial();
 	}
 
+	//CONNECT, CONNACK
+	CPDBG(F("CONNECT"));
 	while (!connected())
 	{
 		sprintf(buffer, "%s", client_id_);
@@ -976,111 +985,141 @@ void ThingClient::Setting()
 		checkSerial();
 	}
 
-	CPDBG(F("Register started"));
+	//REGISTER, REGACK
+	CPDBG(F("REGISTER"));
 	//2.register default values && save id
 	do
 	{
 		sprintf(buffer, MT1001, client_id_); // id_1001_
 		registerTopic(buffer);
 		checkSerial();
-	} while ((id_1001_ = registered_id_) == -1);
+	} while ((id_1001_ = registered_id_) == (INT16_MAX * 2 + 1));
+	sprintf(debug_log, "%s : %d", buffer, id_1001_);
+	CPDBG(debug_log);
 
-	//subscribe(QOS_FLAG, id_1001_);
+	sprintf(debug_log, "waiting_for_response_ : %d", waiting_for_response_);
+	CPDBG(debug_log);
+	CPDBG(F("SUBSCRIBE"));
 	subscribe(QOS_FLAG, buffer);
 	checkSerial();
 
+	registered_id_ = -1;
+	CPDBG(F("REGISTER"));
 	do
 	{
 		sprintf(buffer, MT1002, client_id_); // id1105
 		registerTopic(buffer);
 		checkSerial();
-	} while ((id_1002_ = registered_id_) == -1);
+	} while ((id_1002_ = registered_id_) == (INT16_MAX * 2 + 1));
+	sprintf(debug_log, "%s : %d", buffer, id_1002_);
+	CPDBG(debug_log);
 
-	//subscribe(QOS_FLAG, id_1002_);
+	CPDBG(F("SUBSCRIBE"));
 	subscribe(QOS_FLAG, buffer);
 	checkSerial();
 
+	CPDBG(registered_id_);
+
+	////////////////////////// hear is the problem!!!!! ////////////////////////////////////////////////////////////////////////////
+
+	registered_id_ = -1;
+	CPDBG(F("REGISTER"));
 	do
 	{
 		sprintf(buffer, TM2001, client_id_); // id_2001_
 		registerTopic(buffer);
 		checkSerial();
-	} while ((id_2001_ = registered_id_) == -1);
+	} while ((id_2001_ = registered_id_) == (INT16_MAX * 2 + 1));
 
-	CPDBG(F("1 ID2001:"));
-	CPDBG(id_2001_);
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	sprintf(debug_log, "%s : %d", buffer, id_2001_);
+	CPDBG(debug_log);
 
+	// FIX ME!!! CHECK WHY..?
+	id_2001_ = 3;
+	sprintf(debug_log, "after hard coding, %s : %d", TM2001, id_2001_);
+	CPDBG(debug_log);
+
+	registered_id_ = -1;
+	CPDBG(F("REGISTER"));
 	do
 	{
 		sprintf(buffer, TM2002, client_id_); // id_2002_
 		registerTopic(buffer);
 		checkSerial();
-	} while ((id_2002_ = registered_id_) == -1);
+	} while ((id_2002_ = registered_id_) == (INT16_MAX * 2 + 1));
 
-	CPDBG(F("2 ID2001:"));
-	CPDBG(id_2001_);
+	sprintf(debug_log, "%s : %d", buffer, registered_id_);
+	CPDBG(debug_log);
 
+	registered_id_ = -1;
+	CPDBG(F("REGISTER"));
 	do
 	{
 		sprintf(buffer, TM2003, client_id_); // id_2003_
 		registerTopic(buffer);
 		checkSerial();
-	} while ((id_2003_ = registered_id_) == -1);
+	} while ((id_2003_ = registered_id_) == (INT16_MAX * 2 + 1));
 
-	CPDBG(F("3 ID2001:"));
-	CPDBG(id_2001_);
+	sprintf(debug_log, "%s : %d", buffer, registered_id_);
+	CPDBG(debug_log);
 
 	//related to values_
+	CPDBG(F("REGISTER VALUE"));
 	for (i = 0; i < num_values_; i++)
 	{
+		registered_id_ = -1;
 		do
 		{
 			sprintf(buffer, COMMON0000, client_id_, values_[i]->name());
 			registerTopic(buffer);
 			checkSerial();
-		} while ((values_[i]->set_publish_id(registered_id_)) == -1);
+			sprintf(debug_log, "%s : %d", buffer, registered_id_);
+			CPDBG(debug_log);
+		} while ((values_[i]->set_publish_id(registered_id_)) == (INT16_MAX * 2 + 1));
 	}
 
-	CPDBG(F("4 ID2001:"));
-	CPDBG(id_2001_);
-
+	CPDBG(F("REGISTER FUNCTION"));
 	for (i = 0; i < num_functions_; i++)
 	{
+		registered_id_ = -1;
 		do
 		{
 			sprintf(buffer, MT1003, functions_[i]->name(), client_id_); // id1003
 																		//		CPDBG(buffer);
 			registerTopic(buffer);
 			checkSerial();
-		} while ((functions_[i]->set_id_1003(registered_id_)) == -1);
+			sprintf(debug_log, "%s : %d", buffer, registered_id_);
+			CPDBG(debug_log);
+		} while ((functions_[i]->set_id_1003(registered_id_)) == (INT16_MAX * 2 + 1));
 
-		//subscribe(QOS_FLAG, functions_[i]->id_1003());
 		subscribe(QOS_FLAG, buffer);
 		checkSerial();
 
-		//		CPDBG(functions_[i]->id_1003());
-
+		registered_id_ = -1;
 		memset(buffer, 0, CAPITAL_MAX_BUFFER_SIZE);
 		do
 		{
 			sprintf(buffer, TM2004_DEPRECATED, client_id_); // id2004_deprecated
 			registerTopic(buffer);
 			checkSerial();
-		} while ((functions_[i]->set_id_2004_deprecated(registered_id_)) == -1);
+			sprintf(debug_log, "%s : %d", buffer, registered_id_);
+			CPDBG(debug_log);
+		} while ((functions_[i]->set_id_2004_deprecated(registered_id_)) == (INT16_MAX * 2 + 1));
 
+		registered_id_ = -1;
 		do
 		{
 			sprintf(buffer, TM2004, functions_[i]->name(), client_id_); // id2004
 			registerTopic(buffer);
 			checkSerial();
-		} while ((functions_[i]->set_id_2004(registered_id_)) == -1);
+			sprintf(debug_log, "%s : %d", buffer, registered_id_);
+			CPDBG(debug_log);
+		} while ((functions_[i]->set_id_2004(registered_id_)) == (INT16_MAX * 2 + 1));
 	}
 
 	CPDBG(F("Registering & Subscribe_topic finished\n"));
-
-	CPDBG(F("5 ID2001:"));
-	CPDBG(id_2001_);
-
+	CPDBG(F("DEVREG start"));
 	devreg();
 
 	CPDBG(F("***************************Registering device to MIDDLEWARE finished"));
@@ -1160,13 +1199,17 @@ void ThingClient::DoLoop(int pub_period)
 	checkSerialForValue();
 	for (uint8_t i = 0; i < num_values_; i++)
 	{
+		CPDBG(i + 1);
+		CPDBG(F("Value publish start!"));
 		time_passed = compareTimeStamp(values_[i]);
 		changed = values_[i]->capVal2str(buffer);
 
-		if (time_passed && changed)
-		{
+		// if (time_passed && changed)
+		// {
+		// 	publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
+		// }
+		if (time_passed)
 			publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
-		}
 	}
 	delay(pub_period);
 }
@@ -1252,6 +1295,7 @@ bool ThingClient::valid()
 	return valid_;
 }
 
+//not used!!
 bool ThingClient::waitForResponse()
 {
 	if (waiting_for_response_)
@@ -1296,8 +1340,11 @@ void ThingClient::parseStream(char *buf, uint16_t len)
 
 void ThingClient::dispatch()
 {
+	char debug_log[100];
 	message_header *response_message = (message_header *)message_buffer_;
 	CPDBG(F("DISPATCH STARTS"));
+	sprintf(debug_log, "response_message->type %d", response_message->type);
+	CPDBG(debug_log);
 	switch (response_message->type)
 	{
 	case ADVERTISE:
@@ -1324,7 +1371,11 @@ void ThingClient::dispatch()
 	case REGACK:
 		CPDBG(F("REGACK"));
 		if (!waiting_for_response_ || response_wait_for_ != REGACK)
+		{
+			CPDBG(F("in !waiting_for_response_ || response_wait_for_ != REGACK"));
 			return;
+		}
+
 		regackHandler((msg_regack *)message_buffer_);
 		break;
 
@@ -1363,25 +1414,31 @@ void ThingClient::dispatch()
 		break;
 
 	case DEVREG:
+		CPDBG(F("DEVREG"));
 		// cannot be happend
 		devregHandler();
 		break;
 
 	case DEVREGACK:
+		CPDBG(F("DEVREGACK"));
 		//	if (!waiting_for_response_ || response_wait_for_ != DEVREGACK) return;
 		devregackHandler((msg_devregack *)message_buffer_);
 		break;
 
 	case PUBREC:
+		CPDBG(F("PUBREC"));
 		pubrecHandler((msg_pubqos2 *)message_buffer_);
 		break;
 	case PUBREL:
+		CPDBG(F("PUBREL"));
 		pubrelHandler((msg_pubqos2 *)message_buffer_);
 		break;
 	case PUBCOMP:
+		CPDBG(F("PUBCOMP"));
 		pubcompHandler((msg_pubqos2 *)message_buffer_);
 		break;
 	default:
+		CPDBG(F("default"));
 		return;
 	}
 
@@ -1477,8 +1534,19 @@ void ThingClient::connackHandler(const msg_connack *msg)
 
 void ThingClient::regackHandler(const msg_regack *msg)
 {
+	char debug_log[100];
+	CPDBG(F("in regackHandler"));
+	sprintf(debug_log, "msg->return_code : %d", msg->return_code);
+	CPDBG(debug_log);
+	sprintf(debug_log, "message_id_ : %d", message_id_);
+	CPDBG(debug_log);
+	sprintf(debug_log, "bswap(msg->message_id) : %d", bswap(msg->message_id));
+	CPDBG(debug_log);
 	if (msg->return_code == 0 && bswap(msg->message_id) == message_id_)
 	{
+		CPDBG(F("in msg->return_code == 0 && bswap(msg->message_id) == message_id_"));
+		sprintf(debug_log, "msg->topic_id : %d", msg->topic_id);
+		CPDBG(debug_log);
 		registered_id_ = bswap(msg->topic_id);
 	}
 }
@@ -1511,6 +1579,7 @@ void ThingClient::publishHandler(const msg_publish *msg)
 		{
 			CPDBG(F("Ignore duplicated error message from middleware"));
 			registered_ = !registered_;
+			CPDBG(registered_);
 		}
 		else
 		{
@@ -1633,6 +1702,7 @@ void ThingClient::disconnect(const uint16_t duration)
 
 bool ThingClient::registerTopic(const char *name)
 {
+	CPDBG(F("in registerTopic"));
 	if (!waiting_for_response_)
 	{
 		++message_id_;
@@ -1654,6 +1724,10 @@ bool ThingClient::registerTopic(const char *name)
 		waiting_for_response_ = true;
 		response_wait_for_ = REGACK;
 		return true;
+	}
+	else
+	{
+		CPDBG(F("waiting_for_response_ is false error!"));
 	}
 
 	return false;
@@ -1756,6 +1830,7 @@ void ThingClient::devreg()
 			unicast();
 			checkSerial();
 		}
+
 		for (int j = 0; j < functions_[i]->ncurArguments(); j++)
 		{
 			device_register_ = false;
@@ -1811,12 +1886,13 @@ void ThingClient::devreg()
 	registered_ = false;
 	while (!registered_)
 	{
+
 		message_id_++;
 		msg->length = sizeof(msg_devreg);
 		msg->type = DEVREG;
 		CPDBG(F("ID2001:"));
 		CPDBG(id_2001_);
-		msg->pub_id = bswap(id_2001_);
+		msg->pub_id = bswap(id_2001_); //////////////////////////////
 		msg->message_id = bswap(message_id_);
 		msg->length = sizeof(msg_devreg);
 		msg->status = FINISH;
@@ -1826,6 +1902,8 @@ void ThingClient::devreg()
 		print_message_buffer_();
 		unicast();
 		checkSerial();
+		CPDBG(F("end of FINISH state"));
+		CPDBG(registered_);
 	}
 	waiting_for_response_ = false;
 }

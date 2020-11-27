@@ -22,6 +22,7 @@
 #define CAPITAL_MAX_FUNCTION 5
 #define CAPITAL_MAX_ATTRIBUTE 5
 #define CAPITAL_MAX_NAME_LENGTH 20
+
 #define CAPITAL_MAX_BUFFER_SIZE 60
 
 /**
@@ -446,8 +447,8 @@ public:
 	/**
 	 * programmer can easily set client id and zigbee serial with this constructor.
 	 */
-	ThingClient(const char *class_name, int alive_cycle, Stream &serial);
-	ThingClient(const char *class_name, Stream &serial);
+	ThingClient(char *class_name, int alive_cycle, Stream &serial);
+	ThingClient(char *class_name, Stream &serial);
 
 	void Add(Value &v);
 	void Add(Function &f);
@@ -481,7 +482,7 @@ public:
      * set class name of client
 	 */
 
-	void set_class_name(const char *class_name);
+	void set_class_name(char *class_name);
 	/**
 	 * Call it after setting serial, setting client id, and Adding every function and value.
 	 * Do not forget call this function after (zigbee serial).begin(9600)!
@@ -546,6 +547,7 @@ protected:
 	void print_message_buffer_();
 	void print_message_buffer_(void *buf, int length);
 	void print_message_buffer_(int start, int length);
+
 private:
 #ifdef USE_QOS2
 	void pubrec(const msg_publish *msg);
@@ -611,8 +613,8 @@ private:
 	char save_buffer[CAPITAL_MAX_BUFFER_SIZE];
 	uint8_t mac_address[10];
 
-	const char *client_id_;
-	const char *class_name_;
+	char *client_id_;
+	char *class_name_;
 	unsigned long alive_cycle_;
 
 	/////// MQTT-SN
