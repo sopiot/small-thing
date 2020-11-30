@@ -2,7 +2,7 @@
 #include <DHT.h>
 #include <pm2008_i2c.h>
 
-#define BOARD_SERIAL_IS_ONE (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) || defined(ARDUINO_AVR_PROMICRO)
+#define BOARD_SERIAL_IS_ONE (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || (defined(ARDUINO_ARCH_SAM) && !defined(ARDUINO_SAM_DUE)) || defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) || defined(ARDUINO_AVR_PROMICRO)
 
 #define DHT_TYPE DHT11
 //#define DHT_TYPE DHT22
@@ -14,6 +14,7 @@
 #define DISTANCE_RECEIVE_PIN 4
 #define RELAY_PIN 5
 #define SEND_PIN 6
+#define MOVEMENT_PIN 7
 
 /* board names
 Arduino_Nano_1              
@@ -40,6 +41,7 @@ Arduino_Zero_1
 #define HUMID_VALUE "humid"
 #define TEMP_VALUE "temp"
 #define DUST_VALUE "dust"
+#define MOVEMENT_VALUE "movement"
 
 #define IR_FUNCTION "ir_switch"
 #define RELAY_FUNCTION "relay_switch"
@@ -212,6 +214,15 @@ int DustSensor()
     return pm2p0;
 }
 
+int MovementSensor()
+{
+    int movement_value = (int)digitalRead(MOVEMENT_PIN);
+    Serial.print("movement_value : ");
+    Serial.println(movement_value);
+
+    return movement_value;
+}
+
 void ir_function(void *pData)
 {
     int power = 1, res;
@@ -252,6 +263,7 @@ void init_pin()
     pinMode(RELAY_PIN, OUTPUT);
     pinMode(SEND_PIN, OUTPUT);
     pinMode(SOUND_PIN, INPUT);
+    pinMode(MOVEMENT_PIN, INPUT);
     pinMode(LED_BUILTIN, OUTPUT);
 
     for (int i = 0; i < 4; i++)
@@ -279,6 +291,7 @@ void init_Value()
     static Value humidValue(HUMID_VALUE, HumidSensor, 0, 200, 3000);
     static Value tempValue(TEMP_VALUE, TempSensor, 0, 30000, 3000);
     static Value dustValue(DUST_VALUE, DustSensor, 0, 30000, 3000);
+    static Value movementValue(MOVEMENT_VALUE, MovementSensor, 0, 30000, 3000);
 
     Client1.Add(lightValue);
     Client1.Add(distanceValue);
@@ -286,6 +299,7 @@ void init_Value()
     Client1.Add(humidValue);
     Client1.Add(tempValue);
     Client1.Add(dustValue);
+    Client1.Add(movementValue);
 }
 
 void init_Function()
