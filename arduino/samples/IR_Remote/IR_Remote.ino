@@ -12,10 +12,6 @@
 #define IR_BULB_ON_FUNCTION "ir_bulb_on_switch"
 #define IR_BULB_OFF_FUNCTION "ir_bulb_off_switch"
 
-#define ARG_TV_SWITCH "arg_ir_TV_switch"
-#define ARG_AIR_SWITCH "arg_ir_air_switch"
-#define ARG_BULB_SWITCH "arg_ir_bulb_switch"
-
 #if BOARD_SERIAL_IS_ONE
 ThingClient Client1(CLIENT_NAME, 3, Serial1);
 #else

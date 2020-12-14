@@ -827,7 +827,7 @@ void ThingClient::init_client_id()
 	// TO DO
 	// FIX ME!!!!!!!!!
 	// client_id_ = (char *)malloc(sizeof(char) * (strlen(class_name_) + strlen(temp_mac_address) + 2));
-	client_id_ = (char *)malloc(sizeof(char) * (60));
+	client_id_ = (char *)malloc(sizeof(char) * (100));
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -962,6 +962,9 @@ void ThingClient::Setting()
 {
 	uint8_t i;
 	char debug_log[100];
+
+	CPDBG("num_functions_");
+	CPDBG(num_functions_);
 
 	init_client_id();
 	//ToDo

@@ -5,7 +5,6 @@
 #define MOVEMENT_PIN 7
 
 #define CLIENT_NAME "Arduino_Name"
-
 #define MOVEMENT_VALUE "movement"
 
 #if BOARD_SERIAL_IS_ONE
