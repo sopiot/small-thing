@@ -473,6 +473,12 @@ public:
 	 */
 	void init_client_id();
 
+	// --- thsvkd add it!!! 2020/12/15 ---
+	/** 
+     * set ID of zigbee module
+     */
+	void set_xbee_ID(int id);
+
 	/**
      * get mac address of zigbee for client id
      */

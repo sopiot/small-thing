@@ -842,6 +842,18 @@ void ThingClient::init_client_id()
 	//CPDBG();
 }
 
+//TODO: thsvkd complete this!!!
+void ThingClient::set_xbee_ID(int id)
+{
+	//Serial High
+	uint8_t shCmd[] = {'S', 'H'};
+	//Serial Low
+	uint8_t slCmd[] = {'S', 'L'};
+	AtCommandRequest atRequestSH = AtCommandRequest(shCmd);
+	AtCommandRequest atRequestSL = AtCommandRequest(slCmd);
+	AtCommandResponse atResponse = AtCommandResponse();
+}
+
 void ThingClient::get_mac_address()
 {
 	//Serial High
