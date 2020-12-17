@@ -1,10 +1,6 @@
 #include <thing_client.h>
 #include <pm2008_i2c.h>
 
-//TO DO - thsvkd
-//complete this code!!!
-#define BOARD_SERIAL_IS_ONE (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) || defined(ARDUINO_AVR_PROMICRO)
-
 #define CLIENT_NAME "Sensor_Dust_1"
 
 #define DUST_VALUE "dust"

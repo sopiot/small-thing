@@ -1,7 +1,5 @@
 #include <thing_client.h>
 
-#define BOARD_SERIAL_IS_ONE (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) || defined(ARDUINO_AVR_PROMICRO)
-
 #define SEND_PIN 6
 
 #define CLIENT_NAME "IR_3"
@@ -67,7 +65,7 @@ void mark(unsigned int Time)
     }
 }
 
-void Send_IR(unsigned int *signal)
+void Send_IR(unsigned int *signal, int length)
 {
     digitalWrite(SEND_PIN, LOW);
 
@@ -92,7 +90,7 @@ void ir_tv_onoff_function(void *pData)
     // if (res == -1)
     //     return;
 
-    Send_IR(TV_ONOFF);
+    Send_IR(TV_ONOFF, sizrof(TV_ONOFF) / sizeof(unsigned int));
 }
 
 void ir_air_on_function(void *pData)
@@ -102,7 +100,7 @@ void ir_air_on_function(void *pData)
     // if (res == -1)
     //     return;
 
-    Send_IR(Air_Conditioner_ON);
+    Send_IR(Air_Conditioner_ON), sizrof(Air_Conditioner_ON) / sizeof(unsigned int);
 }
 
 void ir_air_off_function(void *pData)
@@ -112,7 +110,7 @@ void ir_air_off_function(void *pData)
     // if (res == -1)
     //     return;
 
-    Send_IR(Air_Conditioner_OFF);
+    Send_IR(Air_Conditioner_OFF, sizrof(Air_Conditioner_OFF) / sizeof(unsigned int));
 }
 
 void ir_bulb_on_function(void *pData)
@@ -122,7 +120,7 @@ void ir_bulb_on_function(void *pData)
     // if (res == -1)
     //     return;
 
-    Send_IR(Bulb_ON);
+    Send_IR(Bulb_ON, sizrof(Bulb_ON) / sizeof(unsigned int));
 }
 
 void ir_bulb_off_function(void *pData)
@@ -132,7 +130,7 @@ void ir_bulb_off_function(void *pData)
     // if (res == -1)
     //     return;
 
-    Send_IR(Bulb_OFF);
+    Send_IR(Bulb_OFF, sizrof(Bulb_OFF) / sizeof(unsigned int));
 }
 
 void init_pin()

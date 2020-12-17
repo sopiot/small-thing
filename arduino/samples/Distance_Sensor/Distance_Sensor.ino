@@ -1,7 +1,5 @@
 #include <thing_client.h>
 
-#define BOARD_SERIAL_IS_ONE (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) || defined(ARDUINO_AVR_PROMICRO)
-
 #define DISTANCE_TRIGGER_PIN 3
 #define DISTANCE_RECEIVE_PIN 4
 

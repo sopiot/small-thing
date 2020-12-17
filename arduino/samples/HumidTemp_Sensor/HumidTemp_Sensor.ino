@@ -1,8 +1,6 @@
 #include <thing_client.h>
 #include <DHT.h>
 
-#define BOARD_SERIAL_IS_ONE (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) || defined(ARDUINO_AVR_PROMICRO)
-
 #define DHT_TYPE DHT11
 //#define DHT_TYPE DHT22
 

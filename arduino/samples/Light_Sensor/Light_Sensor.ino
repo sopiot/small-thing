@@ -1,16 +1,14 @@
 #include <thing_client.h>
 
-#define BOARD_SERIAL_IS_ONE (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) || defined(ARDUINO_AVR_PROMICRO)
-
 #define LIGHT_PIN A0
 
-#define CLIENT_NAME "Light_1"
+#define Client_NAME "Light_1"
 #define LIGHT_VALUE "light"
 
 #if BOARD_SERIAL_IS_ONE
-ThingClient Client(CLIENT_NAME, 3, Serial1);
+ThingClient Client1(Client_NAME, 3, Serial1);
 #else
-ThingClient Client(CLIENT_NAME, 3, Serial);
+ThingClient Client1(Client_NAME, 3, Serial);
 #endif
 
 int LightSensor()
@@ -45,7 +43,7 @@ void init_Value()
 {
     static Value lightValue(LIGHT_VALUE, LightSensor, 0, 2000, 3000);
 
-    Client.Add(lightValue);
+    Client1.Add(lightValue);
 }
 
 void init_Function()
@@ -60,10 +58,10 @@ void setup()
     init_Value();
     init_Function();
 
-    Client.Setting();
+    Client1.Setting();
 }
 
 void loop()
 {
-    Client.DoLoop();
+    Client1.DoLoop();
 }

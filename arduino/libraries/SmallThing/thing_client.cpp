@@ -226,13 +226,13 @@ void Value::GetInformation(char *buffer)
 	switch (value_classifier_)
 	{
 	case BOOL:
-		sprintf(buffer, "%s\tbool\t%d\t%d", name_, *(int *)min_, *(int *)max_);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tbool\t%d\t%d", name_, *(int *)min_, *(int *)max_);
 		break;
 	case INTEGER:
-		sprintf(buffer, "%s\tint\t%d\t%d", name_, *(int *)min_, *(int *)max_);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tint\t%d\t%d", name_, *(int *)min_, *(int *)max_);
 		break;
 	case STRING:
-		sprintf(buffer, "%s\tstring\t%d\t%d", name_, *(int *)min_, *(int *)max_);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tstring\t%d\t%d", name_, *(int *)min_, *(int *)max_);
 		break;
 	case DOUBLE:
 	{
@@ -240,7 +240,7 @@ void Value::GetInformation(char *buffer)
 		char max_temp[10];
 		dtostrf_cap(*(double *)min_, 8, 2, min_temp);
 		dtostrf_cap(*(double *)max_, 8, 2, max_temp);
-		sprintf(buffer, "%s\tdouble\t%s\t%s", name_, min_temp, max_temp);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tdouble\t%s\t%s", name_, min_temp, max_temp);
 		break;
 	}
 	default:
@@ -266,7 +266,7 @@ bool Value::capVal2str(char *buffer)
 	case INTEGER:
 	{
 		nval = ((IntegerValue)value_)();
-		len = sprintf(buffer, "{\"type\" : \"int\" , \"value\" : %d}", nval);
+		len = snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "{\"type\" : \"int\" , \"value\" : %d}", nval);
 		val = &nval;
 		break;
 	}
@@ -275,7 +275,7 @@ bool Value::capVal2str(char *buffer)
 		char val_temp[10];
 		dval = ((DoubleValue)value_)();
 		dtostrf_cap(dval, 8, 2, val_temp);
-		len = sprintf(buffer, "{\"type\" : \"double\" , \"value\" : %s}", val_temp);
+		len = snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "{\"type\" : \"double\" , \"value\" : %s}", val_temp);
 		val = &dval;
 		break;
 	}
@@ -289,7 +289,7 @@ bool Value::capVal2str(char *buffer)
 			else {
 				len = sprintf(buffer, "{\"type\" : \"bool\" , \"value\" : 0}");
 			}*/
-		len = sprintf(buffer, "{\"type\" : \"bool\" , \"value\" : %d}", nval);
+		len = snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "{\"type\" : \"bool\" , \"value\" : %d}", nval);
 		val = &nval;
 		break;
 	}
@@ -301,7 +301,7 @@ bool Value::capVal2str(char *buffer)
 			CPDBG(F("Fatal Error is occured on capVal2str!!\n"));
 			return false;
 		}
-		len = sprintf(buffer, "{\"type\" : \"string\" , \"value\" : \"%s\"}", ptsval);
+		len = snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "{\"type\" : \"string\" , \"value\" : \"%s\"}", ptsval);
 		val = ptsval;
 		break;
 	}
@@ -382,25 +382,25 @@ void Attribute::GetInformation(char *buffer)
 	{
 		char min_temp[10];
 		dtostrf_cap(real_value_, 8, 2, min_temp);
-		sprintf(buffer, "%s\tbool\t%s", name_, min_temp);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tbool\t%s", name_, min_temp);
 		break;
 	}
 	case INTEGER:
 	{
 		char min_temp[10];
 		dtostrf_cap(real_value_, 8, 2, min_temp);
-		sprintf(buffer, "%s\tint\t%s", name_, min_temp);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tint\t%s", name_, min_temp);
 		break;
 	}
 	case DOUBLE:
 	{
 		char min_temp[10];
 		dtostrf_cap(real_value_, 8, 2, min_temp);
-		sprintf(buffer, "%s\tdouble\t%s", name_, min_temp);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tdouble\t%s", name_, min_temp);
 		break;
 	}
 	case STRING:
-		sprintf(buffer, "%s\tstring\t%s", name_, string_value_);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tstring\t%s", name_, string_value_);
 		break;
 	default:
 		// error!
@@ -584,13 +584,13 @@ void Argument::GetInformation(char *buffer)
 	switch (arg_type_)
 	{
 	case BOOL:
-		sprintf(buffer, "%s\tbool\t%d\t%d\t", name_, *(int *)min_, *(int *)max_);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tbool\t%d\t%d\t", name_, *(int *)min_, *(int *)max_);
 		break;
 	case INTEGER:
-		sprintf(buffer, "%s\tint\t%d\t%d\t", name_, *(int *)min_, *(int *)max_);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tint\t%d\t%d\t", name_, *(int *)min_, *(int *)max_);
 		break;
 	case STRING:
-		sprintf(buffer, "%s\tstring\t%d\t%d\t", name_, *(int *)min_, *(int *)max_);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tstring\t%d\t%d\t", name_, *(int *)min_, *(int *)max_);
 		break;
 	case DOUBLE:
 	{
@@ -598,7 +598,7 @@ void Argument::GetInformation(char *buffer)
 		char max_temp[10];
 		dtostrf_cap(*(double *)min_, 8, 2, min_temp);
 		dtostrf_cap(*(double *)max_, 8, 2, max_temp);
-		sprintf(buffer, "%s\tdouble\t%s\t%s\t", name_, min_temp, max_temp);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tdouble\t%s\t%s\t", name_, min_temp, max_temp);
 		break;
 	}
 	default:
@@ -751,7 +751,7 @@ void Function::GetInformation(char *buffer)
 	case BOOL:
 	case VOID:
 		//index =
-		sprintf(buffer, "%s\t%d", name_, ncurArguments_);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\t%d", name_, ncurArguments_);
 		break;
 	default: // error!
 		CPDBG(F("Function::GetInformation -> ERROR!"));
@@ -818,39 +818,28 @@ void ThingClient::set_serial(Stream &serial)
 
 void ThingClient::init_client_id()
 {
-	int len = 0;
-	char temp_mac_address[17] = "";
-	int nLen = 0;
+	//int len = 0;
+	//char temp_mac_address[17] = "";
+	//int nLen = 0;
 
-	get_mac_address();
+	//get_mac_address();
 
 	// TO DO
 	// FIX ME!!!!!!!!!
+	client_id_ = (char *)malloc(sizeof(char) * (strlen(class_name_) + 1));
+	snprintf(client_id_, strlen(class_name_) + 1, "%s", class_name_);
 	// client_id_ = (char *)malloc(sizeof(char) * (strlen(class_name_) + strlen(temp_mac_address) + 2));
-	client_id_ = (char *)malloc(sizeof(char) * (100));
+	// client_id_ = (char *)malloc(sizeof(char) * (100));
 
-	for (int i = 0; i < 8; i++)
-	{
-		len += sprintf(temp_mac_address + len, "%.2X", (unsigned char)mac_address[i]);
-	}
+	// for (int i = 0; i < 8; i++)
+	// {
+	// 	len += sprintf(temp_mac_address + len, "%.2X", (unsigned char)mac_address[i]);
+	// }
 
 	//sprintf(client_id_, "%s_%s", class_name_, temp_mac_address);
-	sprintf(client_id_, "%s", class_name_);
 
-	/*
-    for(int i = 0; i < strlen(client_id_); i++){
-        Serial.print(client_id_[i]);
-    }
-    Serial.print("\n"));
-    */
-
-	nLen = strlen(client_id_);
-	for (int i = 0; i < strlen(client_id_); i++)
-	{
-		Serial.print(client_id_[i]);
-	}
-
-	CPDBG();
+	//nLen = strlen(client_id_);
+	//CPDBG();
 }
 
 void ThingClient::get_mac_address()
@@ -960,16 +949,7 @@ void ThingClient::Add(Attribute &a)
 
 void ThingClient::Setting()
 {
-	uint8_t i;
-	char debug_log[100];
-
-	CPDBG("num_functions_");
-	CPDBG(num_functions_);
-
 	init_client_id();
-	//ToDo
-	//1.search GW & connect
-	//SEARCHGW, GWINFO
 
 	CPDBG(F("SEARCHGW"));
 	checkSerial();
@@ -983,39 +963,32 @@ void ThingClient::Setting()
 	CPDBG(F("CONNECT"));
 	while (!connected())
 	{
-		sprintf(buffer, "%s", client_id_);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s", client_id_);
 		connect(0, 50, buffer);
 		checkSerial();
 	}
 
 	//REGISTER, REGACK
 	CPDBG(F("REGISTER"));
-	//2.register default values && save id
 	do
 	{
-		sprintf(buffer, MT1001, client_id_); // id_1001_
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, MT1001, client_id_); // id_1001_
 		registerTopic(buffer);
 		checkSerial();
-	} while ((id_1001_ = registered_id_) == (INT16_MAX * 2 + 1));
-	sprintf(debug_log, "%s : %d", buffer, id_1001_);
-	CPDBG(debug_log);
+	} while ((id_1001_ = registered_id_) == (UINT16_MAX));
 
-	sprintf(debug_log, "waiting_for_response_ : %d", waiting_for_response_);
-	CPDBG(debug_log);
 	CPDBG(F("SUBSCRIBE"));
 	subscribe(QOS_FLAG, buffer);
 	checkSerial();
 
-	registered_id_ = -1;
+	registered_id_ = UINT16_MAX;
 	CPDBG(F("REGISTER"));
 	do
 	{
-		sprintf(buffer, MT1002, client_id_); // id1105
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, MT1002, client_id_); // id1105
 		registerTopic(buffer);
 		checkSerial();
-	} while ((id_1002_ = registered_id_) == (INT16_MAX * 2 + 1));
-	sprintf(debug_log, "%s : %d", buffer, id_1002_);
-	CPDBG(debug_log);
+	} while ((id_1002_ = registered_id_) == (UINT16_MAX));
 
 	CPDBG(F("SUBSCRIBE"));
 	subscribe(QOS_FLAG, buffer);
@@ -1023,109 +996,83 @@ void ThingClient::Setting()
 
 	CPDBG(registered_id_);
 
-	////////////////////////// hear is the problem!!!!! ////////////////////////////////////////////////////////////////////////////
-
-	registered_id_ = -1;
+	registered_id_ = UINT16_MAX;
 	CPDBG(F("REGISTER"));
 	do
 	{
-		sprintf(buffer, TM2001, client_id_); // id_2001_
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, TM2001, client_id_); // id_2001_
 		registerTopic(buffer);
 		checkSerial();
-	} while ((id_2001_ = registered_id_) == (INT16_MAX * 2 + 1));
+	} while ((id_2001_ = registered_id_) == (UINT16_MAX));
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	sprintf(debug_log, "%s : %d", buffer, id_2001_);
-	CPDBG(debug_log);
-
-	// FIX ME!!! CHECK WHY..?
-	id_2001_ = 3;
-	sprintf(debug_log, "after hard coding, %s : %d", TM2001, id_2001_);
-	CPDBG(debug_log);
-
-	registered_id_ = -1;
+	registered_id_ = UINT16_MAX;
 	CPDBG(F("REGISTER"));
 	do
 	{
-		sprintf(buffer, TM2002, client_id_); // id_2002_
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, TM2002, client_id_); // id_2002_
 		registerTopic(buffer);
 		checkSerial();
-	} while ((id_2002_ = registered_id_) == (INT16_MAX * 2 + 1));
+	} while ((id_2002_ = registered_id_) == (UINT16_MAX));
 
-	sprintf(debug_log, "%s : %d", buffer, registered_id_);
-	CPDBG(debug_log);
-
-	registered_id_ = -1;
+	registered_id_ = UINT16_MAX;
 	CPDBG(F("REGISTER"));
 	do
 	{
-		sprintf(buffer, TM2003, client_id_); // id_2003_
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, TM2003, client_id_); // id_2003_
 		registerTopic(buffer);
 		checkSerial();
-	} while ((id_2003_ = registered_id_) == (INT16_MAX * 2 + 1));
+	} while ((id_2003_ = registered_id_) == (UINT16_MAX));
 
-	sprintf(debug_log, "%s : %d", buffer, registered_id_);
-	CPDBG(debug_log);
-
-	//related to values_
 	CPDBG(F("REGISTER VALUE"));
-	for (i = 0; i < num_values_; i++)
+	for (int i = 0; i < num_values_; i++)
 	{
-		registered_id_ = -1;
+		registered_id_ = UINT16_MAX;
 		do
 		{
-			sprintf(buffer, COMMON0000, client_id_, values_[i]->name());
+			snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, COMMON0000, client_id_, values_[i]->name());
 			registerTopic(buffer);
 			checkSerial();
-			sprintf(debug_log, "%s : %d", buffer, registered_id_);
-			CPDBG(debug_log);
-		} while ((values_[i]->set_publish_id(registered_id_)) == (INT16_MAX * 2 + 1));
+
+		} while ((values_[i]->set_publish_id(registered_id_)) == (UINT16_MAX));
 	}
 
 	CPDBG(F("REGISTER FUNCTION"));
-	for (i = 0; i < num_functions_; i++)
+	for (int i = 0; i < num_functions_; i++)
 	{
-		registered_id_ = -1;
+		registered_id_ = UINT16_MAX;
 		do
 		{
-			sprintf(buffer, MT1003, functions_[i]->name(), client_id_); // id1003
-																		//		CPDBG(buffer);
+			snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, MT1003, functions_[i]->name(), client_id_); // id1003
 			registerTopic(buffer);
 			checkSerial();
-			sprintf(debug_log, "%s : %d", buffer, registered_id_);
-			CPDBG(debug_log);
-		} while ((functions_[i]->set_id_1003(registered_id_)) == (INT16_MAX * 2 + 1));
+		} while ((functions_[i]->set_id_1003(registered_id_)) == (UINT16_MAX));
 
 		subscribe(QOS_FLAG, buffer);
 		checkSerial();
 
-		registered_id_ = -1;
+		registered_id_ = UINT16_MAX;
 		memset(buffer, 0, CAPITAL_MAX_BUFFER_SIZE);
 		do
 		{
-			sprintf(buffer, TM2004_DEPRECATED, client_id_); // id2004_deprecated
+			snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, TM2004_DEPRECATED, client_id_); // id2004_deprecated
 			registerTopic(buffer);
 			checkSerial();
-			sprintf(debug_log, "%s : %d", buffer, registered_id_);
-			CPDBG(debug_log);
-		} while ((functions_[i]->set_id_2004_deprecated(registered_id_)) == (INT16_MAX * 2 + 1));
+		} while ((functions_[i]->set_id_2004_deprecated(registered_id_)) == (UINT16_MAX));
 
-		registered_id_ = -1;
+		registered_id_ = UINT16_MAX;
 		do
 		{
-			sprintf(buffer, TM2004, functions_[i]->name(), client_id_); // id2004
+			snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, TM2004, functions_[i]->name(), client_id_); // id2004
 			registerTopic(buffer);
 			checkSerial();
-			sprintf(debug_log, "%s : %d", buffer, registered_id_);
-			CPDBG(debug_log);
-		} while ((functions_[i]->set_id_2004(registered_id_)) == (INT16_MAX * 2 + 1));
+		} while ((functions_[i]->set_id_2004(registered_id_)) == (UINT16_MAX));
 	}
 
 	CPDBG(F("Registering & Subscribe_topic finished\n"));
 	CPDBG(F("DEVREG start"));
 	devreg();
 
-	CPDBG(F("***************************Registering device to MIDDLEWARE finished"));
+	CPDBG(F("***********Registering device to MIDDLEWARE finished***********"));
 }
 
 bool ThingClient::compareTimeStamp(Value *t)
@@ -1343,11 +1290,8 @@ void ThingClient::parseStream(char *buf, uint16_t len)
 
 void ThingClient::dispatch()
 {
-	char debug_log[100];
 	message_header *response_message = (message_header *)message_buffer_;
 	CPDBG(F("DISPATCH STARTS"));
-	sprintf(debug_log, "response_message->type %d", response_message->type);
-	CPDBG(debug_log);
 	switch (response_message->type)
 	{
 	case ADVERTISE:
@@ -1537,21 +1481,13 @@ void ThingClient::connackHandler(const msg_connack *msg)
 
 void ThingClient::regackHandler(const msg_regack *msg)
 {
-	char debug_log[100];
 	CPDBG(F("in regackHandler"));
-	sprintf(debug_log, "msg->return_code : %d", msg->return_code);
-	CPDBG(debug_log);
-	sprintf(debug_log, "message_id_ : %d", message_id_);
-	CPDBG(debug_log);
-	sprintf(debug_log, "bswap(msg->message_id) : %d", bswap(msg->message_id));
-	CPDBG(debug_log);
 	if (msg->return_code == 0 && bswap(msg->message_id) == message_id_)
 	{
-		CPDBG(F("in msg->return_code == 0 && bswap(msg->message_id) == message_id_"));
-		sprintf(debug_log, "msg->topic_id : %d", msg->topic_id);
-		CPDBG(debug_log);
+		CPDBG(F("in regackHandler if"));
 		registered_id_ = bswap(msg->topic_id);
 	}
+	CPDBG(F("in regackHandler if end"));
 }
 
 void ThingClient::disconnectHandler(const msg_disconnect *msg)
@@ -1572,7 +1508,7 @@ void ThingClient::publishHandler(const msg_publish *msg)
 
 	if (topic_id == id_1001_)
 	{
-		sprintf(buffer, "%s", msg->data);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s", msg->data);
 		char errNo = buffer[0];
 		CPDBG(F("Error no :"));
 		CPDBG(buffer);
@@ -1637,12 +1573,12 @@ void ThingClient::publishHandler(const msg_publish *msg)
 			}
 			if (t_name[0] == ' ') // No scenario name provided
 			{
-				sprintf(buffer, "{\"function\" : \"%s\" , \"error\" : %d }", functions_[i]->name(), success);
+				snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "{\"function\" : \"%s\" , \"error\" : %d }", functions_[i]->name(), success);
 				publish(QOS_FLAG, functions_[i]->id_2004_deprecated(), buffer, strlen(buffer));
 			}
 			else // scenario name provided
 			{
-				sprintf(buffer, "{\"scenario\" : \"%s\" , \"error\" : %d }", t_name, success);
+				snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "{\"scenario\" : \"%s\" , \"error\" : %d }", t_name, success);
 				publish(QOS_FLAG, functions_[i]->id_2004(), buffer, strlen(buffer));
 			}
 
@@ -1816,6 +1752,8 @@ void ThingClient::devreg()
 			checkSerial();
 		}
 	}
+	CPDBG("num_functions_ : ");
+	CPDBG(num_functions_);
 	for (int i = 0; i < num_functions_; i++)
 	{
 		device_register_ = false;
@@ -1878,7 +1816,7 @@ void ThingClient::devreg()
 		msg->pub_id = 0;
 		msg->status = DURATION;
 		msg->message_id = bswap(message_id_);
-		sprintf(buffer, "%ul", alive_cycle_);
+		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%ul", alive_cycle_);
 		CPDBG(buffer);
 		memcpy(msg->data, buffer, strlen(buffer) + 1);
 		msg->length = sizeof(msg_devreg) + strlen(buffer) + 1;
@@ -1889,7 +1827,7 @@ void ThingClient::devreg()
 	registered_ = false;
 	while (!registered_)
 	{
-
+		CPDBG("start of FINISH state");
 		message_id_++;
 		msg->length = sizeof(msg_devreg);
 		msg->type = DEVREG;
@@ -1899,20 +1837,18 @@ void ThingClient::devreg()
 		msg->message_id = bswap(message_id_);
 		msg->length = sizeof(msg_devreg);
 		msg->status = FINISH;
-		//	delay(5000);
-
-		CPDBG(F("[debug] : \n"));
-		print_message_buffer_();
 		unicast();
 		checkSerial();
 		CPDBG(F("end of FINISH state"));
 		CPDBG(registered_);
 	}
 	waiting_for_response_ = false;
+	CPDBG(F("out of FINISH state"));
 }
 
 void ThingClient::devregackHandler(const msg_devregack *msg)
 {
+	CPDBG("devregackHandler start");
 	device_register_ = true;
 }
 

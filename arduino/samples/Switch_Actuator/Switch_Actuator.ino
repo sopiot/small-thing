@@ -1,8 +1,6 @@
 #include <thing_client.h>
 #include <Servo.h>
 
-#define BOARD_SERIAL_IS_ONE (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || (defined(ARDUINO_ARCH_SAM) && !defined(ARDUINO_SAM_DUE)) || defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) || defined(ARDUINO_AVR_PROMICRO)
-
 #define SERVO_PIN 8
 
 #define CLIENT_NAME "SW_Act_1"
@@ -25,7 +23,7 @@ void servo_function_on(void *pData)
 
     // res = GetIntArgumentByName(pData, ARG_SERVO_SWITCH, &power);
     // if (res == -1)
-    //     return;  
+    //     return;
 
     //TODO(thsvkd) - tuning servo.write Value to meetting room switch!!!
     servo.write(left_rotate);

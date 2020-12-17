@@ -1,7 +1,5 @@
 #include <thing_client.h>
 
-#define BOARD_SERIAL_IS_ONE (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) || defined(ARDUINO_AVR_PROMICRO)
-
 #define RELAY_PIN 5
 
 char CLIENT_NAME[16] = "R2";
@@ -18,6 +16,7 @@ ThingClient Client1(CLIENT_NAME, 3, Serial);
 #endif
 
 int Switch = HIGH;
+
 //void relay_on_function(void *pData)
 //{
 //    digitalWrite(RELAY_PIN, HIGH);
