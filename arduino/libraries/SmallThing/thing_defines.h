@@ -64,7 +64,11 @@
 #endif
 
 #define UINT16_MAX (INT16_MAX * 2 + 1)
-#define BOARD_SERIAL_IS_ONE (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || (defined(ARDUINO_ARCH_SAM) && !defined(ARDUINO_SAM_DUE)) || defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) || defined(ARDUINO_AVR_PROMICRO)
+#define BOARD_SERIAL_IS_ONE (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || \
+                            (defined(ARDUINO_ARCH_SAM) && !defined(ARDUINO_SAM_DUE)) || \
+                            defined(ARDUINO_ARCH_MBED) || \
+                            defined(__AVR_ATmega32U4__) || \
+                            defined(ARDUINO_AVR_PROMICRO)
 
 typedef enum _captype
 {
