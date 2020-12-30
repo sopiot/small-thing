@@ -1,7 +1,6 @@
 #include "thing_client.h"
 
 // for ARM board support
-
 char *dtostrf_cap(double val, signed char width, unsigned char prec, char *sout)
 {
 #if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED)
@@ -824,7 +823,7 @@ void ThingClient::init_client_id()
 
 	//get_mac_address();
 
-	// TO DO
+	// TODO:
 	// FIX ME!!!!!!!!!
 	client_id_ = (char *)malloc(sizeof(char) * (strlen(class_name_) + 1));
 	snprintf(client_id_, strlen(class_name_) + 1, "%s", class_name_);
@@ -1006,8 +1005,6 @@ void ThingClient::Setting()
 	subscribe(QOS_FLAG, buffer);
 	checkSerial();
 
-	CPDBG(registered_id_);
-
 	registered_id_ = UINT16_MAX;
 	CPDBG(F("REGISTER"));
 	do
@@ -1083,7 +1080,7 @@ void ThingClient::Setting()
 	CPDBG(F("Registering & Subscribe_topic finished\n"));
 	CPDBG(F("DEVREG start"));
 	devreg();
-
+	sendAliveMessageRightNow();
 	CPDBG(F("***********Registering device to MIDDLEWARE finished***********"));
 }
 
@@ -1151,6 +1148,13 @@ void ThingClient::sendAliveMessage()
 	return;
 }
 
+void ThingClient::sendAliveMessageRightNow()
+{
+	char *pszDummy = (char *)"dummy";
+
+	publish(0, id_2003_, pszDummy, strlen(pszDummy));
+}
+
 void ThingClient::DoLoop(int pub_period)
 {
 	bool time_passed = false;
@@ -1171,7 +1175,10 @@ void ThingClient::DoLoop(int pub_period)
 		// 	publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
 		// }
 		if (time_passed)
+		{
 			publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
+			sendAliveMessageRightNow();
+		}
 	}
 	delay(pub_period);
 }
@@ -1194,6 +1201,7 @@ void ThingClient::checkSerial()
 		}
 		else if (zbee_.getResponse().getApiId() == ZB_RX_RESPONSE)
 		{
+			CPDBG(F("Recv Success... parseStream start"));
 			zbee_.getResponse().getZBRxResponse(zbee_rx_);
 			parseStream((char *)zbee_rx_.getData(), zbee_rx_.getDataLength());
 			timeout = 50;
