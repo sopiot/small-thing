@@ -500,6 +500,7 @@ public:
      *Send Alive message to middleware for every alive cycle
      */
 	void sendAliveMessage();
+	void sendAliveMessageRightNow();
 	/**
 	 * Call it in the loop() tab on Arduino IDE Environment.
 	 */
