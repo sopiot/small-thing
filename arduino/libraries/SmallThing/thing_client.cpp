@@ -2170,16 +2170,16 @@ void dp(const char* format, ...) {
     va_start(ap, format);
     vsprintf(buf, format, ap);
     va_end(ap);
-	Serial.print(buf);
+    Serial.print(buf);
 }
 
 void dlp(const char* format, ...) {
     va_list ap;
-	char buf[MAX_DEBUG_LOG_SIZE];
+    char buf[MAX_DEBUG_LOG_SIZE];
 
     va_start(ap, format);
     vsprintf(buf, format, ap);
     va_end(ap);
-	Serial.println(buf);
+    Serial.println(buf);
 }
 #endif
