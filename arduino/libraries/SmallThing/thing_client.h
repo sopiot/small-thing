@@ -679,4 +679,9 @@ int GetDoubleArgumentByName(void *pData, const char *name, double *pdbOut);
 */
 void brokerConnLost(void *context, char *cause);
 
+/** thsvkd add(2021-01-06)
+ * for print fotmatted debug log
+ */
+void dp(const char *format, ...);
+void dlp(const char *format, ...);
 #endif
