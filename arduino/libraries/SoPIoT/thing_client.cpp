@@ -225,13 +225,13 @@ void Value::GetInformation(char *buffer)
 	switch (value_classifier_)
 	{
 	case BOOL:
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tbool\t%d\t%d", name_, *(int *)min_, *(int *)max_);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s\tbool\t%d\t%d", name_, *(int *)min_, *(int *)max_);
 		break;
 	case INTEGER:
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tint\t%d\t%d", name_, *(int *)min_, *(int *)max_);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s\tint\t%d\t%d", name_, *(int *)min_, *(int *)max_);
 		break;
 	case STRING:
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tstring\t%d\t%d", name_, *(int *)min_, *(int *)max_);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s\tstring\t%d\t%d", name_, *(int *)min_, *(int *)max_);
 		break;
 	case DOUBLE:
 	{
@@ -239,7 +239,7 @@ void Value::GetInformation(char *buffer)
 		char max_temp[10];
 		dtostrf_cap(*(double *)min_, 8, 2, min_temp);
 		dtostrf_cap(*(double *)max_, 8, 2, max_temp);
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tdouble\t%s\t%s", name_, min_temp, max_temp);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s\tdouble\t%s\t%s", name_, min_temp, max_temp);
 		break;
 	}
 	default:
@@ -265,7 +265,7 @@ bool Value::capVal2str(char *buffer)
 	case INTEGER:
 	{
 		nval = ((IntegerValue)value_)();
-		len = snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "{\"type\" : \"int\" , \"value\" : %d}", nval);
+		len = snprintf(buffer, MAX_BUFFER_SIZE, "{\"type\" : \"int\" , \"value\" : %d}", nval);
 		val = &nval;
 		break;
 	}
@@ -274,7 +274,7 @@ bool Value::capVal2str(char *buffer)
 		char val_temp[10];
 		dval = ((DoubleValue)value_)();
 		dtostrf_cap(dval, 8, 2, val_temp);
-		len = snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "{\"type\" : \"double\" , \"value\" : %s}", val_temp);
+		len = snprintf(buffer, MAX_BUFFER_SIZE, "{\"type\" : \"double\" , \"value\" : %s}", val_temp);
 		val = &dval;
 		break;
 	}
@@ -288,7 +288,7 @@ bool Value::capVal2str(char *buffer)
 			else {
 				len = sprintf(buffer, "{\"type\" : \"bool\" , \"value\" : 0}");
 			}*/
-		len = snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "{\"type\" : \"bool\" , \"value\" : %d}", nval);
+		len = snprintf(buffer, MAX_BUFFER_SIZE, "{\"type\" : \"bool\" , \"value\" : %d}", nval);
 		val = &nval;
 		break;
 	}
@@ -300,7 +300,7 @@ bool Value::capVal2str(char *buffer)
 			CPDBG(F("Fatal Error is occured on capVal2str!!\n"));
 			return false;
 		}
-		len = snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "{\"type\" : \"string\" , \"value\" : \"%s\"}", ptsval);
+		len = snprintf(buffer, MAX_BUFFER_SIZE, "{\"type\" : \"string\" , \"value\" : \"%s\"}", ptsval);
 		val = ptsval;
 		break;
 	}
@@ -381,25 +381,25 @@ void Attribute::GetInformation(char *buffer)
 	{
 		char min_temp[10];
 		dtostrf_cap(real_value_, 8, 2, min_temp);
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tbool\t%s", name_, min_temp);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s\tbool\t%s", name_, min_temp);
 		break;
 	}
 	case INTEGER:
 	{
 		char min_temp[10];
 		dtostrf_cap(real_value_, 8, 2, min_temp);
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tint\t%s", name_, min_temp);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s\tint\t%s", name_, min_temp);
 		break;
 	}
 	case DOUBLE:
 	{
 		char min_temp[10];
 		dtostrf_cap(real_value_, 8, 2, min_temp);
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tdouble\t%s", name_, min_temp);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s\tdouble\t%s", name_, min_temp);
 		break;
 	}
 	case STRING:
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tstring\t%s", name_, string_value_);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s\tstring\t%s", name_, string_value_);
 		break;
 	default:
 		// error!
@@ -583,13 +583,13 @@ void Argument::GetInformation(char *buffer)
 	switch (arg_type_)
 	{
 	case BOOL:
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tbool\t%d\t%d\t", name_, *(int *)min_, *(int *)max_);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s\tbool\t%d\t%d\t", name_, *(int *)min_, *(int *)max_);
 		break;
 	case INTEGER:
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tint\t%d\t%d\t", name_, *(int *)min_, *(int *)max_);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s\tint\t%d\t%d\t", name_, *(int *)min_, *(int *)max_);
 		break;
 	case STRING:
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tstring\t%d\t%d\t", name_, *(int *)min_, *(int *)max_);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s\tstring\t%d\t%d\t", name_, *(int *)min_, *(int *)max_);
 		break;
 	case DOUBLE:
 	{
@@ -597,7 +597,7 @@ void Argument::GetInformation(char *buffer)
 		char max_temp[10];
 		dtostrf_cap(*(double *)min_, 8, 2, min_temp);
 		dtostrf_cap(*(double *)max_, 8, 2, max_temp);
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\tdouble\t%s\t%s\t", name_, min_temp, max_temp);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s\tdouble\t%s\t%s\t", name_, min_temp, max_temp);
 		break;
 	}
 	default:
@@ -750,7 +750,7 @@ void Function::GetInformation(char *buffer)
 	case BOOL:
 	case VOID:
 		//index =
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s\t%d", name_, ncurArguments_);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s\t%d", name_, ncurArguments_);
 		break;
 	default: // error!
 		CPDBG(F("Function::GetInformation -> ERROR!"));
@@ -804,7 +804,7 @@ ThingClient::ThingClient(char *class_name, int alive_cycle, Stream &serial) : wa
 	this->class_name_ = class_name;
 	this->alive_cycle_ = alive_cycle;
 	response_timer_ = millis();
-	memset(message_buffer_, 0, CAPITAL_MAX_BUFFER_SIZE);
+	memset(message_buffer_, 0, MAX_BUFFER_SIZE);
 
 	num_values_ = 0;
 	num_functions_ = 0;
@@ -924,7 +924,7 @@ void ThingClient::set_class_name(char *class_name)
 
 void ThingClient::Add(Value &v)
 {
-	if (num_values_ < CAPITAL_MAX_VALUE)
+	if (num_values_ < MAX_VALUE_NUM)
 	{
 		values_[num_values_++] = &v;
 	}
@@ -936,7 +936,7 @@ void ThingClient::Add(Value &v)
 
 void ThingClient::Add(Function &f)
 {
-	if (num_functions_ < CAPITAL_MAX_FUNCTION)
+	if (num_functions_ < MAX_FUNCTION_NUM)
 	{
 		functions_[num_functions_++] = &f;
 	}
@@ -948,7 +948,7 @@ void ThingClient::Add(Function &f)
 
 void ThingClient::Add(Attribute &a)
 {
-	if (num_attributes_ < CAPITAL_MAX_ATTRIBUTE)
+	if (num_attributes_ < MAX_ATTRIBUTE_NUM)
 	{
 		attributes_[num_attributes_++] = &a;
 	}
@@ -974,7 +974,7 @@ void ThingClient::Setting()
 	CPDBG(F("CONNECT"));
 	while (!connected())
 	{
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s", client_id_);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s", client_id_);
 		connect(0, 50, buffer);
 		checkSerial();
 	}
@@ -983,7 +983,7 @@ void ThingClient::Setting()
 	CPDBG(F("REGISTER"));
 	do
 	{
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, MT1001, client_id_); // id_1001_
+		snprintf(buffer, MAX_BUFFER_SIZE, MT1001, client_id_); // id_1001_
 		registerTopic(buffer);
 		checkSerial();
 	} while ((id_1001_ = registered_id_) == (UINT16_MAX));
@@ -996,7 +996,7 @@ void ThingClient::Setting()
 	CPDBG(F("REGISTER"));
 	do
 	{
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, MT1002, client_id_); // id1105
+		snprintf(buffer, MAX_BUFFER_SIZE, MT1002, client_id_); // id1105
 		registerTopic(buffer);
 		checkSerial();
 	} while ((id_1002_ = registered_id_) == (UINT16_MAX));
@@ -1009,7 +1009,7 @@ void ThingClient::Setting()
 	CPDBG(F("REGISTER"));
 	do
 	{
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, TM2001, client_id_); // id_2001_
+		snprintf(buffer, MAX_BUFFER_SIZE, TM2001, client_id_); // id_2001_
 		registerTopic(buffer);
 		checkSerial();
 	} while ((id_2001_ = registered_id_) == (UINT16_MAX));
@@ -1018,7 +1018,7 @@ void ThingClient::Setting()
 	CPDBG(F("REGISTER"));
 	do
 	{
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, TM2002, client_id_); // id_2002_
+		snprintf(buffer, MAX_BUFFER_SIZE, TM2002, client_id_); // id_2002_
 		registerTopic(buffer);
 		checkSerial();
 	} while ((id_2002_ = registered_id_) == (UINT16_MAX));
@@ -1027,7 +1027,7 @@ void ThingClient::Setting()
 	CPDBG(F("REGISTER"));
 	do
 	{
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, TM2003, client_id_); // id_2003_
+		snprintf(buffer, MAX_BUFFER_SIZE, TM2003, client_id_); // id_2003_
 		registerTopic(buffer);
 		checkSerial();
 	} while ((id_2003_ = registered_id_) == (UINT16_MAX));
@@ -1038,7 +1038,7 @@ void ThingClient::Setting()
 		registered_id_ = UINT16_MAX;
 		do
 		{
-			snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, COMMON0000, client_id_, values_[i]->name());
+			snprintf(buffer, MAX_BUFFER_SIZE, COMMON0000, client_id_, values_[i]->name());
 			registerTopic(buffer);
 			checkSerial();
 
@@ -1051,7 +1051,7 @@ void ThingClient::Setting()
 		registered_id_ = UINT16_MAX;
 		do
 		{
-			snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, MT1003, functions_[i]->name(), client_id_); // id1003
+			snprintf(buffer, MAX_BUFFER_SIZE, MT1003, functions_[i]->name(), client_id_); // id1003
 			registerTopic(buffer);
 			checkSerial();
 		} while ((functions_[i]->set_id_1003(registered_id_)) == (UINT16_MAX));
@@ -1060,10 +1060,10 @@ void ThingClient::Setting()
 		checkSerial();
 
 		registered_id_ = UINT16_MAX;
-		memset(buffer, 0, CAPITAL_MAX_BUFFER_SIZE);
+		memset(buffer, 0, MAX_BUFFER_SIZE);
 		do
 		{
-			snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, TM2004_DEPRECATED, client_id_); // id2004_deprecated
+			snprintf(buffer, MAX_BUFFER_SIZE, TM2004_DEPRECATED, client_id_); // id2004_deprecated
 			registerTopic(buffer);
 			checkSerial();
 		} while ((functions_[i]->set_id_2004_deprecated(registered_id_)) == (UINT16_MAX));
@@ -1071,7 +1071,7 @@ void ThingClient::Setting()
 		registered_id_ = UINT16_MAX;
 		do
 		{
-			snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, TM2004, functions_[i]->name(), client_id_); // id2004
+			snprintf(buffer, MAX_BUFFER_SIZE, TM2004, functions_[i]->name(), client_id_); // id2004
 			registerTopic(buffer);
 			checkSerial();
 		} while ((functions_[i]->set_id_2004(registered_id_)) == (UINT16_MAX));
@@ -1528,7 +1528,7 @@ void ThingClient::publishHandler(const msg_publish *msg)
 
 	if (topic_id == id_1001_)
 	{
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%s", msg->data);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%s", msg->data);
 		char errNo = buffer[0];
 		CPDBG(F("Error no :"));
 		CPDBG(buffer);
@@ -1570,7 +1570,7 @@ void ThingClient::publishHandler(const msg_publish *msg)
 			char *t_name = NULL;
 			char *t_args = NULL;
 			in_process_ = true;
-			strncpy(save_buffer, msg->data, CAPITAL_MAX_BUFFER_SIZE - sizeof(msg_publish)); // safe cpy
+			strncpy(save_buffer, msg->data, MAX_BUFFER_SIZE - sizeof(msg_publish)); // safe cpy
 			if (msg->flags & FLAG_QOS_2)
 			{
 				ret = ACCEPTED;
@@ -1593,12 +1593,12 @@ void ThingClient::publishHandler(const msg_publish *msg)
 			}
 			if (t_name[0] == ' ') // No scenario name provided
 			{
-				snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "{\"function\" : \"%s\" , \"error\" : %d }", functions_[i]->name(), success);
+				snprintf(buffer, MAX_BUFFER_SIZE, "{\"function\" : \"%s\" , \"error\" : %d }", functions_[i]->name(), success);
 				publish(QOS_FLAG, functions_[i]->id_2004_deprecated(), buffer, strlen(buffer));
 			}
 			else // scenario name provided
 			{
-				snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "{\"scenario\" : \"%s\" , \"error\" : %d }", t_name, success);
+				snprintf(buffer, MAX_BUFFER_SIZE, "{\"scenario\" : \"%s\" , \"error\" : %d }", t_name, success);
 				publish(QOS_FLAG, functions_[i]->id_2004(), buffer, strlen(buffer));
 			}
 
@@ -1836,7 +1836,7 @@ void ThingClient::devreg()
 		msg->pub_id = 0;
 		msg->status = DURATION;
 		msg->message_id = bswap(message_id_);
-		snprintf(buffer, CAPITAL_MAX_BUFFER_SIZE, "%ul", alive_cycle_);
+		snprintf(buffer, MAX_BUFFER_SIZE, "%ul", alive_cycle_);
 		CPDBG(buffer);
 		memcpy(msg->data, buffer, strlen(buffer) + 1);
 		msg->length = sizeof(msg_devreg) + strlen(buffer) + 1;
@@ -1904,7 +1904,7 @@ void ThingClient::print_message_buffer_(int start, int length)
 {
 	//print message_buffer_ BYTE message_buffer_[start] to message_buffer_[start + length]
 	if (length == -1)
-		length = CAPITAL_MAX_BUFFER_SIZE;
+		length = MAX_BUFFER_SIZE;
 	for (int i = start; i < start + length; i++)
 	{
 		Serial.print(message_buffer_[i], HEX);
@@ -1918,7 +1918,7 @@ void ThingClient::print_message_buffer_(void *buf, int length)
 	//print message_buffer_ BYTE *buf to *(buf + length)
 	char *tmp = (char *)buf;
 	if (length == -1)
-		length = CAPITAL_MAX_BUFFER_SIZE;
+		length = MAX_BUFFER_SIZE;
 	for (int i = 0; i < length; i++)
 	{
 		Serial.print(*(tmp + i), HEX);
@@ -1930,7 +1930,7 @@ void ThingClient::print_message_buffer_(void *buf, int length)
 void ThingClient::print_message_buffer_()
 {
 	//print all message_buffer_ BYTE
-	for (int i = 0; i < CAPITAL_MAX_BUFFER_SIZE; i++)
+	for (int i = 0; i < MAX_BUFFER_SIZE; i++)
 	{
 		Serial.print(message_buffer_[i], HEX);
 		Serial.print(" ");
@@ -2165,7 +2165,7 @@ void ThingClient::pubcompHandler(const msg_pubqos2 *msg)
 // thsvkd add(2021-01-06)
 void dp(const char* format, ...) {
     va_list ap;
-    char buf[MAX_DEBUG_LOG_SIZE];
+    char buf[MAX_BUFFER_SIZE];
 
     va_start(ap, format);
     vsprintf(buf, format, ap);
@@ -2175,7 +2175,7 @@ void dp(const char* format, ...) {
 
 void dlp(const char* format, ...) {
     va_list ap;
-    char buf[MAX_DEBUG_LOG_SIZE];
+    char buf[MAX_BUFFER_SIZE];
 
     va_start(ap, format);
     vsprintf(buf, format, ap);

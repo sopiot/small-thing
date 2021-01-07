@@ -1,24 +1,17 @@
-/**
- * @file thing_defines.h
- * @brief define macros, default enums and types
- */
+#ifndef _SOPIOT_DEFINES_H_
+#define _SOPIOT_DEFINES_H_
 
-#ifndef CAPITAL_ARDUINO_THING_DEFINES_H_
-#define CAPITAL_ARDUINO_THING_DEFINES_H_
+// Author: thsvkd
+// on ARM board, structure is divided(packed) by 4 bytes
+// to sync with AVR board, set structure packing size to 1 byte.
+#pragma pack(push, 1)
 
-#define COMMON0000 "%s/%s"
-#define MT1001 "MT/REGACK/%s"
-#define MT1002 "MT/PINGREQ/%s"
-#define MT1003 "MT/%s/%s"
-
-#define TM2001 "TM/REGISTER/%s"
-#define TM2002 "TM/UNREGISTER/%s"
-#define TM2003 "TM/ALIVE/%s"
-#define TM2004_DEPRECATED "TM/RESULT/FUNCTION/%s"
-#define TM2004 "TM/RESULT/FUNCTION/%s/%s"
-
-#define QOS 2
-#define TIMEOUT 10000L
+//----------------------------------------
+// Author: ikess
+// This codes are
+// From mqttsn.h by John Donovan (20210107 ikess guessed.)
+// ref: https://bitbucket.org/MerseyViking/mqtt-sn-arduino/src/master/src/mqttsn.h
+//----------------------------------------
 
 #define PROTOCOL_ID 0x01
 
@@ -45,69 +38,6 @@
 #define T_WAIT 360
 #define T_RETRY 15
 #define N_RETRY 5
-#define CAP_DEBUG
-#ifdef CAP_DEBUG
-#define CPDBG(...) Serial.println(__VA_ARGS__)
-#else
-#define CPDBG(...)
-#endif
-
-#define DOUBLE_EPSILON (0.0000001)
-#define DOUBLE_IS_APPROX_EQUAL(a, b) (fabs((a) - (b)) <= DOUBLE_EPSILON)
-
-#define USE_QOS2
-
-#ifdef USE_QOS2
-#define QOS_FLAG FLAG_QOS_2
-#else
-#define QOS_FLAG 0
-#endif
-
-#define UINT16_MAX (INT16_MAX * 2 + 1)
-#define BOARD_SERIAL_IS_ONE (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || \
-                            (defined(ARDUINO_ARCH_SAM) && !defined(ARDUINO_SAM_DUE)) || \
-                            defined(ARDUINO_ARCH_MBED) || \
-                            defined(__AVR_ATmega32U4__) || \
-                            defined(ARDUINO_AVR_PROMICRO)
-
-typedef enum _captype
-{
-    UNDEFINED = 0,
-    VOID,
-    INTEGER,
-    DOUBLE,
-    BOOL,
-    STRING,
-} CapType;
-
-typedef enum _capdevreg
-{
-    VALUE = 0,
-    ATTRIBUTE,
-    FUNCTION,
-    ARGUMENT,
-    //DOWHAN ADDEED
-    FUNCTION_ATTRIBUTE,
-    //END
-    DURATION,
-    FINISH,
-} CapRegStatus;
-
-typedef enum _capstate
-{
-    UNREGISTERED = 0,
-    REGISTERED,
-} CapState;
-
-typedef void (*VoidFunction)(void *);
-typedef int (*IntegerFunction)(void *);
-typedef double (*DoubleFunction)(void *);
-typedef bool (*BoolFunction)(void *);
-
-typedef int (*IntegerValue)(void);
-typedef double (*DoubleValue)(void);
-typedef bool (*BoolValue)(void);
-typedef char *(*StringValue)(char *, int);
 
 enum return_code_t
 {
@@ -123,7 +53,7 @@ enum message_type
     ADVERTISE,
     SEARCHGW,
     GWINFO,
-    CONNECT = 0x04, //for 0x03 reserved
+    CONNECT = 0x04,  // for 0x03 reserved
     CONNACK,
     WILLTOPICREQ,
     WILLTOPIC,
@@ -136,28 +66,25 @@ enum message_type
     PUBCOMP,
     PUBREC,
     PUBREL,
-    SUBSCRIBE = 0x12, //for 0x11 reserved
+    SUBSCRIBE = 0x12,  // for 0x11 reserved
     SUBACK,
     UNSUBSCRIBE,
     UNSUBACK,
     PINGREQ,
     PINGRESP,
     DISCONNECT,
-    WILLTOPICUPD = 0x1a, //for 0x19 reserved
+    WILLTOPICUPD = 0x1a,  // for 0x19 reserved
     WILLTOPICRESP,
     WILLMSGUPD,
     WILLMSGRESP,
-    DEVREG,
-    DEVREGACK
+    DEVREG,  // added for DevReg Protocol
+    DEVREGACK  // added for DevReg Protocol
 };
 
-/*********************************************************
-At ARM board, struct packing structure is divide by 4 byte
-so you have to use pragma(1) like that
-**********************************************************/
-#if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED)
-#pragma pack(push, 1)
-#endif
+//----------------------------------------
+// MQTT-SN Basic Protocols
+//----------------------------------------
+
 struct message_header
 {
     uint8_t length;
@@ -258,27 +185,6 @@ struct msg_suback : public message_header
     uint8_t return_code;
 };
 
-//
-
-struct msg_devreg : public message_header
-{
-    uint16_t pub_id;
-    uint16_t message_id;
-    uint8_t status;
-    char data[0];
-};
-
-// status -> 0 : continue 1 : last
-
-struct msg_devregack : public message_header
-{
-    uint8_t flags;
-    uint16_t message_id;
-    uint8_t return_code;
-};
-
-// added
-
 struct msg_unsubscribe : public message_header
 {
     uint8_t flags;
@@ -314,8 +220,123 @@ struct msg_willmsgresp : public message_header
 {
     uint8_t return_code;
 };
-#if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_MBED)
-#pragma pack(pop)
+
+
+//----------------------------------------
+// DevReg Protocol (Added Protocol)
+//
+// To send SoPIoT register packet.
+// MQTT-SN packet only supported max 60 bytes so
+// split packet and send one by one.
+// The packets are gathered at Gateway.
+//----------------------------------------
+
+struct msg_devreg : public message_header
+{
+    uint16_t pub_id;
+    uint16_t message_id;
+    uint8_t status; // status -> 0 : continue 1 : last
+    char data[0];
+};
+
+struct msg_devregack : public message_header
+{
+    uint8_t flags;
+    uint16_t message_id;
+    uint8_t return_code;
+};
+
+// FIXME (ikess): check it is necessary. maybe no need to pop again?
+// #pragma pack(pop) 
+
+//----------------------------------------
+// SoPIoT Defines
+//----------------------------------------
+
+#define CAP_DEBUG
+#ifdef CAP_DEBUG
+#define CPDBG(...) Serial.println(__VA_ARGS__)
+#else
+#define CPDBG(...)
 #endif
 
+#define COMMON0000 "%s/%s"
+
+// SoPIoT protocols (See specification documentation)
+// MW --> Thing
+#define MT1001 "MT/REGACK/%s"
+#define MT1002 "MT/PINGREQ/%s"
+#define MT1003 "MT/%s/%s"
+
+// Thing --> MW
+#define TM2001 "TM/REGISTER/%s"
+#define TM2002 "TM/UNREGISTER/%s"
+#define TM2003 "TM/ALIVE/%s"
+#define TM2004_DEPRECATED "TM/RESULT/FUNCTION/%s"
+#define TM2004 "TM/RESULT/FUNCTION/%s/%s"
+
+// Double data type comparison
+#define DOUBLE_EPSILON (0.0000001)
+#define DOUBLE_IS_APPROX_EQUAL(a, b) (fabs((a) - (b)) <= DOUBLE_EPSILON)
+
+// QoS 2
+#define QOS 2
+#define USE_QOS2
+
+#ifdef USE_QOS2
+#define QOS_FLAG FLAG_QOS_2
+#else
+#define QOS_FLAG 0
 #endif
+
+// Max value of unsigned int16
+#define UINT16_MAX (INT16_MAX * 2 + 1)
+
+// Author: thsvkd
+// Depending arduino board,
+// Serial variable is different.
+// Some are Serial, the others are Serial1                       
+#define BOARD_SERIAL_IS_ONE (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || \
+                            (defined(ARDUINO_ARCH_SAM) && !defined(ARDUINO_SAM_DUE)) || \
+                            defined(ARDUINO_ARCH_MBED) || \
+                            defined(__AVR_ATmega32U4__) || \
+                            defined(ARDUINO_AVR_PROMICRO)
+
+typedef enum _captype
+{
+    UNDEFINED = 0,
+    VOID,
+    INTEGER,
+    DOUBLE,
+    BOOL,
+    STRING,
+} CapType;
+
+typedef enum _capdevreg
+{
+    VALUE = 0,
+    ATTRIBUTE,
+    FUNCTION,
+    ARGUMENT,
+    FUNCTION_ATTRIBUTE,
+    DURATION,
+    FINISH,
+} CapRegStatus;
+
+typedef enum _capstate
+{
+    UNREGISTERED = 0,
+    REGISTERED,
+} CapState;
+
+typedef void (*VoidFunction)(void *);
+typedef int (*IntegerFunction)(void *);
+typedef double (*DoubleFunction)(void *);
+typedef bool (*BoolFunction)(void *);
+
+typedef int (*IntegerValue)(void);
+typedef double (*DoubleValue)(void);
+typedef bool (*BoolValue)(void);
+typedef char *(*StringValue)(char *, int);
+
+#endif // _SOPIOT_DEFINES_H_

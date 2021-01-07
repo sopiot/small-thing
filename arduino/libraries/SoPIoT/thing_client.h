@@ -1,29 +1,20 @@
-/**
- * @file	thing_client.h
- * @brief class Value, Function, Client included
- * @author Donghyun Kang, kangdongh@iris.snu.ac.kr
- * @date 2016-04-01
- * @version 1.0.0
- * @section changelog Change Log
- * 2016/04/01 the first reconstruction applied
- * @section license_section License
- * TODO
- */
-
-#ifndef _CAPITAL_ST_THING_CLIENT_H_
-#define _CAPITAL_ST_THING_CLIENT_H_
+#ifndef _SOPIOT_THING_H_
+#define _SOPIOT_THING_H_
 
 #include <Arduino.h>
 #include <Stream.h>
 #include <XBee.h>
 #include "thing_defines.h"
 
-#define CAPITAL_MAX_VALUE 10
-#define CAPITAL_MAX_FUNCTION 5
-#define CAPITAL_MAX_ATTRIBUTE 5
-#define CAPITAL_MAX_NAME_LENGTH 20
+//----------------------------------------
+// Config
+//----------------------------------------
 
-#define CAPITAL_MAX_BUFFER_SIZE 60
+#define MAX_VALUE_NUM 10
+#define MAX_FUNCTION_NUM 5
+#define MAX_ATTRIBUTE_NUM 5
+#define MAX_NAME_LENGTH 20
+#define MAX_BUFFER_SIZE 60
 
 /**
  * @brief A class for handling various "value" types.
@@ -605,9 +596,9 @@ private:
 	uint8_t num_functions_;
 	uint8_t num_attributes_;
 
-	Value *values_[CAPITAL_MAX_VALUE];
-	Function *functions_[CAPITAL_MAX_FUNCTION];
-	Attribute *attributes_[CAPITAL_MAX_ATTRIBUTE];
+	Value *values_[MAX_VALUE_NUM];
+	Function *functions_[MAX_FUNCTION_NUM];
+	Attribute *attributes_[MAX_ATTRIBUTE_NUM];
 
 	uint16_t id_1001_;
 	uint16_t id_1002_;
@@ -616,8 +607,8 @@ private:
 	uint16_t id_2003_;
 	//
 
-	char buffer[CAPITAL_MAX_BUFFER_SIZE];
-	char save_buffer[CAPITAL_MAX_BUFFER_SIZE];
+	char buffer[MAX_BUFFER_SIZE];
+	char save_buffer[MAX_BUFFER_SIZE];
 	uint8_t mac_address[10];
 
 	char *client_id_;
@@ -645,7 +636,7 @@ private:
 
 	uint16_t message_id_;
 
-	uint8_t message_buffer_[CAPITAL_MAX_BUFFER_SIZE];
+	uint8_t message_buffer_[MAX_BUFFER_SIZE];
 
 	uint32_t response_timer_;
 	uint8_t response_retries_;
@@ -684,4 +675,5 @@ void brokerConnLost(void *context, char *cause);
  */
 void dp(const char *format, ...);
 void dlp(const char *format, ...);
-#endif
+
+#endif // _SOPIOT_THING_H_
