@@ -3,7 +3,7 @@
 //----------------------------------------
 
 // SoPIoT Thing library
-#include <thing_client.h>
+#include <sopiot.h>
 
 // Module libraries
 #include <Servo.h>
@@ -23,9 +23,25 @@ static const int kServo1Pin = 8;
 //----------------------------------------
 
 // Thing declaration
-// ThingClient(class_name, alive_cycle, serial);
-// ThingClient(class_name, serial);
-ThingClient thing((const char *)"Template_001", 60, SafeSerial);
+// Thing(class_name, alive_cycle, serial);
+// Thing(class_name, serial);
+Thing template_thing((const char *)"Template_001", 60, SafeSerial);
+
+//----------------------------------------
+// Values
+// an SenseXXX overwrites a Value XXX
+//----------------------------------------
+
+// Value variables
+int switch_status_;
+
+// Getter functions of each Value variable
+int SenseSwitchStatus() { return switch_status_; }
+
+// Value declarations
+// Value(name, sense_function, min, max, period(ms));
+Value switch_status((const char *)"switch_status", SenseSwitchStatus, 0, 2,
+                    10000);
 
 //----------------------------------------
 // Functions
@@ -38,43 +54,21 @@ void ActuateSwitchOn(void *pData) {
   // if (res == -1)
   //   return;
 
-  // servo.write(angle);
-  servo.write(45);
+  // servo1.write(angle);
+  servo1.write(45);
   delay(300);
-  servoState = 1;
+  switch_status_ = 1;
 }
 
 // Function declarations
 // Function(name, actuate_function, arguments_num, function_attributes_num);
-Function switch_on((const char *)"SwitchOn", ActuateSwitchOn, 0, 0);
+Function switch_on((const char *)"switch_on", ActuateSwitchOn, 0, 0);
 
 //----------------------------------------
-// Values
-// an SenseXXX overwrites a Value XXX
+// Setup
 //----------------------------------------
 
-// Value variables
-int switch_status_;
-
-// Getter functions of each Value variable
-int SenseSwitchStatus() const { return switch_status_; }
-
-// Value declarations
-// Value(name, sense_function, min, max, period(ms));
-Value switch_status((const char *)"SwitchStatus", SenseSwitchStatus, 0, 2,
-                    10000);
-
-//----------------------------------------
-// Main
-//----------------------------------------
-
-void SetupSerial() {
-#if BOARD_SERIAL_IS_ONE
-  Serial1.begin(115200);
-#else
-  Serial.begin(115200);
-#endif
-}
+void SetupSerial() { SafeSerial.begin(115200); }
 
 void SetupModules() {
   // Setup Pin mode
@@ -86,14 +80,18 @@ void SetupModules() {
 
 void SetupThing() {
   // Setup Functions
-  thing.Add(functionSwitchOn);
+  template_thing.Add(switch_on);
 
   // Setup Values
-  thing.Add(SW_status);
+  template_thing.Add(switch_status);
 
   // Setup Thing
-  thing.Setting();
+  template_thing.Setup();
 }
+
+//----------------------------------------
+// Main
+//----------------------------------------
 
 void setup() {
   SetupSerial();
@@ -101,4 +99,4 @@ void setup() {
   SetupThing();
 }
 
-void loop() { thing.DoLoop(); }
+void loop() { template_thing.Loop(); }

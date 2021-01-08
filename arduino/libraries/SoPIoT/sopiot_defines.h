@@ -1,5 +1,5 @@
-#ifndef _SOPIOT_DEFINES_H_
-#define _SOPIOT_DEFINES_H_
+#ifndef _SMALL_THING_SOPIOT_DEFINES_H_
+#define _SMALL_THING_SOPIOT_DEFINES_H_
 
 // Author: thsvkd
 // on ARM board, structure is divided(packed) by 4 bytes
@@ -263,9 +263,6 @@ struct msg_devregack : public message_header {
 #define QOS_FLAG 0
 #endif
 
-// Max value of unsigned int16
-#define UINT16_MAX (INT16_MAX * 2 + 1)
-
 // Author: thsvkd
 // Depending arduino board,
 // Serial variable is different.
@@ -276,8 +273,8 @@ struct msg_devregack : public message_header {
       defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) || \
       defined(ARDUINO_AVR_PROMICRO)
 
-#ifdef(BOARD_SERIAL_IS_ONE)
-#define SafeSerial Serial1
+#ifdef USE_SERIAL_ONE
+#define SafeSerial Serial
 #else
 #define SafeSerial Serial
 #endif
@@ -316,4 +313,4 @@ typedef double (*DoubleValue)(void);
 typedef bool (*BoolValue)(void);
 typedef char *(*StringValue)(char *, int);
 
-#endif  // _SOPIOT_DEFINES_H_
+#endif  // _SMALL_THING_SOPIOT_DEFINES_H_
