@@ -1,11 +1,6 @@
 #ifndef _SMALL_THING_SOPIOT_DEFINES_H_
 #define _SMALL_THING_SOPIOT_DEFINES_H_
 
-// Author: thsvkd
-// on ARM board, structure is divided(packed) by 4 bytes
-// to sync with AVR board, set structure packing size to 1 byte.
-#pragma pack(push, 1)
-
 //----------------------------------------
 // Author: ikess
 // This codes are
@@ -84,6 +79,11 @@ enum message_type {
 //----------------------------------------
 // MQTT-SN Basic Protocols
 //----------------------------------------
+
+// Author: thsvkd
+// on ARM board, structure is divided(packed) by 4 bytes
+// to sync with AVR board, set structure packing size to 1 byte.
+#pragma pack(push, 1)
 
 struct message_header {
   uint8_t length;
@@ -221,7 +221,7 @@ struct msg_devregack : public message_header {
 };
 
 // FIXME (ikess): check it is necessary. maybe no need to pop again?
-// #pragma pack(pop)
+#pragma pack(pop)
 
 //----------------------------------------
 // SoPIoT Defines
