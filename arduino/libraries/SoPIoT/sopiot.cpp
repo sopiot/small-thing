@@ -1821,24 +1821,4 @@ void Thing::pubcompHandler(const msg_pubqos2 *msg) {
   response_wait_for_ = PUBLISH;
 }
 
-// thsvkd add(2021-01-06)
-void dp(const char *format, ...) {
-  va_list ap;
-  char buf[MAX_BUFFER_SIZE];
-
-  va_start(ap, format);
-  vsprintf(buf, format, ap);
-  va_end(ap);
-  Serial.print(buf);
-}
-
-void dlp(const char *format, ...) {
-  va_list ap;
-  char buf[MAX_BUFFER_SIZE];
-
-  va_start(ap, format);
-  vsprintf(buf, format, ap);
-  va_end(ap);
-  Serial.println(buf);
-}
 #endif
