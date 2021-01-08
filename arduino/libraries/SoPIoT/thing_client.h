@@ -438,8 +438,8 @@ public:
 	/**
 	 * programmer can easily set client id and zigbee serial with this constructor.
 	 */
-	ThingClient(char *class_name, int alive_cycle, Stream &serial);
-	ThingClient(char *class_name, Stream &serial);
+	ThingClient(const char *class_name, int alive_cycle, Stream &serial);
+	ThingClient(const char *class_name, Stream &serial);
 
 	void Add(Value &v);
 	void Add(Function &f);
