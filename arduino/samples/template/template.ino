@@ -25,7 +25,7 @@ static const int kServo1Pin = 8;
 // Thing declaration
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
-Thing template_thing((const char *)"Template_001", 60, SafeSerial);
+Thing template_thing((const char *)"Template", 60, SafeSerial);
 
 //----------------------------------------
 // Values

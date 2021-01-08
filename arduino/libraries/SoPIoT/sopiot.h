@@ -621,7 +621,7 @@ class Thing {
 
   char buffer[MAX_BUFFER_SIZE];
   char save_buffer[MAX_BUFFER_SIZE];
-  uint8_t mac_address[10];
+  uint8_t mac_address[8];
 
   char *client_id_;
   char *class_name_;

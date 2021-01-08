@@ -666,30 +666,20 @@ Thing::Thing(const char *class_name, int alive_cycle, Stream &serial)
 void Thing::set_serial(Stream &serial) { zbee_.setSerial(serial); }
 
 void Thing::init_client_id() {
-  // int len = 0;
-  // char temp_mac_address[17] = "";
-  // int nLen = 0;
+  get_mac_address();
 
-  // get_mac_address();
+  char temp_mac_address[17] = "";
 
-  // TODO:
-  // FIX ME!!!!!!!!!
-  client_id_ = (char *)malloc(sizeof(char) * (strlen(class_name_) + 1));
-  snprintf(client_id_, strlen(class_name_) + 1, "%s", class_name_);
-  // client_id_ = (char *)malloc(sizeof(char) * (strlen(class_name_) +
-  // strlen(temp_mac_address) + 2)); client_id_ = (char *)malloc(sizeof(char) *
-  // (100));
+  client_id_ = (char *)malloc(
+      sizeof(char) * (strlen(class_name_) + strlen(temp_mac_address) + 2));
 
-  // for (int i = 0; i < 8; i++)
-  // {
-  // 	len += sprintf(temp_mac_address + len, "%.2X", (unsigned
-  // char)mac_address[i]);
-  // }
+  int len = 0;
+  for (int i = 0; i < 8; i++) {
+    len +=
+        sprintf(temp_mac_address + len, "%.2X", (unsigned char)mac_address[i]);
+  }
 
-  // sprintf(client_id_, "%s_%s", class_name_, temp_mac_address);
-
-  // nLen = strlen(client_id_);
-  // CPDBG();
+  sprintf(client_id_, "%s_%s", class_name_, temp_mac_address);
 }
 
 // TODO: thsvkd complete this!!!

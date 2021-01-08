@@ -229,7 +229,7 @@ struct msg_devregack : public message_header {
 
 #define CAP_DEBUG
 #ifdef CAP_DEBUG
-#define CPDBG(...) Serial.println(__VA_ARGS__)
+#define CPDBG(...) SafeSerial.println(__VA_ARGS__)
 #else
 #define CPDBG(...)
 #endif
@@ -267,14 +267,16 @@ struct msg_devregack : public message_header {
 // Depending arduino board,
 // Serial variable is different.
 // Some are Serial, the others are Serial1
-#define USE_SERIAL_ONE                                             \
-  (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) ||   \
-      (defined(ARDUINO_ARCH_SAM) && !defined(ARDUINO_SAM_DUE)) ||  \
-      defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) || \
-      defined(ARDUINO_AVR_PROMICRO)
+
+#if (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || \
+    (defined(ARDUINO_ARCH_SAM) && !defined(ARDUINO_SAM_DUE)) ||    \
+    defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) ||   \
+    defined(ARDUINO_AVR_PROMICRO)
+#define USE_SERIAL_ONE
+#endif
 
 #ifdef USE_SERIAL_ONE
-#define SafeSerial Serial
+#define SafeSerial Serial1
 #else
 #define SafeSerial Serial
 #endif
