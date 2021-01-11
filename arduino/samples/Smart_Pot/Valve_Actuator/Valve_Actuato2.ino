@@ -21,7 +21,7 @@ int valve1_status = 0;
 void openValve1(void *pData)
 {
     servo1.attach(SERVO_PIN1);
-    servo1.write(90);
+    servo1.write(0);
     delay(1000);
     valve1_status = valve_open;
     servo1.detach();
@@ -30,7 +30,7 @@ void openValve1(void *pData)
 void closeValve1(void *pData)
 {
     servo1.attach(SERVO_PIN1);
-    servo1.write(0);
+    servo1.write(90);
     delay(1000);
     valve1_status = valve_close;
     servo1.detach();
