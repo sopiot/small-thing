@@ -1,5 +1,9 @@
-#ifndef _SMALL_THING_SOPIOT_DEFINES_H_
-#define _SMALL_THING_SOPIOT_DEFINES_H_
+#ifndef SMALL_THING_COMMON_H_
+#define SMALL_THING_COMMON_H_
+
+#include <Arduino.h>
+#include <Stream.h>
+#include <XBee.h>
 
 //----------------------------------------
 // Author: ikess
@@ -220,23 +224,22 @@ struct msg_devregack : public message_header {
   uint8_t return_code;
 };
 
-// FIXME (ikess): check it is necessary. maybe no need to pop again?
 #pragma pack(pop)
 
 //----------------------------------------
 // SoPIoT Defines
 //----------------------------------------
 
-#define CAP_DEBUG
-#ifdef CAP_DEBUG
-#define CPDBG(...) SafeSerial.println(__VA_ARGS__)
-#else
-#define CPDBG(...)
-#endif
-
-#define COMMON0000 "%s/%s"
+// Config
+#define MAX_VALUE_NUM 10
+#define MAX_FUNCTION_NUM 5
+#define MAX_ATTRIBUTE_NUM 5
+#define MAX_NAME_LENGTH 20
+#define MAX_BUFFER_SIZE 66
 
 // SoPIoT protocols (See specification documentation)
+#define COMMON0000 "%s/%s"
+
 // MW --> Thing
 #define MT1001 "MT/REGACK/%s"
 #define MT1002 "MT/PINGREQ/%s"
@@ -246,7 +249,7 @@ struct msg_devregack : public message_header {
 #define TM2001 "TM/REGISTER/%s"
 #define TM2002 "TM/UNREGISTER/%s"
 #define TM2003 "TM/ALIVE/%s"
-#define TM2004_DEPRECATED "TM/RESULT/FUNCTION/%s"
+// #define TM2004_DEPRECATED "TM/RESULT/FUNCTION/%s"
 #define TM2004 "TM/RESULT/FUNCTION/%s/%s"
 
 // Double data type comparison
@@ -267,7 +270,7 @@ struct msg_devregack : public message_header {
 // Depending arduino board,
 // Serial variable is different.
 // Some are Serial, the others are Serial1
-
+// TODO(thsvkd): fix it with the best practice
 #if (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || \
     (defined(ARDUINO_ARCH_SAM) && !defined(ARDUINO_SAM_DUE)) ||    \
     defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) ||   \
@@ -315,4 +318,18 @@ typedef double (*DoubleValue)(void);
 typedef bool (*BoolValue)(void);
 typedef char *(*StringValue)(char *, int);
 
-#endif  // _SMALL_THING_SOPIOT_DEFINES_H_
+#define SOP_DEBUG
+#ifdef SOP_DEBUG
+#define SOPLOG(...) SafeSerial.print(__VA_ARGS__)
+#define SOPLOGLN(...) SafeSerial.println(__VA_ARGS__)
+#else
+#define SOPLOG(...)
+#define SOPLOGLN(...)
+#endif
+
+#define MEM_ALLOC_CHECK(var)           \
+  if (var == NULL) {                   \
+    SOPLOGLN("[ERROR] malloc failed"); \
+  }
+
+#endif  // SMALL_THING_COMMON_H_

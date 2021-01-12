@@ -3,7 +3,7 @@
 //----------------------------------------
 
 // SoPIoT Thing library
-#include <sopiot.h>
+#include <thing.h>
 
 // Module libraries
 #include <Servo.h>
@@ -68,7 +68,7 @@ Function switch_on((const char *)"switch_on", ActuateSwitchOn, 0, 0);
 // Setup
 //----------------------------------------
 
-void SetupSerial() { SafeSerial.begin(115200); }
+void SetupSerial() { SafeSerial.begin(9600); }
 
 void SetupModules() {
   // Setup Pin mode

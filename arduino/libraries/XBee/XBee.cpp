@@ -129,7 +129,6 @@ bool ZBTxStatusResponse::isSuccess() {
 }
 
 void XBeeResponse::getZBTxStatusResponse(XBeeResponse &zbXBeeResponse) {
-
 	// way off?
 	ZBTxStatusResponse* zb = static_cast<ZBTxStatusResponse*>(&zbXBeeResponse);
 	// pass pointer array to subclass
