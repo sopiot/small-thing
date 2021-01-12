@@ -320,8 +320,8 @@ typedef char *(*StringValue)(char *, int);
 
 #define SOP_DEBUG
 #ifdef SOP_DEBUG
-#define SOPLOG(...) SafeSerial.print(__VA_ARGS__)
-#define SOPLOGLN(...) SafeSerial.println(__VA_ARGS__)
+#define SOPLOG(...) Serial.print(__VA_ARGS__)
+#define SOPLOGLN(...) Serial.println(__VA_ARGS__)
 #else
 #define SOPLOG(...)
 #define SOPLOGLN(...)

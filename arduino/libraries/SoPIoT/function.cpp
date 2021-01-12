@@ -7,6 +7,7 @@ void Function::Initialize() {
   function_ = NULL;
   nmaxArguments_ = 0;
   ncurArguments_ = 0;
+  nMaxFunctionAttributes_ = 0;
   ncurFunctionAttributes_ = 0;
   ptsArguments_ = NULL;
   function_classifier_ = UNDEFINED;
@@ -18,18 +19,40 @@ Function::Function(const char *name, VoidFunction func, int nArguments,
   set_name(name);
   set_function(func);
   nmaxArguments_ = nArguments;
-  if (nArguments > 0)
+  if (nArguments > 0) {
     ptsArguments_ = (Argument **)malloc(sizeof(Argument *) * nArguments);
-  if (nFunctionAttributes > 0)
+    MEM_ALLOC_CHECK(ptsArguments_);
+  }
+
+  nMaxFunctionAttributes_ = nFunctionAttributes;
+  if (nFunctionAttributes > 0) {
     ptsFunctionAttributes_ =
         (Attribute **)malloc(sizeof(Attribute *) * nFunctionAttributes);
+      MEM_ALLOC_CHECK(ptsFunctionAttributes_);
+  }
 }
 
 Function::~Function() {
   if (name_) free(name_);
+
+  for (int i = 0; i < nmaxArguments_; i++) {
+    if (ptsArguments_[i] != NULL) {
+      free(ptsArguments_[i]);
+      ptsArguments_[i] = NULL;
+    }
+  }
+  free(ptsArguments_);
+
+  for (int i = 0; i < nMaxFunctionAttributes_; i++) {
+    if (ptsFunctionAttributes_[i] != NULL) {
+      free(ptsFunctionAttributes_[i]);
+      ptsFunctionAttributes_[i] = NULL;
+    }
+  }
+  free(ptsFunctionAttributes_);
 }
 
-void Function::Add_argument(Argument &argument) {
+void Function::AddArgument(Argument &argument) {
   // set order of argument to distinguish when receiving function request from
   // middleware
   if (ncurArguments_ >= nmaxArguments_) {
@@ -40,7 +63,7 @@ void Function::Add_argument(Argument &argument) {
   argument.set_order(ncurArguments_++);
 }
 
-void Function::Add_functionattribute(Attribute &function_attribute) {
+void Function::AddFunctionAttribute(Attribute &function_attribute) {
   ptsFunctionAttributes_[ncurFunctionAttributes_] = &function_attribute;
   ncurFunctionAttributes_++;
 }
@@ -104,7 +127,6 @@ uint16_t Function::id_2004() { return id_2004_; }
 CapType Function::function_classifier() { return function_classifier_; }
 
 void Function::GetInformation(char *buffer) {
-  //	int index = 0;
   int i, len;
   switch (function_classifier_) {
     case INTEGER:
@@ -115,9 +137,8 @@ void Function::GetInformation(char *buffer) {
       snprintf(buffer, MAX_BUFFER_SIZE, "%s\t%d", name_, ncurArguments_);
       break;
     default:  // error!
-      SOPLOGLN(F("Function::GetInformation -> ERROR!"));
+      SOPLOGLN(F("[ERROR] Function::GetInformation -> ERROR!"));
       break;
   }
-  SOPLOGLN(F("Get Function Information!"));
-  // CPDBG(index);
+  // SOPLOGLN(F("Get Function Information!"));
 }

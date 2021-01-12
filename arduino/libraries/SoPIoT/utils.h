@@ -15,5 +15,5 @@ int GetDoubleArgumentByName(void *pData, const char *name, double *pdbOut);
 // void brokerConnLost(void *context, char *cause);
 
 // dtostrf works differently on ARM board.
-char *dtostrf_arm(double val, signed char width, unsigned char prec,
+char *safe_dtostrf(double val, signed char width, unsigned char prec,
                   char *sout);

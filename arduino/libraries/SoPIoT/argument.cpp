@@ -67,11 +67,17 @@ void Argument::set_name(const char *name) {
 void Argument::set_min(const int min) {
   if (arg_type_ == INTEGER || arg_type_ == STRING || arg_type_ == BOOL) {
     int *i_min = (int *)malloc(sizeof(int));
+    MEM_ALLOC_CHECK(i_min);
     *i_min = min;
+
+    if (min_) free(min_));
     min_ = (void *)i_min;
   } else if (arg_type_ == DOUBLE) {
     double *d_min = (double *)malloc(sizeof(double));
+    MEM_ALLOC_CHECK(d_min);
     *d_min = (double)min;
+
+    if (min_) free(min_));
     min_ = (void *)d_min;
   }
 }
@@ -79,21 +85,30 @@ void Argument::set_min(const int min) {
 void Argument::set_min(const double min) {
   if (arg_type_ == DOUBLE) {
     double *d_min = (double *)malloc(sizeof(double));
+    MEM_ALLOC_CHECK(d_min);
     *d_min = min;
+
+    if (min_) free(min_));
     min_ = (void *)d_min;
   } else {
-    SOPLOGLN(F("the type of minimum argument is not suitable\n"));
+    SOPLOGLN(F("[ERROR] the type of min is not suitable"));
   }
 }
 
 void Argument::set_max(const int max) {
   if (arg_type_ == INTEGER || arg_type_ == STRING || arg_type_ == BOOL) {
     int *i_max = (int *)malloc(sizeof(int));
+    MEM_ALLOC_CHECK(i_max);
     *i_max = max;
+
+    if (max_) free(max_));
     max_ = (void *)i_max;
   } else if (arg_type_ == DOUBLE) {
     double *d_max = (double *)malloc(sizeof(double));
+    MEM_ALLOC_CHECK(d_max);
     *d_max = (double)max;
+
+    if (max_) free(max_));
     max_ = (void *)d_max;
   }
 }
@@ -101,10 +116,13 @@ void Argument::set_max(const int max) {
 void Argument::set_max(const double max) {
   if (arg_type_ == DOUBLE) {
     double *d_max = (double *)malloc(sizeof(double));
+    MEM_ALLOC_CHECK(d_max);
     *d_max = max;
+
+    if (max_) free(max_));
     max_ = (void *)d_max;
   } else {
-    SOPLOGLN(F("the type of maximum argument is not suitable\n"));
+    SOPLOGLN(F("[ERROR] the type of max is not suitable"));
   }
 }
 
@@ -159,8 +177,8 @@ void Argument::GetInformation(char *buffer) {
     case DOUBLE: {
       char min_temp[10];
       char max_temp[10];
-      dtostrf_arm(*(double *)min_, 8, 2, min_temp);
-      dtostrf_arm(*(double *)max_, 8, 2, max_temp);
+      safe_dtostrf(*(double *)min_, 8, 2, min_temp);
+      safe_dtostrf(*(double *)max_, 8, 2, max_temp);
       snprintf(buffer, MAX_BUFFER_SIZE, "%s\tdouble\t%s\t%s\t", name_, min_temp,
                max_temp);
       break;
