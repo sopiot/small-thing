@@ -1,68 +1,85 @@
-#include <thing_client.h>
+//----------------------------------------
+// Libraries
+//----------------------------------------
 
-#define MOVEMENT_PIN 7
+// SoPIoT Thing library
+#include <thing.h>
 
-#define CLIENT_NAME "Move_1"
-#define MOVEMENT_VALUE "movement"
+// Module libraries
 
-#if BOARD_SERIAL_IS_ONE
-ThingClient Client1(CLIENT_NAME, 3, Serial1);
-#else
-ThingClient Client1(CLIENT_NAME, 3, Serial);
-#endif
+//----------------------------------------
+// Modules
+//----------------------------------------
 
-int MovementSensor()
-{
-    return (int)digitalRead(MOVEMENT_PIN);
+// Modules
+
+// Pins
+static const int kmovement1Pin = 7;
+
+//----------------------------------------
+// Thing
+//----------------------------------------
+
+// Thing declaration
+// Thing(class_name, alive_cycle, serial);
+// Thing(class_name, serial);
+Thing movement_thing((const char *)"Move_1", 60, SafeSerial);
+
+//----------------------------------------
+// Values
+// an SenseXXX overwrites a Value XXX
+//----------------------------------------
+
+// Value variables
+
+// Getter functions of each Value variable
+int SenseMovementStatus(){ return (int)digitalRead(kmovement1Pin); }
+
+// Value declarations
+// Value(name, sense_function, min, max, period(ms));
+Value movement_value((const char *)"movement_value", SenseMovementStatus, 0, 2,
+                    10000);
+
+//----------------------------------------
+// Functions
+// an ActuateXXX actuates a Function XXX
+//----------------------------------------
+
+
+// Function declarations
+// Function(name, actuate_function, arguments_num, function_attributes_num);
+
+//----------------------------------------
+// Setup
+//----------------------------------------
+
+void SetupSerial() { SafeSerial.begin(9600); }
+
+void SetupModules() {
+  // Setup Pin mode
+  pinMode(kmovement1Pin, INPUT);
+
+  // Attach modules
 }
 
-void init_pin()
-{
-#if BOARD_SERIAL_IS_ONE
-    Serial1.begin(115200);
-#else
-    Serial.begin(115200);
-#endif
+void SetupThing() {
+  // Setup Functions
 
-    pinMode(MOVEMENT_PIN, INPUT);
-    pinMode(LED_BUILTIN, OUTPUT);
+  // Setup Values
+  movement_thing.Add(movement_value);
 
-    for (int i = 0; i < 4; i++)
-    {
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(100);
-        digitalWrite(LED_BUILTIN, LOW);
-        delay(100);
-    }
+  // Setup Thing
+  movement_thing.Setup();
 }
 
-void init_sensor()
-{
+//----------------------------------------
+// Main
+//----------------------------------------
+
+void setup() {
+  SetupSerial();
+  SetupModules();
+  SetupThing();
 }
 
-void init_Value()
-{
-    static Value movementValue(MOVEMENT_VALUE, MovementSensor, 0, 30000, 3000);
-
-    Client1.Add(movementValue);
-}
-
-void init_Function()
-{
-}
-
-void setup()
-{
-    init_pin();
-    init_sensor();
-
-    init_Value();
-    init_Function();
-
-    Client1.Setting();
-}
-
-void loop()
-{
-    Client1.DoLoop();
-}
+void loop() { movement_thing.Loop(); }

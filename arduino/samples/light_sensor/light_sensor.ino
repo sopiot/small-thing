@@ -3,7 +3,7 @@
 //----------------------------------------
 
 // SoPIoT Thing library
-#include <sopiot.h>
+#include <thing.h>
 // Module libraries
 
 //----------------------------------------
@@ -51,7 +51,7 @@ Value brightness((const char *)"brightness", SenseBrightness, 0, 2048, 1000);
 // Setup
 //----------------------------------------
 
-void SetupSerial() { SafeSerial.begin(115200); }
+void SetupSerial() { SafeSerial.begin(9600); }
 
 void SetupModules() {
   // Setup Pin mode
