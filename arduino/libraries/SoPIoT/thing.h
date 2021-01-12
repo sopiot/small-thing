@@ -1,5 +1,5 @@
-#ifndef SMALL_THING_SOPIOT_H_
-#define SMALL_THING_SOPIOT_H_
+#ifndef SMALL_THING_THING_H_
+#define SMALL_THING_THING_H_
 
 #include "common.h"
 #include "value.h"
@@ -196,4 +196,4 @@ class Thing {
   uint16_t last_ping_;
 };
 
-#endif  // SMALL_THING_SOPIOT_H_
+#endif  // SMALL_THING_THING_H_

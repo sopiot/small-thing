@@ -221,8 +221,8 @@ void Value::GetInformation(char *buffer) {
     case DOUBLE: {
       char min_temp[10];
       char max_temp[10];
-      dtostrf_arm(*(double *)min_, 8, 2, min_temp);
-      dtostrf_arm(*(double *)max_, 8, 2, max_temp);
+      safe_dtostrf(*(double *)min_, 8, 2, min_temp);
+      safe_dtostrf(*(double *)max_, 8, 2, max_temp);
       snprintf(buffer, MAX_BUFFER_SIZE, "%s\tdouble\t%s\t%s", name_, min_temp,
                max_temp);
       break;
@@ -252,7 +252,7 @@ bool Value::capVal2str(char *buffer) {
     case DOUBLE: {
       char val_temp[10];
       dval = ((DoubleValue)value_)();
-      dtostrf_arm(dval, 8, 2, val_temp);
+      safe_dtostrf(dval, 8, 2, val_temp);
       len = snprintf(buffer, MAX_BUFFER_SIZE,
                      "{\"type\" : \"double\" , \"value\" : %s}", val_temp);
       val = &dval;

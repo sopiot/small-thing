@@ -52,19 +52,19 @@ void Attribute::GetInformation(char *buffer) {
   switch (attribute_type_) {
     case BOOL: {
       char min_temp[10];
-      dtostrf_arm(real_value_, 8, 2, min_temp);
+      safe_dtostrf(real_value_, 8, 2, min_temp);
       snprintf(buffer, MAX_BUFFER_SIZE, "%s\tbool\t%s", name_, min_temp);
       break;
     }
     case INTEGER: {
       char min_temp[10];
-      dtostrf_arm(real_value_, 8, 2, min_temp);
+      safe_dtostrf(real_value_, 8, 2, min_temp);
       snprintf(buffer, MAX_BUFFER_SIZE, "%s\tint\t%s", name_, min_temp);
       break;
     }
     case DOUBLE: {
       char min_temp[10];
-      dtostrf_arm(real_value_, 8, 2, min_temp);
+      safe_dtostrf(real_value_, 8, 2, min_temp);
       snprintf(buffer, MAX_BUFFER_SIZE, "%s\tdouble\t%s", name_, min_temp);
       break;
     }

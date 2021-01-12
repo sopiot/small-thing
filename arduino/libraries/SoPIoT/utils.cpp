@@ -50,7 +50,7 @@ void *GetArgumentByName(void *pData, const char *name) {
 
 // dtostrf works differently on ARM board.
 // TODO(thsvkd): fix it with the best practice
-char *dtostrf_arm(double val, signed char width, unsigned char prec,
+char *safe_dtostrf(double val, signed char width, unsigned char prec,
                   char *sout) {
 #if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM) || \
     defined(ARDUINO_ARCH_MBED)
