@@ -70,14 +70,14 @@ void Argument::set_min(const int min) {
     MEM_ALLOC_CHECK(i_min);
     *i_min = min;
 
-    if (min_) free(min_));
+    if (min_) free(min_);
     min_ = (void *)i_min;
   } else if (arg_type_ == DOUBLE) {
     double *d_min = (double *)malloc(sizeof(double));
     MEM_ALLOC_CHECK(d_min);
     *d_min = (double)min;
 
-    if (min_) free(min_));
+    if (min_) free(min_);
     min_ = (void *)d_min;
   }
 }
@@ -88,7 +88,7 @@ void Argument::set_min(const double min) {
     MEM_ALLOC_CHECK(d_min);
     *d_min = min;
 
-    if (min_) free(min_));
+    if (min_) free(min_);
     min_ = (void *)d_min;
   } else {
     SOPLOGLN(F("[ERROR] the type of min is not suitable"));
@@ -101,14 +101,14 @@ void Argument::set_max(const int max) {
     MEM_ALLOC_CHECK(i_max);
     *i_max = max;
 
-    if (max_) free(max_));
+    if (max_) free(max_);
     max_ = (void *)i_max;
   } else if (arg_type_ == DOUBLE) {
     double *d_max = (double *)malloc(sizeof(double));
     MEM_ALLOC_CHECK(d_max);
     *d_max = (double)max;
 
-    if (max_) free(max_));
+    if (max_) free(max_);
     max_ = (void *)d_max;
   }
 }
@@ -119,7 +119,7 @@ void Argument::set_max(const double max) {
     MEM_ALLOC_CHECK(d_max);
     *d_max = max;
 
-    if (max_) free(max_));
+    if (max_) free(max_);
     max_ = (void *)d_max;
   } else {
     SOPLOGLN(F("[ERROR] the type of max is not suitable"));
