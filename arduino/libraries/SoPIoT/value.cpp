@@ -125,35 +125,20 @@ bool Value::value_changed(void *cur) {
       if (strncmp((char *)cur, (char *)prev_, *(int *)max_) != 0) {
         changed = true;
       }
-
-      if (prev_ != NULL) {
-        free(prev_);
-      }
       memcpy(prev_, cur, *(int *)max_);
-
       break;
     case INTEGER:
     case BOOL:
       if (*(int *)prev_ != *(int *)cur) {
         changed = true;
       }
-
-      if (prev_ != NULL) {
-        free(prev_);
-      }
       memcpy(prev_, cur, sizeof(int));
-
       break;
     case DOUBLE:
       if (DOUBLE_IS_APPROX_EQUAL(*(double *)prev_, *(double *)cur)) {
         changed = true;
       }
-
-      if (prev_ != NULL) {
-        free(prev_);
-      }
       memcpy(prev_, cur, sizeof(double));
-
       break;
     default:
       // error!
