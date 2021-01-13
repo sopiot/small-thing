@@ -55,32 +55,28 @@ Value valve2_status((const char *)"valve2_status", SenseValve2Status, 0, 2,
 // an ActuateXXX actuates a Function XXX
 //----------------------------------------
 
-void ActuateValve1Open(void *pData)
-{
+void ActuateValve1Open(void *pData) {
     servo1.write(0);
     delay(300);
-    valve1_status = valve_open;
+    valve1_status_ = valve_open;
 }
 
-void ActuateValve1Close(void *pData)
-{
+void ActuateValve1Close(void *pData) {
     servo1.write(90);
     delay(300);
-    valve1_status = valve_close;
+    valve1_status_ = valve_close;
 }
 
-void ActuateValve2Open(void *pData)
-{
+void ActuateValve2Open(void *pData) {
     servo2.write(0);
     delay(300);
-    valve2_status = valve_open;
+    valve2_status_ = valve_open;
 }
 
-void ActuateValve2Close(void *pData)
-{
+void ActuateValve2Close(void *pData) {
     servo2.write(90);
     delay(300);
-    valve2_status = valve_close;
+    valve2_status_ = valve_close;
 }
 
 // Function declarations
@@ -104,10 +100,10 @@ void SetupModules() {
 
 void SetupThing() {
     //Setup Functions
-    valve_act1_thing.Add(ActuateValve1Open);
-    valve_act1_thing.Add(ActuateValve1Close);
-    valve_act1_thing.Add(ActuateValve2Open);
-    valve_act1_thing.Add(ActuateValve2Close);
+    valve_act1_thing.Add(valve1_open);
+    valve_act1_thing.Add(valve1_close);
+    valve_act1_thing.Add(valve2_open);
+    valve_act1_thing.Add(valve2_close);
 
     //Setup Values
     valve_act1_thing.Add(valve1_status);
