@@ -220,14 +220,14 @@ void Thing::Loop(int pub_period) {
     // Value to Json String
     changed = values_[i]->capVal2str(buffer);
 
-    // if (time_passed && changed)
-    // {
-    // 	publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
-    // }
-    if (time_passed) {
-      publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
-      sendAliveMessageNoCond();
+    if (time_passed && changed)
+    {
+    	publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
     }
+    // if (time_passed) {
+    //   publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
+    //   sendAliveMessageNoCond();
+    // }
   }
 
   delay(pub_period);
