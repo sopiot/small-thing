@@ -8,6 +8,10 @@
 // Module libraries
 #include <Servo.h>
 
+// Pins
+static const int kServo1Pin = 9;
+static const int kServo2Pin = 10;
+
 //--------------------------------------------------
 // Modules
 // -------------------------------------------------
@@ -15,10 +19,6 @@
 // Modules
 Servo servo1;
 Servo servo2; 
-
-// Pins
-static const int kServo1Pin = 9;
-static const int kServo2Pin = 10;
 
 enum valve_status {
     valve_close = 0,

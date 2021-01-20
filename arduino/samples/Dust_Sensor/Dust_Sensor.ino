@@ -1,106 +1,100 @@
-#include <thing_client.h>
-#include <pm2008_i2c.h>
+//----------------------------------------
+// Libraries
+//----------------------------------------
 
-#define CLIENT_NAME "Sensor_Dust_1"
+// SoPIoT Thing library
+#include <thing.h>
 
-#define DUST_VALUE "dust"
+// Module libraries
 
-#if BOARD_SERIAL_IS_ONE
-ThingClient Client(CLIENT_NAME, 3, Serial1);
-#else
-ThingClient Client(CLIENT_NAME, 3, Serial);
-#endif
+// Pins
+static const int kTriggerPin = 3;
+static const int kReceivePin = 4;
 
-PM2008_I2C pm2008_i2c;
+//----------------------------------------
+// Modules
+//----------------------------------------
 
-int DustSensor()
+// Modules
+
+//----------------------------------------
+// Thing
+//----------------------------------------
+
+// Thing declaration
+// Thing(class_name, alive_cycle, serial);
+// Thing(class_name, serial);
+Thing distance_thing((const char *)"Distance", 60, SafeSerial);
+
+//----------------------------------------
+// Values
+// an SenseXXX overwrites a Value XXX
+//----------------------------------------
+
+// Value variables
+int distance_status_;
+
+// Getter functions of each Value variable
+int SenseDistanceStatus()
 {
-    uint8_t ret = pm2008_i2c.read();
-    int pm10 = 0;
-    int pm2p0 = 0;
-    int pm1p0 = 0;
-    if (ret == 0)
-    {
-        // Serial.print("PM 1.0 (GRIMM) : ");
-        // pm1p0 = pm2008_i2c.pm1p0_grimm;
-        // Serial.println(pm2008_i2c.pm1p0_grimm);
-        // Serial.print("PM 2.5 (GRIMM) : : ");
-        // pm2p0 = pm2008_i2c.pm2p5_grimm;
-        // Serial.println(pm2008_i2c.pm2p5_grimm);
-        // Serial.print("PM 10 (GRIMM) : : ");
-        pm10 = pm2008_i2c.pm10_grimm;
-        // Serial.println(pm2008_i2c.pm10_grimm);
-        // Serial.print("PM 1.0 (TSI) : ");
-        // Serial.println(pm2008_i2c.pm1p0_tsi);
-        // Serial.print("PM 2.5 (TSI) : : ");
-        // Serial.println(pm2008_i2c.pm2p5_tsi);
-        // Serial.print("PM 10 (TSI) : : ");
-        // Serial.println(pm2008_i2c.pm10_tsi);
-        // Serial.print("Number of 0.3 um : ");
-        // Serial.println(pm2008_i2c.number_of_0p3_um);
-        // Serial.print("Number of 0.5 um : ");
-        // Serial.println(pm2008_i2c.number_of_0p5_um);
-        // Serial.print("Number of 1 um : ");
-        // Serial.println(pm2008_i2c.number_of_1_um);
-        // Serial.print("Number of 2.5 um : ");
-        // Serial.println(pm2008_i2c.number_of_2p5_um);
-        // Serial.print("Number of 5 um : ");
-        // Serial.println(pm2008_i2c.number_of_5_um);
-        // Serial.print("Number of 10 um : ");
-        // Serial.println(pm2008_i2c.number_of_10_um);
-    }
+    long Duration = 0;
+    digitalWrite(kTriggerPin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(kTriggerPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(kTriggerPin, LOW);
 
-    return pm10;
+    Duration = pulseIn(kReceivePin, HIGH);
+    int Distance_mm = ((Duration / 2.9) / 2);
+
+    return Distance_mm;
 }
 
-void init_pin()
-{
-#if BOARD_SERIAL_IS_ONE
-    Serial1.begin(115200);
-#else
-    Serial.begin(115200);
-#endif
+// Value declarations
+// Value(name, sense_function, min, max, period(ms));
+Value distance_status((const char *)"distance_status", SenseDistanceStatus, 0, 2,
+                    3000);
 
-    pinMode(LED_BUILTIN, OUTPUT);
+//----------------------------------------
+// Functions
+// an ActuateXXX actuates a Function XXX
+//----------------------------------------
 
-    for (int i = 0; i < 4; i++)
-    {
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(100);
-        digitalWrite(LED_BUILTIN, LOW);
-        delay(100);
-    }
+// Function declarations
+// Function(name, actuate_function, arguments_num, function_attributes_num);
+
+//----------------------------------------
+// Setup
+//----------------------------------------
+
+void SetupSerial() { SafeSerial.begin(9600); }
+
+void SetupModules() {
+  // Setup Pin mode
+  pinMode(kTriggerPin, OUTPUT);
+  pinMode(kReceivePin, INPUT);
+
+  // Attach modules
 }
 
-void init_sensor()
-{
-    pm2008_i2c.begin();
-    pm2008_i2c.command();
+void SetupThing() {
+  // Setup Functions
+
+  // Setup Values
+  distance_thing.Add(distance_status);
+
+  // Setup Thing
+  distance_thing.Setup();
 }
 
-void init_Value()
-{
-    static Value dustValue(DUST_VALUE, DustSensor, 0, 30000, 3000);
+//----------------------------------------
+// Main
+//----------------------------------------
 
-    Client.Add(dustValue);
+void setup() {
+  SetupSerial();
+  SetupModules();
+  SetupThing();
 }
 
-void init_Function()
-{
-}
-
-void setup()
-{
-    init_pin();
-    init_sensor();
-
-    init_Value();
-    init_Function();
-
-    Client.Setting();
-}
-
-void loop()
-{
-    Client.DoLoop();
-}
+void loop() { distance_thing.Loop(); }

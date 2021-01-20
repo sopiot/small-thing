@@ -8,17 +8,17 @@
 // Module libraries
 #include <Servo.h>
 
+// Pins
+static const int kServo1Pin = 9;
+static const int kMoisturePin = A1;
+//#define kMoisturePin A1
+
 //--------------------------------------------------
 // Modules
 // -------------------------------------------------
 
 // Modules
 Servo servo1;
-
-// Pins
-static const int kServo1Pin = 9;
-static const int kMoisturePin = A1;
-//#define kMoisturePin A1
 
 enum valve_status
 {

@@ -7,14 +7,14 @@
 
 // Module libraries
 
-//----------------------------------------
-// Modules
-//----------------------------------------
-
-// Modules
-
 // Pins
 static const int kmovement1Pin = 7;
+
+//----------------------------------------
+// Modules
+//----------------------------------------
+
+// Modules
 
 //----------------------------------------
 // Thing
@@ -23,7 +23,7 @@ static const int kmovement1Pin = 7;
 // Thing declaration
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
-Thing movement_thing((const char *)"Move_1", 60, SafeSerial);
+Thing movement_thing((const char *)"Move" , 60, SafeSerial);
 
 //----------------------------------------
 // Values

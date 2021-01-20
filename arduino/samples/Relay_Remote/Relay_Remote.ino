@@ -1,87 +1,95 @@
-#include <thing_client.h>
+//----------------------------------------
+// Libraries
+//----------------------------------------
 
-#define RELAY_PIN 5
+// SoPIoT Thing library
+#include <thing.h>
 
-char CLIENT_NAME[16] = "R2";
+// Module libraries
 
-#define RELAY_ON_FUNCTION "relay_on_switch"
-#define RELAY_OFF_FUNCTION "relay_off_switch"
+// Pins
+static const int kRelayPin = 5;
 
-#define ARG_RELAY_SWITCH "arg_relay_switch"
+//----------------------------------------
+// Modules
+//----------------------------------------
 
-#if BOARD_SERIAL_IS_ONE
-ThingClient Client1(CLIENT_NAME, 3, Serial1);
-#else
-ThingClient Client1(CLIENT_NAME, 3, Serial);
-#endif
+// Modules
 
-int Switch = HIGH;
+//----------------------------------------
+// Thing
+//----------------------------------------
 
-//void relay_on_function(void *pData)
-//{
-//    digitalWrite(RELAY_PIN, HIGH);
-//}
-//
-//void relay_off_function(void *pData)
-//{
-//    digitalWrite(RELAY_PIN, LOW);
-//}
+// Thing declaration
+// Thing(class_name, alive_cycle, serial);
+// Thing(class_name, serial);
+Thing relayremote_thing((const char *)"RelayRemote", 60, SafeSerial);
 
-void relay_function(void *pData)
+//----------------------------------------
+// Values
+// an SenseXXX overwrites a Value XXX
+//----------------------------------------
+
+// Value variables
+int switch_status_ = LOW;
+
+// Getter functions of each Value variable
+int SenseSwitchStatus() { return switch_status_; }
+
+// Value declarations
+// Value(name, sense_function, min, max, period(ms));
+Value switch_status((const char *)"switch_status", SenseSwitchStatus, 0, 2,
+                    3000);
+
+//----------------------------------------
+// Functions
+// an ActuateXXX actuates a Function XXX
+//----------------------------------------
+
+void RelayFunction(void *pData)
 {
     Serial.print("Switch = ");
-    Serial.println(Switch);
-    digitalWrite(RELAY_PIN, Switch);
-    Switch = !Switch;
+    Serial.println(switch_status_);
+    switch_status_ = !switch_status_;
+    digitalWrite(kRelayPin, switch_status_);
 }
 
-void init_pin()
-{
-#if BOARD_SERIAL_IS_ONE
-    Serial1.begin(115200);
-#else
-    Serial.begin(115200);
-#endif
+// Function declarations
+// Function(name, actuate_function, arguments_num, function_attributes_num);
+Function relay_onoff((const char *)"relay_onoff", RelayFunction, 0, 0);
 
-    pinMode(RELAY_PIN, OUTPUT);
-    pinMode(LED_BUILTIN, OUTPUT);
+//----------------------------------------
+// Setup
+//----------------------------------------
 
-    for (int i = 0; i < 4; i++)
-    {
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(100);
-        digitalWrite(LED_BUILTIN, LOW);
-        delay(100);
-    }
+void SetupSerial() { SafeSerial.begin(9600); }
+
+void SetupModules() {
+  // Setup Pin mode
+  pinMode(kRelayPin, OUTPUT);
+
+  // Attach modules
 }
 
-void init_sensor()
-{
+void SetupThing() {
+  // Setup Functions
+  relayremote_thing.Add(relay_onoff);
+
+  // Setup Values
+  relayremote_thing.Add(switch_status);
+
+  // Setup Thing
+  relayremote_thing.Setup();
 }
 
-void init_Value()
-{
+//----------------------------------------
+// Main
+//----------------------------------------
+
+void setup() {
+  SetupSerial();
+  SetupModules();
+  SetupThing();
 }
 
-void init_Function()
-{
-    static Function Relay_Function("Rfunc", relay_function, 0, 0);
-
-    Client1.Add(Relay_Function);
-}
-
-void setup()
-{
-    init_pin();
-    init_sensor();
-
-    init_Value();
-    init_Function();
-
-    Client1.Setting();
-}
-
-void loop()
-{
-    Client1.DoLoop();
-}
+void loop() { relayremote_thing.Loop(); }

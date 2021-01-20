@@ -1,80 +1,100 @@
-#include <thing_client.h>
+//----------------------------------------
+// Libraries
+//----------------------------------------
 
-#define DISTANCE_TRIGGER_PIN 3
-#define DISTANCE_RECEIVE_PIN 4
+// SoPIoT Thing library
+#include <thing.h>
 
-#define CLIENT_NAME "Distance_2"
+// Module libraries
 
-#define DISTANCE_VALUE "distance"
+// Pins
+static const int kTriggerPin = 3;
+static const int kReceivePin = 4;
 
-#if BOARD_SERIAL_IS_ONE
-ThingClient Client1(CLIENT_NAME, 3, Serial1);
-#else
-ThingClient Client1(CLIENT_NAME, 3, Serial);
-#endif
+//----------------------------------------
+// Modules
+//----------------------------------------
 
-int DistanceSensor()
+// Modules
+
+//----------------------------------------
+// Thing
+//----------------------------------------
+
+// Thing declaration
+// Thing(class_name, alive_cycle, serial);
+// Thing(class_name, serial);
+Thing distance_thing((const char *)"Distance", 60, SafeSerial);
+
+//----------------------------------------
+// Values
+// an SenseXXX overwrites a Value XXX
+//----------------------------------------
+
+// Value variables
+int distance_status_;
+
+// Getter functions of each Value variable
+int SenseDistanceStatus()
 {
     long Duration = 0;
-    digitalWrite(DISTANCE_TRIGGER_PIN, LOW);
+    digitalWrite(kTriggerPin, LOW);
     delayMicroseconds(2);
-    digitalWrite(DISTANCE_TRIGGER_PIN, HIGH);
+    digitalWrite(kTriggerPin, HIGH);
     delayMicroseconds(10);
-    digitalWrite(DISTANCE_TRIGGER_PIN, LOW);
+    digitalWrite(kTriggerPin, LOW);
 
-    Duration = pulseIn(DISTANCE_RECEIVE_PIN, HIGH);
+    Duration = pulseIn(kReceivePin, HIGH);
     int Distance_mm = ((Duration / 2.9) / 2);
 
     return Distance_mm;
 }
 
-void init_pin()
-{
-#if BOARD_SERIAL_IS_ONE
-    Serial1.begin(115200);
-#else
-    Serial.begin(115200);
-#endif
+// Value declarations
+// Value(name, sense_function, min, max, period(ms));
+Value distance_status((const char *)"distance_status", SenseDistanceStatus, 0, 2,
+                    3000);
 
-    pinMode(DISTANCE_TRIGGER_PIN, OUTPUT);
-    pinMode(DISTANCE_RECEIVE_PIN, INPUT);
+//----------------------------------------
+// Functions
+// an ActuateXXX actuates a Function XXX
+//----------------------------------------
 
-    for (int i = 0; i < 4; i++)
-    {
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(100);
-        digitalWrite(LED_BUILTIN, LOW);
-        delay(100);
-    }
+// Function declarations
+// Function(name, actuate_function, arguments_num, function_attributes_num);
+
+//----------------------------------------
+// Setup
+//----------------------------------------
+
+void SetupSerial() { SafeSerial.begin(9600); }
+
+void SetupModules() {
+  // Setup Pin mode
+  pinMode(kTriggerPin, OUTPUT);
+  pinMode(kReceivePin, INPUT);
+
+  // Attach modules
 }
 
-void init_sensor()
-{
+void SetupThing() {
+  // Setup Functions
+
+  // Setup Values
+  distance_thing.Add(distance_status);
+
+  // Setup Thing
+  distance_thing.Setup();
 }
 
-void init_Value()
-{
-    static Value distanceValue(DISTANCE_VALUE, DistanceSensor, 0, 30000, 3000);
+//----------------------------------------
+// Main
+//----------------------------------------
 
-    Client1.Add(distanceValue);
+void setup() {
+  SetupSerial();
+  SetupModules();
+  SetupThing();
 }
 
-void init_Function()
-{
-}
-
-void setup()
-{
-    init_pin();
-    init_sensor();
-
-    init_Value();
-    init_Function();
-
-    Client1.Setting();
-}
-
-void loop()
-{
-    Client1.DoLoop();
-}
+void loop() { distance_thing.Loop(); }

@@ -1,83 +1,97 @@
-#include <thing_client.h>
+//----------------------------------------
+// Libraries
+//----------------------------------------
+
+// SoPIoT Thing library
+#include <thing.h>
+
+// Module libraries
 #include <DHT.h>
 
-#define DHT_TYPE DHT11
-//#define DHT_TYPE DHT22
+// Pins
+static const int khumidPin = 2;
 
-#define HUMID_PIN 2
+//----------------------------------------
+// Modules
+//----------------------------------------
 
-#define CLIENT_NAME "Humid_3"
+// Modules
 #define HUMID_VALUE "humid"
 #define TEMP_VALUE "temp"
+#define DHT_TYPE DHT11
+//#define DHT_TYPE DHT22
+DHT dht(khumidPin, DHT_TYPE);
 
-#if BOARD_SERIAL_IS_ONE
-ThingClient Client1(CLIENT_NAME, 3, Serial1);
-#else
-ThingClient Client1(CLIENT_NAME, 3, Serial);
-#endif
+//----------------------------------------
+// Thing
+//----------------------------------------
 
-DHT dht(HUMID_PIN, DHT_TYPE);
+// Thing declaration
+// Thing(class_name, alive_cycle, serial);
+// Thing(class_name, serial);
+Thing humid_thing((const char *)"Humid", 60, SafeSerial);
 
-int HumidSensor()
-{
-    return (int)dht.readHumidity();
+//----------------------------------------
+// Values
+// an SenseXXX overwrites a Value XXX
+//----------------------------------------
+
+// Value variables
+int humid_status_;
+int temp_status_;
+
+// Getter functions of each Value variable
+int SenseHumidStatus(){ return humid_status_ = (int)dht.readHumidity(); }
+int SenseTempStatus(){ return temp_status_ = (int)dht.readTemperature(); }
+
+// Value declarations
+// Value(name, sense_function, min, max, period(ms));
+Value humid_status((const char *)"humid_status", SenseHumidStatus, 0, 2,
+                    3000);
+Value temp_status((const char *)"temp_status", SenseTempStatus, 0, 2,
+                    3000);
+
+//----------------------------------------
+// Functions
+// an ActuateXXX actuates a Function XXX
+//----------------------------------------
+
+// Function declarations
+// Function(name, actuate_function, arguments_num, function_attributes_num);
+
+//----------------------------------------
+// Setup
+//----------------------------------------
+
+void SetupSerial() { SafeSerial.begin(9600); }
+
+void SetupModules() {
+  // Setup Pin mode
+  pinMode(khumidPin, INPUT);
+
+  // Attach modules
+  dht.begin();
 }
 
-int TempSensor()
-{
-    return (int)dht.readTemperature();
+void SetupThing() {
+  // Setup Functions
+
+  // Setup Values
+  humid_thing.Add(humid_status);
+  humid_thing.Add(temp_status);
+
+  // Setup Thing
+  humid_thing.Setup();
 }
 
-void init_pin()
-{
-#if BOARD_SERIAL_IS_ONE
-    Serial1.begin(115200);
-#else
-    Serial.begin(115200);
-#endif
+//----------------------------------------
+// Main
+//----------------------------------------
 
-    pinMode(HUMID_PIN, INPUT);
-    pinMode(LED_BUILTIN, OUTPUT);
-
-    for (int i = 0; i < 4; i++)
-    {
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(100);
-        digitalWrite(LED_BUILTIN, LOW);
-        delay(100);
-    }
+void setup() {
+  SetupSerial();
+  SetupModules();
+  SetupThing();
 }
 
-void init_sensor()
-{
-    dht.begin();
-}
-
-void init_Value()
-{
-    static Value humidValue(HUMID_VALUE, HumidSensor, 0, 200, 3000);
-    static Value tempValue(TEMP_VALUE, TempSensor, 0, 30000, 3000);
-
-    Client1.Add(humidValue);
-    Client1.Add(tempValue);
-}
-
-void init_Function()
-{
-}
-
-void setup()
-{
-    init_pin();
-    init_sensor();
-
-    init_Value();
-    init_Function();
-
-    Client1.Setting();
-}
-
-void loop()
-{
-    Client1.DoLoop();
-}
+void loop() { humid_thing.Loop(); }
