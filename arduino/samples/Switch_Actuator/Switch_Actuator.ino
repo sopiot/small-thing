@@ -8,6 +8,10 @@
 // Module libraries
 #include <Servo.h>
 
+// Pins
+static const int kServo1Pin = 8;
+static const int kServo2Pin = 9;
+
 //----------------------------------------
 // Modules
 //----------------------------------------
@@ -16,10 +20,6 @@
 Servo servo1;
 Servo servo2;
 
-// Pins
-static const int kServo1Pin = 8;
-static const int kServo2Pin = 9;
-
 //----------------------------------------
 // Thing
 //----------------------------------------
@@ -27,7 +27,7 @@ static const int kServo2Pin = 9;
 // Thing declaration
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
-Thing Actuate_thing((const char *)"Actuate_1", 60, SafeSerial);
+Thing Actuate_thing((const char *)"Actuate", 60, SafeSerial);
 
 //----------------------------------------
 // Values
@@ -64,6 +64,7 @@ void ActuateSwitchOn(void *pData)
     servo2.write(mid - turn);
     delay(300);
     servo2.write(mid);
+    delay(300);
     switch_status_ = 1;
     servo2.detach();
 }
@@ -82,6 +83,7 @@ void ActuateSwitchOff(void *pData)
     servo1.write(mid - turn);
     delay(300);
     servo1.write(mid);
+    delay(300);
     switch_status_ = 0;
     servo1.detach();
 }

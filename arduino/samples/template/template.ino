@@ -8,15 +8,15 @@
 // Module libraries
 #include <Servo.h>
 
+// Pins
+static const int kServo1Pin = 8;
+
 //----------------------------------------
 // Modules
 //----------------------------------------
 
 // Modules
 Servo servo1;
-
-// Pins
-static const int kServo1Pin = 8;
 
 //----------------------------------------
 // Thing
