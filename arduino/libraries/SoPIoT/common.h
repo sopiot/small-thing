@@ -257,13 +257,13 @@ struct msg_devregack : public message_header {
 #define DOUBLE_IS_APPROX_EQUAL(a, b) (fabs((a) - (b)) <= DOUBLE_EPSILON)
 
 // QoS 2
-#define QOS 2
-#define USE_QOS2
+// #define QOS 2
+// #define USE_QOS2
 
 #ifdef USE_QOS2
 #define QOS_FLAG FLAG_QOS_2
 #else
-#define QOS_FLAG 0
+#define QOS_FLAG FLAG_QOS_0
 #endif
 
 // Author: thsvkd
