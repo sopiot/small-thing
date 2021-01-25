@@ -357,8 +357,10 @@ void Thing::SendAliveMessage() {
 
   diff_time = curr_time - last_sent_time;
 
+  // send aliveness twice in a period.
+  // assume two QoS-0 packet in a row should not be missed!
   // millis() goes back to zero after approximately 50 days
-  if ((diff_time < 0) || (diff_time >= alive_cycle_ * 1000)) {
+  if ((diff_time < 0) || (diff_time >= alive_cycle_ / 2 * 1000)) {
     SOPLOG(F("[DEBUG] Send Alive in "));
     SOPLOGLN(diff_time);
     
