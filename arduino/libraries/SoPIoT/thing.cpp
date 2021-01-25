@@ -390,6 +390,7 @@ void Thing::ReadZbeeTimeout(int timeout) {
       SOPLOGLN(F("[SUCCESS] Zigbee Receive Success... parsing the stream"));
 
       ParseStream((char *)zbee_rx_.getData(), zbee_rx_.getDataLength());
+      timeout = 50; // exit instantly after receiving a packet from gateway
     } else if (zbee_.getResponse().isError()) {
       SOPLOGLN(F("[ERROR] ZigBee Response Error."));
     } else {
