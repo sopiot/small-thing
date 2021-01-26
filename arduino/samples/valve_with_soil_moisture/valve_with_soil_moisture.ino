@@ -20,12 +20,6 @@ static const int kMoisturePin = A1;
 // Modules
 Servo servo1;
 
-enum valve_status
-{
-  valve_close = 0,
-  valve_open = 1
-};
-
 //----------------------------------------
 // Thing
 //----------------------------------------
@@ -40,25 +34,26 @@ Thing valve_with_soil_moisture((const char *)"SmartPotVSoil", 60, SafeSerial);
 //----------------------------------------
 
 // Value variables
-int valve1_status_;
-float pot1_moisture_;
+int valve1_status_ = 0;
+int pot1_moisture_ = 0;
 
 // Getter functions of each Value variable
 int SenseValve1Status() { return valve1_status_; }
-double SensePot1Moisture() {
-  double moisture_vol;
+
+int SensePot1Moisture() {
+  int moisture_vol;
   for (int i = 0; i < 10; i++) {
     moisture_vol = moisture_vol + analogRead(kMoisturePin);
     delay(1);
   }
-  moisture_vol = moisture_vol / 10.0;
-  return moisture_vol;
+  pot1_moisture_ = moisture_vol / 10;
+  return pot1_moisture_;
 }
 
 Value valve1_status((const char *)"valve1_status", SenseValve1Status, 0, 2,
                     10000);
-Value pot1_moisture((const char *)"pot1_moisture", SensePot1Moisture, 0, 3000,
-                    10000);
+Value pot1_moisture((const char *)"pot1_moisture", SensePot1Moisture, 0, 2000,
+                    3000);
 
 //----------------------------------------
 // Functions
@@ -68,13 +63,13 @@ Value pot1_moisture((const char *)"pot1_moisture", SensePot1Moisture, 0, 3000,
 void ActuateValve1Open(void *pData) {
   servo1.write(0);
   delay(300);
-  valve1_status_ = valve_open;
+  valve1_status_ = 1;
 }
 
 void ActuateValve1Close(void *pData) {
   servo1.write(90);
   delay(300);
-  valve1_status_ = valve_close;
+  valve1_status_ = 0;
 }
 
 Function valve1_open((const char *)"valve1_open", ActuateValve1Open, 0, 0);

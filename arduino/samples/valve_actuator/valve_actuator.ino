@@ -20,11 +20,6 @@ static const int kServo2Pin = 10;
 Servo servo1;
 Servo servo2; 
 
-enum valve_status {
-    valve_close = 0,
-    valve_open = 1
-};
-
 //----------------------------------------
 // Thing
 //----------------------------------------
@@ -58,25 +53,25 @@ Value valve2_status((const char *)"valve2_status", SenseValve2Status, 0, 2,
 void ActuateValve1Open(void *pData) {
     servo1.write(0);
     delay(300);
-    valve1_status_ = valve_open;
+    valve1_status_ = 1;
 }
 
 void ActuateValve1Close(void *pData) {
     servo1.write(90);
     delay(300);
-    valve1_status_ = valve_close;
+    valve1_status_ = 0;
 }
 
 void ActuateValve2Open(void *pData) {
     servo2.write(0);
     delay(300);
-    valve2_status_ = valve_open;
+    valve2_status_ = 1;
 }
 
 void ActuateValve2Close(void *pData) {
     servo2.write(90);
     delay(300);
-    valve2_status_ = valve_close;
+    valve2_status_ = 0;
 }
 
 // Function declarations
