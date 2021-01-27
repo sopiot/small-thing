@@ -26,7 +26,8 @@ unsigned int kMusic1[] = {9160,4488,588,520,588,528,588,568,552,528,588,528,584,
 */
 // Remote Controller Signals (USB power charging)
 unsigned int kOnSignal[] = {9024,4460,584,564,548,520,584,532,576,568,544,528,580,528,588,528,576,532,584,1636,576,1644,576,1644,580,1632,588,528,576,1616,604,1632,588,1640,576,1640,576,1632,588,524,576,572,540,572,540,532,576,532,584,520,588,528,580,528,588,1632,584,1676,540,1632,584,1640,576,1632,588,1632,588,40848,9024,2216,584};
-unsigned int kOffSignal[] = {9080,4396,644,528,576,536,576,532,576,532,576,532,576,536,576,540,580,500,604,1572,644,1620,604,1576,640,1576,640,540,568,1584,644,1612,596,1584,640,532,576,1576,640,544,560,520,596,528,580,540,568,508,608,504,596,1584,632,512,604,1536,676,1584,632,1584,640,1572,640,1576,640,1588,628,40796,9080,2152,640}; 
+//unsigned int kOffSignal[] = {9080,4396,644,528,576,536,576,532,576,532,576,532,576,536,576,540,580,500,604,1572,644,1620,604,1576,640,1576,640,540,568,1584,644,1612,596,1584,640,532,576,1576,640,544,560,520,596,528,580,540,568,508,608,504,596,1584,632,512,604,1536,676,1584,632,1584,640,1572,640,1576,640,1588,628,40796,9080,2152,640}; 
+unsigned int kOffSignal[] = {9008,4456,580,528,576,536,576,524,584,532,576,532,576,532,576,532,568,540,580,1628,580,1640,576,1648,576,1636,576,532,576,1644,580,1632,588,1632,584,524,584,1636,572,532,572,528,576,540,568,568,540,540,568,528,588,1632,576,496,624,1636,572,1640,576,1644,576,1632,584,1636,576,1636,584,40816,9012,2216,576};
 unsigned int kRedSignal[] = {9052,4396,640,536,588,520,580,536,572,508,604,532,576,540,576,504,600,512,600,1572,640,1576,640,1624,596,1580,644,532,576,1576,640,1576,640,1580,644,528,580,540,572,1580,640,536,576,544,576,532,576,532,576,540,568,1584,640,1576,652,504,604,1576,648,1572,640,1584,632,1584,640,1572,640,40828,9084,2156,640};
 unsigned int kGreenSignal[] = {9052,4396,640,544,576,532,576,528,580,508,608,528,580,508,596,540,576,532,576,1576,648,1576,640,1584,632,1584,644,512,604,1576,640,1576,648,1576,580,1632,588,568,540,1632,584,532,588,520,584,524,584,536,588,556,552,560,548,1628,588,568,540,1636,584,1636,584,1640,580,1632,588,1632,588,40892,9032,2216,584};
 unsigned int kBlueSignal[] = {9076,4396,644,508,604,512,596,508,604,504,604,472,640,512,596,512,604,504,604,1572,644,1584,644,1572,640,1576,640,512,604,1576,640,1584,632,1584,632,520,592,1576,640,1588,628,516,604,512,596,508,608,508,596,512,604,1576,640,516,596,512,604,1576,640,1584,632,1620,600,1580,632,1584,640,40796,9020,2216,588};
@@ -79,6 +80,7 @@ void SendIR(unsigned int *signal, int length) {
       mark(signal[i]);
   }
   digitalWrite(kTransmitterPin, LOW);
+  delay(100);
 }
 
 //----------------------------------------
@@ -95,48 +97,61 @@ Thing ir_led((const char *)"SmartPotLEDIR", 60, SafeSerial);
 //----------------------------------------
 
 // Value variables
-int brightness_;
-int led_status_;
+// int brightness_;
+// int led_status_;
 
-int SenseBrightness() { 
-  return analogRead(kLight1Pin); 
+// int SenseBrightness() { 
+//   return analogRead(kLightPin); 
+// }
+
+// int SenseLEDStatus() { 
+//   return led_status_; 
+// }
+double brightness_=0.0;
+double led_status_=0.0;
+
+double SenseBrightness() { 
+  double brightness_double = analogRead(kLightPin) / 1024.0 * 100.0;
+  return brightness_double; 
 }
 
-int SenseLEDStatus() { 
+double SenseLEDStatus() { 
   return led_status_; 
 }
 
-Value brightness((const char *)"brightness", SenseBrightness, 0, 2048, 3000);
-Value led_status((const char *)"led_status", SenseLEDStatus, 0, 2, 3000);
+Value brightness((const char *)"brightness", SenseBrightness, 0.0, 2048.0, 3000);
+Value led_status((const char *)"led_status", SenseLEDStatus, 0.0, 2.0, 3000);
 
 //----------------------------------------
 // Functions
 // an ActuateXXX actuates a Function XXX
 //----------------------------------------
 
-void ActuateLEDOnOff(void *pData) {
-  if(led_status_ == 0){
-    Send_IR(kOnSignal, sizeof(kOnSignal) / sizeof(kOnSignal[0]));
-  }else{
-    Send_IR(kOffSignal, sizeof(kOffSignal) / sizeof(kOffSignal[0]));
-  }
+void ActuateLEDOn(void *pData) {
+  SendIR(kOnSignal, sizeof(kOnSignal) / sizeof(kOnSignal[0]));
+  led_status_ = 1.0;
 }
 
+void ActuateLEDOff(void *pData) {
+  SendIR(kOffSignal, sizeof(kOffSignal) / sizeof(kOffSignal[0]));
+  led_status_ = 0.0;
+}
 void ActuateRed(void *pData) {
-  Send_IR(kRedSignal, sizeof(kRedSignal) / sizeof(kRedSignal[0]));
+  SendIR(kRedSignal, sizeof(kRedSignal) / sizeof(kRedSignal[0]));
 }
 
 void ActuateGreen(void *pData) {
-  Send_IR(kGreenSignal, sizeof(kGreenSignal) / sizeof(kGreenSignal[0]));
+  SendIR(kGreenSignal, sizeof(kGreenSignal) / sizeof(kGreenSignal[0]));
 }
 
 void ActuateStrobe(void *pData) {
-  Send_IR(kStrobeSignal, sizeof(kStrobeSignal) / sizeof(kStrobeSignal[0]));
+  SendIR(kStrobeSignal, sizeof(kStrobeSignal) / sizeof(kStrobeSignal[0]));
 }
 
 // Function declarations
 // Function(name, actuate_function, arguments_num, function_attributes_num);
-Function led_onoff((const char *)"led_on", ActuateLEDOnOff, 0, 0);
+Function led_on((const char *)"led_on", ActuateLEDOn, 0, 0);
+Function led_off((const char *)"led_off", ActuateLEDOff, 0, 0);
 Function color_red((const char *)"color_red", ActuateRed, 0, 0);
 Function color_green((const char *)"color_green", ActuateGreen, 0, 0);
 Function strobe_mode((const char *)"strobe_mode", ActuateStrobe, 0, 0);
@@ -155,7 +170,8 @@ void SetupModules() {
 
 void SetupThing() {
   // Setup Functions
-  ir_led.Add(led_onoff);
+  ir_led.Add(led_on);
+  ir_led.Add(led_off);
   ir_led.Add(color_red);
   ir_led.Add(color_green);
   ir_led.Add(strobe_mode);
