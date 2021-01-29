@@ -364,7 +364,7 @@ void Thing::SendAliveMessage() {
     SOPLOG(F("[DEBUG] Send Alive in "));
     SOPLOGLN(diff_time);
     
-    publish(0, id_2003_, pszDummy, strlen(pszDummy));
+    publish(QOS_FLAG, id_2003_, pszDummy, strlen(pszDummy));
     last_sent_time = curr_time;
   }
   return;
@@ -373,7 +373,7 @@ void Thing::SendAliveMessage() {
 void Thing::sendAliveMessageNoCond() {
   char *pszDummy = (char *)"AliveNoCond";
 
-  publish(0, id_2003_, pszDummy, strlen(pszDummy));
+  publish(QOS_FLAG, id_2003_, pszDummy, strlen(pszDummy));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -532,6 +532,7 @@ void Thing::dispatch() {
       devregackHandler((msg_devregack *)message_buffer_);
       break;
 
+#ifdef USE_QOS2
     case PUBREC:
       pubrecHandler((msg_pubqos2 *)message_buffer_);
       break;
@@ -543,6 +544,7 @@ void Thing::dispatch() {
     case PUBCOMP:
       pubcompHandler((msg_pubqos2 *)message_buffer_);
       break;
+#endif
 
     default:
       SOPLOGLN(F("[ERROR] Not supported type."));
@@ -672,12 +674,14 @@ void Thing::publishHandler(const msg_publish *msg) {
     SOPLOG(F("Registered: "));
     SOPLOGLN(registered_);
 
+#ifdef USE_QOS2
     in_process_ = true;
     if (msg->flags & FLAG_QOS_2) {
       ret = ACCEPTED;
       pubrec(msg);
     }
     in_process_ = false;
+#endif
 
     return;
   }
@@ -699,10 +703,12 @@ void Thing::publishHandler(const msg_publish *msg) {
       in_process_ = true;
       strncpy(save_buffer, msg->data,
               MAX_BUFFER_SIZE - sizeof(msg_publish));  // safe cpy
+#ifdef USE_QOS2
       if (msg->flags & FLAG_QOS_2) {
         ret = ACCEPTED;
         pubrec(msg);
       }
+#endif
       in_process_ = false;
 
       t_name = strtok_r(save_buffer, ":", &pTokPtr);
