@@ -22,12 +22,15 @@ Thing water_pump((const char *)"SmartPotPump", 60, SafeSerial);
 //----------------------------------------
 
 // Value variables
-double pump_status_ = 0.0;
+//double pump_status_ = 0.0;
+int pump_status_ = 0;
+
 
 // Getter functions of each Value variable
-double SensePumpStatus() { return pump_status_; }
+//double SensePumpStatus() { return pump_status_; }
+int SensePumpStatus() { return pump_status_; }
 
-Value pump_status((const char *)"pump_status", SensePumpStatus, 0.0, 2.0, 3000);
+Value pump_status((const char *)"pump_status", SensePumpStatus, 0, 2, 3000);
 
 //----------------------------------------
 // Functions
@@ -37,15 +40,15 @@ Value pump_status((const char *)"pump_status", SensePumpStatus, 0.0, 2.0, 3000);
 void ActuatePumpOn(void *pData) {
   SOPLOGLN(F("[MOTOR DEBUG]: Actuate_Pump_Open!!"));
   digitalWrite(kRelayPin,HIGH); 
-  delay(500);
-  pump_status_ = 1.0;
+  //delay(500);
+  pump_status_ = 1;
 }
 
 void ActuatePumpOff(void *pData) {
   SOPLOGLN(F("[MOTOR DEBUG]: Actuate_Pump_Open!!"));
   digitalWrite(kRelayPin,LOW); 
-  delay(500);
-  pump_status_ = 0.0;
+  //delay(500);
+  pump_status_ = 0;
 }
 
 Function pump_on((const char *)"pump_on", ActuatePumpOn, 0, 0);

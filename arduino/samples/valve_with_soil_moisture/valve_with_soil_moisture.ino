@@ -34,29 +34,38 @@ Thing valve_with_soil_moisture((const char *)"SmartPotVSoil", 60, SafeSerial);
 //----------------------------------------
 
 // Value variables
-// int valve1_status_ = 0;
-// int pot1_moisture_ = 0;
-double valve1_status_ = 0.0;
-double pot1_moisture_ = 0.0;
+int valve1_status_ = 0;
+int pot1_moisture_ = 0;
+// double valve1_status_ = 0.0;
+// double pot1_moisture_ = 0.0;
 
 // Getter functions of each Value variable
-//int SenseValve1Status() { return valve1_status_; }
-double SenseValve1Status() { return valve1_status_; }
+int SenseValve1Status() { return valve1_status_; }
+// double SenseValve1Status() { return valve1_status_; }
 
-//int SensePot1Moisture() {
-double SensePot1Moisture() {
-  double moisture_vol = 0.0;
+int SensePot1Moisture() {
+  int moisture_vol = 0.0;
   for (int i = 0; i < 10; i++) {
-    moisture_vol = moisture_vol + analogRead(kMoisturePin)/1024.0 * 100.0;
+    moisture_vol = moisture_vol + analogRead(kMoisturePin) * 100 / 1024;
     delay(1);
   }
-  pot1_moisture_ = moisture_vol / 10.0;
+  pot1_moisture_ = moisture_vol / 10;
   return pot1_moisture_;
 }
 
-Value valve1_status((const char *)"valve1_status", SenseValve1Status, 0.0, 2.0,
+// double SensePot1Moisture() {
+//   double moisture_vol = 0.0;
+//   for (int i = 0; i < 10; i++) {
+//     moisture_vol = moisture_vol + analogRead(kMoisturePin)/1024.0 * 100.0;
+//     delay(1);
+//   }
+//   pot1_moisture_ = moisture_vol / 10.0;
+//   return pot1_moisture_;
+// }
+
+Value valve1_status((const char *)"valve1_status", SenseValve1Status, 0, 2,
                     1000);
-Value pot1_moisture((const char *)"pot1_moisture", SensePot1Moisture, 0.0, 2000.0,
+Value pot1_moisture((const char *)"pot1_moisture", SensePot1Moisture, 0, 2000,
                     3000);
 
 //----------------------------------------
@@ -68,16 +77,16 @@ void ActuateValve1Open(void *pData) {
   SOPLOGLN(F("[MOTOR DEBUG]: Actuate_Valve1_Open!!"));
   servo1.write(0);
   SOPLOGLN(F("[MOTOR DEBUG]: Actuate_Valve1_Open finished!!"));
-  delay(300);
-  valve1_status_ = 1.0;
+  //delay(300);
+  valve1_status_ = 1;
 }
 
 void ActuateValve1Close(void *pData) {
   SOPLOGLN(F("[MOTOR DEBUG]: Actuate_Valve1_Close!!"));
   servo1.write(90);
   SOPLOGLN(F("[MOTOR DEBUG]: Actuate_Valve1_Close finished!!"));
-  delay(300);
-  valve1_status_ = 0.0;
+  //delay(300);
+  valve1_status_ = 0;
 }
 
 Function valve1_open((const char *)"valve1_open", ActuateValve1Open, 0, 0);

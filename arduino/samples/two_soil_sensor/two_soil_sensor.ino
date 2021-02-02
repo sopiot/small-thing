@@ -23,32 +23,55 @@ Thing two_soil_sensor((const char *)"SmartPotTwoSoil", 60, SafeSerial);
 //----------------------------------------
 
 // Value variables
-double pot1_moisture_ = 0.0;
-double pot2_moisture_ = 0.0;
+// double pot1_moisture_ = 0.0;
+// double pot2_moisture_ = 0.0;
+// int pot1_moisture_ = 0;
+// int pot2_moisture_ = 0;
 
 // Getter functions of each Value variable
-double SensePot1Moisture() {
-  double moisture_vol = 0.0;
-  for (int i = 0; i < 10; i++) {
-    moisture_vol = moisture_vol + analogRead(kMoisture1Pin)/1024.0 * 100.0;
-    delay(1);
-  }
-  pot1_moisture_ = moisture_vol / 10.0;
-  return pot1_moisture_;
+// double SensePot1Moisture() {
+//   double moisture_vol = 0.0;
+//   for (int i = 0; i < 10; i++) {
+//     moisture_vol = moisture_vol + analogRead(kMoisture1Pin)/1024.0 * 100.0;
+//     delay(1);
+//   }
+//   pot1_moisture_ = moisture_vol / 10.0;
+//   return pot1_moisture_;
+// }
+
+// double SensePot2Moisture() {
+//   double moisture_vol = 0.0;
+//   for (int i = 0; i < 10; i++) {
+//     moisture_vol = moisture_vol + analogRead(kMoisture2Pin)/1024.0 * 100.0;
+//     delay(1);
+//   }
+//   pot2_moisture_ = moisture_vol / 10.0;
+//   return pot2_moisture_;
+// }
+
+int SensePot1Moisture() {
+  // int moisture_vol = 0;
+  // for (int i = 0; i < 10; i++) {
+  //   moisture_vol = moisture_vol + analogRead(kMoisture1Pin) * 100 / 1024;
+  //   delay(1);
+  // }
+  // pot1_moisture_ = moisture_vol / 10.0;
+  return analogRead(kMoisture1Pin) * 100 / 1024;
 }
 
-double SensePot2Moisture() {
-  double moisture_vol = 0.0;
-  for (int i = 0; i < 10; i++) {
-    moisture_vol = moisture_vol + analogRead(kMoisture2Pin)/1024.0 * 100.0;
-    delay(1);
-  }
-  pot2_moisture_ = moisture_vol / 10.0;
-  return pot2_moisture_;
+int SensePot2Moisture() {
+  // double moisture_vol = 0.0;
+  // for (int i = 0; i < 10; i++) {
+  //   moisture_vol = moisture_vol + analogRead(kMoisture2Pin)/1024.0 * 100.0;
+  //   delay(1);
+  // }
+  // pot2_moisture_ = moisture_vol / 10.0;
+  // return pot2_moisture_;
+  return analogRead(kMoisture2Pin) * 100 / 1024;
 }
 
-Value pot1_moisture((const char *)"pot1_moisture", SensePot1Moisture, 0.0, 2000.0, 3000);
-Value pot2_moisture((const char *)"pot2_moisture", SensePot2Moisture, 0.0, 2000.0, 3000);
+Value pot1_moisture((const char *)"pot1_moisture", SensePot1Moisture, 0, 2000, 3000);
+Value pot2_moisture((const char *)"pot2_moisture", SensePot2Moisture, 0, 2000, 3000);
 
 void SetupSerial() { SafeSerial.begin(9600); }
 

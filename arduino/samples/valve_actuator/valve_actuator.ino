@@ -33,20 +33,20 @@ Thing valve_act1_thing((const char *)"SmartPotValve", 60, SafeSerial);
 //----------------------------------------
 
 // Value variables
-// int valve1_status_;
-// int valve2_status_;
-double valve1_status_;
-double valve2_status_;
+int valve1_status_;
+int valve2_status_;
+// double valve1_status_;
+// double valve2_status_;
 
 // Getter functions of each Value variable
-// int SenseValve1Status() { return valve1_status_; }
-// int SenseValve2Status() { return valve2_status_; }
-double SenseValve1Status() { return valve1_status_; }
-double SenseValve2Status() { return valve2_status_; }
+int SenseValve1Status() { return valve1_status_; }
+int SenseValve2Status() { return valve2_status_; }
+// double SenseValve1Status() { return valve1_status_; }
+// double SenseValve2Status() { return valve2_status_; }
 
-Value valve1_status((const char *)"valve1_status", SenseValve1Status, 0.0, 2.0, 
+Value valve1_status((const char *)"valve1_status", SenseValve1Status, 0, 2, 
                     3000);
-Value valve2_status((const char *)"valve2_status", SenseValve2Status, 0.0, 2.0, 
+Value valve2_status((const char *)"valve2_status", SenseValve2Status, 0, 2, 
                     3000);
 
 //----------------------------------------
@@ -56,26 +56,26 @@ Value valve2_status((const char *)"valve2_status", SenseValve2Status, 0.0, 2.0,
 
 void ActuateValve1Open(void *pData) {
     servo1.write(0);
-    delay(300);
-    valve1_status_ = 1.0;
+    //delay(300);
+    valve1_status_ = 1;
 }
 
 void ActuateValve1Close(void *pData) {
     servo1.write(90);
-    delay(300);
-    valve1_status_ = 0.0;
+    //delay(300);
+    valve1_status_ = 0;
 }
 
 void ActuateValve2Open(void *pData) {
     servo2.write(0);
-    delay(300);
+    //delay(300);
     valve2_status_ = 1;
 }
 
 void ActuateValve2Close(void *pData) {
     servo2.write(90);
-    delay(300);
-    valve2_status_ = 0.0;
+    //delay(300);
+    valve2_status_ = 0;
 }
 
 // Function declarations

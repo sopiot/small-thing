@@ -80,7 +80,7 @@ void SendIR(unsigned int *signal, int length) {
       mark(signal[i]);
   }
   digitalWrite(kTransmitterPin, LOW);
-  delay(100);
+  //delay(100);
 }
 
 //----------------------------------------
@@ -97,30 +97,30 @@ Thing ir_led((const char *)"SmartPotLEDIR", 60, SafeSerial);
 //----------------------------------------
 
 // Value variables
-// int brightness_;
-// int led_status_;
+int brightness_;
+int led_status_;
 
-// int SenseBrightness() { 
-//   return analogRead(kLightPin); 
-// }
-
-// int SenseLEDStatus() { 
-//   return led_status_; 
-// }
-double brightness_=0.0;
-double led_status_=0.0;
-
-double SenseBrightness() { 
-  double brightness_double = analogRead(kLightPin) / 1024.0 * 100.0;
-  return brightness_double; 
+int SenseBrightness() { 
+  return analogRead(kLightPin) * 100 / 1024; 
 }
 
-double SenseLEDStatus() { 
+int SenseLEDStatus() { 
   return led_status_; 
 }
+// double brightness_=0.0;
+// double led_status_=0.0;
 
-Value brightness((const char *)"brightness", SenseBrightness, 0.0, 2048.0, 3000);
-Value led_status((const char *)"led_status", SenseLEDStatus, 0.0, 2.0, 3000);
+// double SenseBrightness() { 
+//   double brightness_double = analogRead(kLightPin) / 1024.0 * 100.0;
+//   return brightness_double; 
+// }
+
+// double SenseLEDStatus() { 
+//   return led_status_; 
+// }
+
+Value brightness((const char *)"brightness", SenseBrightness, 0, 2048, 3000);
+Value led_status((const char *)"led_status", SenseLEDStatus, 0, 2, 3000);
 
 //----------------------------------------
 // Functions
@@ -128,23 +128,28 @@ Value led_status((const char *)"led_status", SenseLEDStatus, 0.0, 2.0, 3000);
 //----------------------------------------
 
 void ActuateLEDOn(void *pData) {
+  SOPLOGLN(F("[LED DEBUG]: LED On"));
   SendIR(kOnSignal, sizeof(kOnSignal) / sizeof(kOnSignal[0]));
-  led_status_ = 1.0;
+  led_status_ = 1;
 }
 
 void ActuateLEDOff(void *pData) {
+  SOPLOGLN(F("[LED DEBUG]: LED Off"));
   SendIR(kOffSignal, sizeof(kOffSignal) / sizeof(kOffSignal[0]));
-  led_status_ = 0.0;
+  led_status_ = 0;
 }
 void ActuateRed(void *pData) {
+  SOPLOGLN(F("[LED DEBUG]: LED Red"));
   SendIR(kRedSignal, sizeof(kRedSignal) / sizeof(kRedSignal[0]));
 }
 
 void ActuateGreen(void *pData) {
+  SOPLOGLN(F("[LED DEBUG]: LED Green"));
   SendIR(kGreenSignal, sizeof(kGreenSignal) / sizeof(kGreenSignal[0]));
 }
 
 void ActuateStrobe(void *pData) {
+  SOPLOGLN(F("[LED DEBUG]: LED Strobe"));
   SendIR(kStrobeSignal, sizeof(kStrobeSignal) / sizeof(kStrobeSignal[0]));
 }
 
