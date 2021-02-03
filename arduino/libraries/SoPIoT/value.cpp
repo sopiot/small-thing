@@ -118,8 +118,25 @@ void Value::set_value(BoolValue value) {
   value_classifier_ = BOOL;
 }
 
+// [INT DEBUG] -------------------------------
+#include <stdio.h>
+#include <stdarg.h>
+void _printf(const char *s, ...) {
+  va_list args;
+  va_start(args, s);
+  int n = vsnprintf(NULL, 0, s, args);
+  char *str = new char[n + 1];
+  vsprintf(str, s, args);
+  va_end(args);
+  Serial.print(str);
+  delete[] str;
+}
+//--------------------------------------------
+
 bool Value::value_changed(void *cur) {
   bool changed = false;
+  char int_debug_print[50];
+  SOPLOGLN(F("[INT DEBUG] value_changed"));
   switch (value_classifier_) {
     case STRING:
       if (strncmp((char *)cur, (char *)prev_, *(int *)max_) != 0) {
@@ -128,17 +145,33 @@ bool Value::value_changed(void *cur) {
       memcpy(prev_, cur, *(int *)max_);
       break;
     case INTEGER:
+      SOPLOGLN(F("[INT DEBUG] INT CHANGED CHECK"));
     case BOOL:
+      // sprintf(int_debug_print, "[INT DEBUG] prev = %d, cur = %d", *(int
+      // *)prev_, *(int *)cur );
+      _printf("[INT DEBUG] prev = %d, cur = %d", *(int *)prev_, *(int *)cur);
       if (*(int *)prev_ != *(int *)cur) {
         changed = true;
       }
       memcpy(prev_, cur, sizeof(int));
+      //[INT DEBUG]-----------------------------------
+      if (changed == true) {
+        SOPLOGLN(F("[INT DEBUG] Changed == true"));
+      } else {
+        SOPLOGLN(F("[INT DEBUG] Changed == false"));
+      }
+      //-----------------------------------------------
       break;
     case DOUBLE:
-      if (DOUBLE_IS_APPROX_EQUAL(*(double *)prev_, *(double *)cur)) {
+      if (!DOUBLE_IS_APPROX_EQUAL(*(double *)prev_, *(double *)cur)) {
         changed = true;
       }
       memcpy(prev_, cur, sizeof(double));
+      if (changed == true) {
+        SOPLOGLN(F("[DOUBLE DEBUG] Changed == true"));
+      } else {
+        SOPLOGLN(F("[INT DEBUG] Changed == false"));
+      }
       break;
     default:
       // error!
@@ -226,8 +259,10 @@ bool Value::capVal2str(char *buffer) {
   char dval;
   char *ptsval;
   int len = 0;
+  SOPLOGLN(F("[INT DEBUG] Inside capVal2str"));
   switch (value_classifier_) {
     case INTEGER: {
+      SOPLOGLN(F("[INT DEBUG] capVal2str, integer"));
       nval = ((IntegerValue)value_)();
       len = snprintf(buffer, MAX_BUFFER_SIZE,
                      "{\"type\" : \"int\" , \"value\" : %d}", nval);
