@@ -135,7 +135,6 @@ void _printf(const char *s, ...) {
 
 bool Value::value_changed(void *cur) {
   bool changed = false;
-  char int_debug_print[50];
   SOPLOGLN(F("[INT DEBUG] value_changed"));
   switch (value_classifier_) {
     case STRING:
@@ -147,31 +146,18 @@ bool Value::value_changed(void *cur) {
     case INTEGER:
       SOPLOGLN(F("[INT DEBUG] INT CHANGED CHECK"));
     case BOOL:
-      // sprintf(int_debug_print, "[INT DEBUG] prev = %d, cur = %d", *(int
-      // *)prev_, *(int *)cur );
-      _printf("[INT DEBUG] prev = %d, cur = %d", *(int *)prev_, *(int *)cur);
       if (*(int *)prev_ != *(int *)cur) {
         changed = true;
       }
-      memcpy(prev_, cur, sizeof(int));
-      //[INT DEBUG]-----------------------------------
-      if (changed == true) {
-        SOPLOGLN(F("[INT DEBUG] Changed == true"));
-      } else {
-        SOPLOGLN(F("[INT DEBUG] Changed == false"));
-      }
-      //-----------------------------------------------
+      //memcpy(prev_, cur, sizeof(int));
+      *(int *)prev_ = *(int *)cur;
       break;
     case DOUBLE:
       if (!DOUBLE_IS_APPROX_EQUAL(*(double *)prev_, *(double *)cur)) {
         changed = true;
       }
-      memcpy(prev_, cur, sizeof(double));
-      if (changed == true) {
-        SOPLOGLN(F("[DOUBLE DEBUG] Changed == true"));
-      } else {
-        SOPLOGLN(F("[INT DEBUG] Changed == false"));
-      }
+      //memcpy(prev_, cur, sizeof(double));
+      *(double *)prev_ = *(double *)cur;
       break;
     default:
       // error!
@@ -259,13 +245,11 @@ bool Value::capVal2str(char *buffer) {
   char dval;
   char *ptsval;
   int len = 0;
-  SOPLOGLN(F("[INT DEBUG] Inside capVal2str"));
   switch (value_classifier_) {
     case INTEGER: {
-      SOPLOGLN(F("[INT DEBUG] capVal2str, integer"));
       nval = ((IntegerValue)value_)();
       len = snprintf(buffer, MAX_BUFFER_SIZE,
-                     "{\"type\" : \"int\" , \"value\" : %d}", nval);
+                     "{\"type\" : \"int\" , \"value\" : %d}\n", nval);
       val = &nval;
       break;
     }
@@ -274,14 +258,14 @@ bool Value::capVal2str(char *buffer) {
       dval = ((DoubleValue)value_)();
       safe_dtostrf(dval, 8, 2, val_temp);
       len = snprintf(buffer, MAX_BUFFER_SIZE,
-                     "{\"type\" : \"double\" , \"value\" : %s}", val_temp);
+                     "{\"type\" : \"double\" , \"value\" : %s}\n", val_temp);
       val = &dval;
       break;
     }
     case BOOL: {
       nval = ((BoolValue)value_)();
       len = snprintf(buffer, MAX_BUFFER_SIZE,
-                     "{\"type\" : \"bool\" , \"value\" : %d}", nval);
+                     "{\"type\" : \"bool\" , \"value\" : %d}\n", nval);
       val = &nval;
       break;
     }
@@ -292,7 +276,7 @@ bool Value::capVal2str(char *buffer) {
         return false;
       }
       len = snprintf(buffer, MAX_BUFFER_SIZE,
-                     "{\"type\" : \"string\" , \"value\" : \"%s\"}", ptsval);
+                     "{\"type\" : \"string\" , \"value\" : \"%s\"}\n", ptsval);
       val = ptsval;
       break;
     }

@@ -14,7 +14,7 @@ static const int kRelayPin = 3;
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
 // class name should not include '_'
-Thing water_pump((const char *)"SmartPotPump", 60, SafeSerial);
+Thing water_pump((const char *) "SmartPotPump", 60, SafeSerial);
 
 //----------------------------------------
 // Values
@@ -22,15 +22,12 @@ Thing water_pump((const char *)"SmartPotPump", 60, SafeSerial);
 //----------------------------------------
 
 // Value variables
-//double pump_status_ = 0.0;
 int pump_status_ = 0;
 
-
 // Getter functions of each Value variable
-//double SensePumpStatus() { return pump_status_; }
 int SensePumpStatus() { return pump_status_; }
 
-Value pump_status((const char *)"pump_status", SensePumpStatus, 0, 2, 3000);
+Value pump_status((const char *) "pump_status", SensePumpStatus, 0, 2, 1000);
 
 //----------------------------------------
 // Functions
@@ -38,21 +35,17 @@ Value pump_status((const char *)"pump_status", SensePumpStatus, 0, 2, 3000);
 //----------------------------------------
 
 void ActuatePumpOn(void *pData) {
-  SOPLOGLN(F("[MOTOR DEBUG]: Actuate_Pump_Open!!"));
-  digitalWrite(kRelayPin,HIGH); 
-  //delay(500);
+  digitalWrite(kRelayPin, HIGH);
   pump_status_ = 1;
 }
 
 void ActuatePumpOff(void *pData) {
-  SOPLOGLN(F("[MOTOR DEBUG]: Actuate_Pump_Open!!"));
-  digitalWrite(kRelayPin,LOW); 
-  //delay(500);
+  digitalWrite(kRelayPin, LOW);
   pump_status_ = 0;
 }
 
-Function pump_on((const char *)"pump_on", ActuatePumpOn, 0, 0);
-Function pump_off((const char *)"pump_off", ActuatePumpOff, 0, 0);
+Function pump_on((const char *) "pump_on", ActuatePumpOn, 0, 0);
+Function pump_off((const char *) "pump_off", ActuatePumpOff, 0, 0);
 
 void SetupSerial() { SafeSerial.begin(9600); }
 
@@ -62,14 +55,14 @@ void SetupModules() {
 }
 
 void SetupThing() {
-  //Setup Functions
+  // Setup Functions
   water_pump.Add(pump_on);
   water_pump.Add(pump_off);
 
-  //Setup Values
+  // Setup Values
   water_pump.Add(pump_status);
 
-  //Setup Thing
+  // Setup Thing
   water_pump.Setup();
 }
 

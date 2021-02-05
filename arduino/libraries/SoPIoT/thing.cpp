@@ -214,17 +214,13 @@ void Thing::Loop(int pub_period) {
   // Wait for Response about Value
   SendAliveMessage();
   // Wait for Response about Value
-  // SOPLOGLN(F("[LED DEBUG] ReadZbeeIfAvailable() start"));
   ReadZbeeIfAvailable();
-  SOPLOGLN(F("[LED DEBUG] ValuePublish start"));
   for (uint8_t i = 0; i < num_values_; i++) {
     time_passed = compareTimeStamp(values_[i]);
     if (time_passed) {
       changed = values_[i]->capVal2str(buffer);
       // Value to Json String
-      SOPLOGLN(F("[INT DEBUG] Check if value has changed"));
       if (changed) {
-        SOPLOGLN(F("****** publish value"));
         publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
       } else {
         SOPLOGLN(F("[DEBUG] Value is not changed. Not publishing value"));
@@ -237,9 +233,10 @@ void Thing::Loop(int pub_period) {
       SOPLOGLN(F(
           "[DEBUG] Value publish cycle is not finished. Not publishing value"));
     }
+    ReadZbeeIfAvailable();
   }
   SOPLOGLN(F("[INT DEBUG] Loop finished"));
-  delay(pub_period);
+  //delay(pub_period);
 }
 
 //----------------------------------------

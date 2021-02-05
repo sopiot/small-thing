@@ -2,7 +2,7 @@
 // Libraries
 //----------------------------------------
 
-//SoPIoT thing library
+// SoPIoT thing library
 #include <thing.h>
 
 // Module libraries
@@ -11,7 +11,6 @@
 // Pins
 static const int kServo1Pin = 9;
 static const int kMoisturePin = A1;
-//#define kMoisturePin A1
 
 //--------------------------------------------------
 // Modules
@@ -26,7 +25,7 @@ Servo servo1;
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
 // class name should not include '_'
-Thing valve_with_soil_moisture((const char *)"SmartPotVSoil", 60, SafeSerial);
+Thing valve_with_soil_moisture((const char *) "SmartPotVSoil", 60, SafeSerial);
 
 //----------------------------------------
 // Values
@@ -36,36 +35,17 @@ Thing valve_with_soil_moisture((const char *)"SmartPotVSoil", 60, SafeSerial);
 // Value variables
 int valve1_status_ = 0;
 int pot1_moisture_ = 0;
-// double valve1_status_ = 0.0;
-// double pot1_moisture_ = 0.0;
 
 // Getter functions of each Value variable
 int SenseValve1Status() { return valve1_status_; }
-// double SenseValve1Status() { return valve1_status_; }
 
 int SensePot1Moisture() {
-  int moisture_vol = 0.0;
-  for (int i = 0; i < 10; i++) {
-    moisture_vol = moisture_vol + analogRead(kMoisturePin) * 100 / 1024;
-    delay(1);
-  }
-  pot1_moisture_ = moisture_vol / 10;
-  return pot1_moisture_;
+  return (double)analogRead(kMoisturePin) / 1024 * 100;
 }
 
-// double SensePot1Moisture() {
-//   double moisture_vol = 0.0;
-//   for (int i = 0; i < 10; i++) {
-//     moisture_vol = moisture_vol + analogRead(kMoisturePin)/1024.0 * 100.0;
-//     delay(1);
-//   }
-//   pot1_moisture_ = moisture_vol / 10.0;
-//   return pot1_moisture_;
-// }
-
-Value valve1_status((const char *)"valve1_status", SenseValve1Status, 0, 2,
+Value valve1_status((const char *) "valve1_status", SenseValve1Status, 0, 2,
                     1000);
-Value pot1_moisture((const char *)"pot1_moisture", SensePot1Moisture, 0, 2000,
+Value pot1_moisture((const char *) "pot1_moisture", SensePot1Moisture, 0, 2000,
                     3000);
 
 //----------------------------------------
@@ -74,23 +54,17 @@ Value pot1_moisture((const char *)"pot1_moisture", SensePot1Moisture, 0, 2000,
 //----------------------------------------
 
 void ActuateValve1Open(void *pData) {
-  SOPLOGLN(F("[MOTOR DEBUG]: Actuate_Valve1_Open!!"));
   servo1.write(0);
-  SOPLOGLN(F("[MOTOR DEBUG]: Actuate_Valve1_Open finished!!"));
-  //delay(300);
   valve1_status_ = 1;
 }
 
 void ActuateValve1Close(void *pData) {
-  SOPLOGLN(F("[MOTOR DEBUG]: Actuate_Valve1_Close!!"));
   servo1.write(90);
-  SOPLOGLN(F("[MOTOR DEBUG]: Actuate_Valve1_Close finished!!"));
-  //delay(300);
   valve1_status_ = 0;
 }
 
-Function valve1_open((const char *)"valve1_open", ActuateValve1Open, 0, 0);
-Function valve1_close((const char *)"valve1_close", ActuateValve1Close, 0, 0);
+Function valve1_open((const char *) "valve1_open", ActuateValve1Open, 0, 0);
+Function valve1_close((const char *) "valve1_close", ActuateValve1Close, 0, 0);
 
 void SetupSerial() { SafeSerial.begin(9600); }
 
@@ -98,19 +72,21 @@ void SetupModules() {
   // Setup Pin mode
   pinMode(kServo1Pin, OUTPUT);
   pinMode(kMoisturePin, INPUT);
+
   // Attach modules
   servo1.attach(kServo1Pin);
 }
 
 void SetupThing() {
-  //Setup Functions
+  // Setup Functions
   valve_with_soil_moisture.Add(valve1_open);
   valve_with_soil_moisture.Add(valve1_close);
 
-  //Setup Values
+  // Setup Values
   valve_with_soil_moisture.Add(valve1_status);
   valve_with_soil_moisture.Add(pot1_moisture);
-  //Setup Thing
+
+  // Setup Thing
   valve_with_soil_moisture.Setup();
 }
 
