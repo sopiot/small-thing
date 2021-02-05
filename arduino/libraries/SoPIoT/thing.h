@@ -50,11 +50,11 @@ protected:
 
 */
 
-//#ifdef USE_QOS2
+#ifdef USE_QOS2
   void pubrecHandler(const msg_pubqos2 *msg);
   void pubrelHandler(const msg_pubqos2 *msg);
   void pubcompHandler(const msg_pubqos2 *msg);
-//#endif
+#endif
 
   /*
   virtual void unsubackHandler(const msg_unsuback* msg) = 0; // it is needed,
@@ -105,11 +105,11 @@ private:
   void SendAliveMessage();
   void sendAliveMessageNoCond();
 
-//#ifdef USE_QOS2
+#ifdef USE_QOS2
   void pubrec(const msg_publish *msg);
   void pubrel(const msg_pubqos2 *msg);
   void pubcomp(const msg_pubqos2 *msg);
-//#endif
+#endif
 
   bool waitForResponse();
   bool connected();

@@ -118,8 +118,24 @@ void Value::set_value(BoolValue value) {
   value_classifier_ = BOOL;
 }
 
+// [INT DEBUG] -------------------------------
+#include <stdio.h>
+#include <stdarg.h>
+void _printf(const char *s, ...) {
+  va_list args;
+  va_start(args, s);
+  int n = vsnprintf(NULL, 0, s, args);
+  char *str = new char[n + 1];
+  vsprintf(str, s, args);
+  va_end(args);
+  Serial.print(str);
+  delete[] str;
+}
+//--------------------------------------------
+
 bool Value::value_changed(void *cur) {
   bool changed = false;
+  SOPLOGLN(F("[INT DEBUG] value_changed"));
   switch (value_classifier_) {
     case STRING:
       if (strncmp((char *)cur, (char *)prev_, *(int *)max_) != 0) {
@@ -128,17 +144,20 @@ bool Value::value_changed(void *cur) {
       memcpy(prev_, cur, *(int *)max_);
       break;
     case INTEGER:
+      SOPLOGLN(F("[INT DEBUG] INT CHANGED CHECK"));
     case BOOL:
       if (*(int *)prev_ != *(int *)cur) {
         changed = true;
       }
-      memcpy(prev_, cur, sizeof(int));
+      //memcpy(prev_, cur, sizeof(int));
+      *(int *)prev_ = *(int *)cur;
       break;
     case DOUBLE:
-      if (DOUBLE_IS_APPROX_EQUAL(*(double *)prev_, *(double *)cur)) {
+      if (!DOUBLE_IS_APPROX_EQUAL(*(double *)prev_, *(double *)cur)) {
         changed = true;
       }
-      memcpy(prev_, cur, sizeof(double));
+      //memcpy(prev_, cur, sizeof(double));
+      *(double *)prev_ = *(double *)cur;
       break;
     default:
       // error!
@@ -230,7 +249,7 @@ bool Value::capVal2str(char *buffer) {
     case INTEGER: {
       nval = ((IntegerValue)value_)();
       len = snprintf(buffer, MAX_BUFFER_SIZE,
-                     "{\"type\" : \"int\" , \"value\" : %d}", nval);
+                     "{\"type\" : \"int\" , \"value\" : %d}\n", nval);
       val = &nval;
       break;
     }
@@ -239,14 +258,14 @@ bool Value::capVal2str(char *buffer) {
       dval = ((DoubleValue)value_)();
       safe_dtostrf(dval, 8, 2, val_temp);
       len = snprintf(buffer, MAX_BUFFER_SIZE,
-                     "{\"type\" : \"double\" , \"value\" : %s}", val_temp);
+                     "{\"type\" : \"double\" , \"value\" : %s}\n", val_temp);
       val = &dval;
       break;
     }
     case BOOL: {
       nval = ((BoolValue)value_)();
       len = snprintf(buffer, MAX_BUFFER_SIZE,
-                     "{\"type\" : \"bool\" , \"value\" : %d}", nval);
+                     "{\"type\" : \"bool\" , \"value\" : %d}\n", nval);
       val = &nval;
       break;
     }
@@ -257,7 +276,7 @@ bool Value::capVal2str(char *buffer) {
         return false;
       }
       len = snprintf(buffer, MAX_BUFFER_SIZE,
-                     "{\"type\" : \"string\" , \"value\" : \"%s\"}", ptsval);
+                     "{\"type\" : \"string\" , \"value\" : \"%s\"}\n", ptsval);
       val = ptsval;
       break;
     }

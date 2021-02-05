@@ -28,7 +28,7 @@ Function::Function(const char *name, VoidFunction func, int nArguments,
   if (nFunctionAttributes > 0) {
     ptsFunctionAttributes_ =
         (Attribute **)malloc(sizeof(Attribute *) * nFunctionAttributes);
-      MEM_ALLOC_CHECK(ptsFunctionAttributes_);
+    MEM_ALLOC_CHECK(ptsFunctionAttributes_);
   }
 }
 
@@ -99,9 +99,8 @@ void Function::Execute(char *args, int *success) const {
       return;
     }
   }
-
   VoidFunction executer = (VoidFunction)function_;
-
+  SOPLOGLN(F("[DEBUG]: Execute function"));
   executer((void *)this);
   *success = 0;
 }

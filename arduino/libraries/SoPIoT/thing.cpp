@@ -5,7 +5,9 @@
 #define READ_ZBEE_TIMEOUT 1000
 #define SEARCH_RADIUS 100
 
-static inline uint16_t bswap(const uint16_t val) { return (val << 8) | (val >> 8); }
+static inline uint16_t bswap(const uint16_t val) {
+  return (val << 8) | (val >> 8);
+}
 
 Thing::Thing()
     : waiting_for_response_(true),
@@ -153,10 +155,10 @@ void Thing::Setup() {
       snprintf(buffer, MAX_BUFFER_SIZE, COMMON0000, client_id_,
                values_[i]->name());
       registerTopic(buffer);
-      
+
       SOPLOG(F("Value Topic: "));
       SOPLOGLN(buffer);
-      
+
       ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
 
     } while ((values_[i]->set_publish_id(registered_id_)) == (UINT16_MAX));
@@ -201,36 +203,40 @@ void Thing::Setup() {
 
   devreg();
   sendAliveMessageNoCond();
-  SOPLOGLN(
-      F("[SUCCESS] Registeration to the Middleware Finished."));
+  SOPLOGLN(F("[SUCCESS] Registeration to the Middleware Finished."));
 }
 
 void Thing::Loop(int pub_period) {
+  SOPLOGLN(F("[LED DEBUG] Loop Start here!"));
   bool time_passed = false;
   bool changed = false;
 
   // Wait for Response about Value
   SendAliveMessage();
-
   // Wait for Response about Value
   ReadZbeeIfAvailable();
-
   for (uint8_t i = 0; i < num_values_; i++) {
     time_passed = compareTimeStamp(values_[i]);
-    // Value to Json String
-    changed = values_[i]->capVal2str(buffer);
-
-    if (time_passed && changed)
-    {
-    	publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
+    if (time_passed) {
+      changed = values_[i]->capVal2str(buffer);
+      // Value to Json String
+      if (changed) {
+        publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
+      } else {
+        SOPLOGLN(F("[DEBUG] Value is not changed. Not publishing value"));
+      }
+      // if (time_passed) {
+      //   publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
+      //   sendAliveMessageNoCond();
+      // }
+    } else {
+      SOPLOGLN(F(
+          "[DEBUG] Value publish cycle is not finished. Not publishing value"));
     }
-    // if (time_passed) {
-    //   publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
-    //   sendAliveMessageNoCond();
-    // }
+    ReadZbeeIfAvailable();
   }
-
-  delay(pub_period);
+  SOPLOGLN(F("[INT DEBUG] Loop finished"));
+  //delay(pub_period);
 }
 
 //----------------------------------------
@@ -246,17 +252,18 @@ void Thing::GetMacAddress() {
   uint8_t slCmd[] = {'S', 'L'};
   AtCommandRequest atRequestSH = AtCommandRequest(shCmd);
   AtCommandRequest atRequestSL = AtCommandRequest(slCmd);
-  AtCommandResponse atResponse = AtCommandResponse();
+  AtCommandResponse atResponseSH = AtCommandResponse();
+  AtCommandResponse atResponseSL = AtCommandResponse();
 
   while (1) {
     zbee_.send(atRequestSH);
 
     if (zbee_.readPacket(5000)) {
       if (zbee_.getResponse().getApiId() == AT_COMMAND_RESPONSE) {
-        zbee_.getResponse().getAtCommandResponse(atResponse);
-        if (atResponse.isOk()) {
-          for (int i = 0; i < atResponse.getValueLength(); i++) {
-            mac_address_[i] = atResponse.getValue()[i];
+        zbee_.getResponse().getAtCommandResponse(atResponseSH);
+        if (atResponseSH.isOk()) {
+          for (int i = 0; i < atResponseSH.getValueLength(); i++) {
+            mac_address_[i] = atResponseSH.getValue()[i];
           }
           break;
         }
@@ -273,10 +280,10 @@ void Thing::GetMacAddress() {
 
     if (zbee_.readPacket(5000)) {
       if (zbee_.getResponse().getApiId() == AT_COMMAND_RESPONSE) {
-        zbee_.getResponse().getAtCommandResponse(atResponse);
-        if (atResponse.isOk()) {
-          for (int i = 0; i < atResponse.getValueLength(); i++) {
-            mac_address_[i + 4] = atResponse.getValue()[i];
+        zbee_.getResponse().getAtCommandResponse(atResponseSL);
+        if (atResponseSL.isOk()) {
+          for (int i = 0; i < atResponseSL.getValueLength(); i++) {
+            mac_address_[i + 4] = atResponseSL.getValue()[i];
           }
           break;
         }
@@ -392,7 +399,7 @@ void Thing::ReadZbeeTimeout(int timeout) {
       SOPLOGLN(F("[SUCCESS] Zigbee Receive Success... parsing the stream"));
 
       ParseStream((char *)zbee_rx_.getData(), zbee_rx_.getDataLength());
-      timeout = 50; // exit instantly after receiving a packet from gateway
+      timeout = 50;  // exit instantly after receiving a packet from gateway
     } else if (zbee_.getResponse().isError()) {
       SOPLOGLN(F("[ERROR] ZigBee Response Error."));
     } else {
@@ -402,23 +409,29 @@ void Thing::ReadZbeeTimeout(int timeout) {
 }
 
 void Thing::ReadZbeeIfAvailable() {
-  zbee_.readPacket();
+  while (1) {
+    zbee_.readPacket();
 
-  if (zbee_.getResponse().isAvailable()) {
-    if (zbee_.getResponse().getApiId() == ZB_TX_STATUS_RESPONSE) {
-      ZBTxStatusResponse txStatus;
-      zbee_.getResponse().getZBTxStatusResponse(txStatus);
-      if (txStatus.isSuccess())
-        SOPLOGLN(F("[SUCCESS] Zigbee Send Success... waiting for response"));
-      else
-        SOPLOGLN(F("[ERROR] Zigbee Send Fail."));
-    } else if (zbee_.getResponse().getApiId() == ZB_RX_RESPONSE) {
-      zbee_.getResponse().getZBRxResponse(zbee_rx_);
-      ParseStream((char *)zbee_rx_.getData(), zbee_rx_.getDataLength());
-    } else if (zbee_.getResponse().isError()) {
-      SOPLOGLN(F("[ERROR] ZigBee Response Error."));
+    if (zbee_.getResponse().isAvailable()) {
+      if (zbee_.getResponse().getApiId() == ZB_TX_STATUS_RESPONSE) {
+        ZBTxStatusResponse txStatus;
+        zbee_.getResponse().getZBTxStatusResponse(txStatus);
+        if (txStatus.isSuccess())
+          SOPLOGLN(F("[SUCCESS] Zigbee Send Success... waiting for response"));
+        else
+          SOPLOGLN(F("[ERROR] Zigbee Send Fail."));
+      } else if (zbee_.getResponse().getApiId() == ZB_RX_RESPONSE) {
+        zbee_.getResponse().getZBRxResponse(zbee_rx_);
+        SOPLOGLN(F("[LED DEBUG SUCCESS] Zigbee Receive Success"));
+        ParseStream((char *)zbee_rx_.getData(), zbee_rx_.getDataLength());
+      } else if (zbee_.getResponse().isError()) {
+        SOPLOGLN(F("[ERROR] ZigBee Response Error."));
+      } else {
+        SOPLOGLN(F("[WARNING] Unexpected Response."));
+      }
     } else {
-      SOPLOGLN(F("[WARNING] Unexpected Response."));
+      SOPLOGLN(F("[LED DEBUG] zbee_.getResponse().isAvailable() is false"));
+      break;
     }
   }
 }
@@ -559,9 +572,10 @@ void Thing::broadcast() {
   uint16_t addr16 = ZB_BROADCAST_ADDRESS;
   XBeeAddress64 addr64 = XBeeAddress64(0, 0xffff);
 
-  // TODO(ikess): check what is diffrence between ZB_TX_UNICAST, ZB_TX_BROADCAST??
-  zbee_tx_ = ZBTxRequest(addr64, addr16, SEARCH_RADIUS, ZB_TX_UNICAST, message_buffer_,
-                         hdr->length, DEFAULT_FRAME_ID);
+  // TODO(ikess): check what is diffrence between ZB_TX_UNICAST,
+  // ZB_TX_BROADCAST??
+  zbee_tx_ = ZBTxRequest(addr64, addr16, SEARCH_RADIUS, ZB_TX_UNICAST,
+                         message_buffer_, hdr->length, DEFAULT_FRAME_ID);
   // zbee_tx_ = ZBTxRequest(addr64, message_buffer_, hdr->length);
 
   sendPacket();
@@ -656,10 +670,10 @@ void Thing::publishHandler(const msg_publish *msg) {
   if (topic_id == id_1001_) {
     snprintf(buffer, MAX_BUFFER_SIZE, "%s", msg->data);
     char errNo = buffer[0];
-    
+
     SOPLOG(F("Error no :"));
     SOPLOGLN(buffer);
-    
+
     if (errNo == '0') {
       // registered_ = !registered_;
       registered_ = true;
@@ -727,7 +741,7 @@ void Thing::publishHandler(const msg_publish *msg) {
       }
 
       snprintf(buffer, MAX_BUFFER_SIZE,
-                "{\"scenario\" : \"%s\" , \"error\" : %d }", t_name, success);
+               "{\"scenario\" : \"%s\" , \"error\" : %d }", t_name, success);
       publish(QOS_FLAG, functions_[i]->id_2004(), buffer, strlen(buffer));
 
       return;
@@ -954,10 +968,10 @@ void Thing::devreg() {
     msg->status = DURATION;
     msg->message_id = bswap(message_id_);
     snprintf(buffer, MAX_BUFFER_SIZE, "%ul", alive_cycle_);
-    
+
     SOPLOG(F("alive cycle: "));
     SOPLOGLN(buffer);
-    
+
     memcpy(msg->data, buffer, strlen(buffer) + 1);
     msg->length = sizeof(msg_devreg) + strlen(buffer) + 1;
     unicast();
@@ -968,14 +982,14 @@ void Thing::devreg() {
   registered_ = false;
   while (!registered_) {
     SOPLOGLN(F("start of FINISH state"));
-    
+
     message_id_++;
     msg->length = sizeof(msg_devreg);
     msg->type = DEVREG;
-    
+
     SOPLOG(F("ID2001: "));
     SOPLOGLN(id_2001_);
-    
+
     msg->pub_id = bswap(id_2001_);
     msg->message_id = bswap(message_id_);
     msg->length = sizeof(msg_devreg);
