@@ -318,7 +318,7 @@ typedef double (*DoubleValue)(void);
 typedef bool (*BoolValue)(void);
 typedef char *(*StringValue)(char *, int);
 
-#define SOP_DEBUG
+//#define SOP_DEBUG
 #ifdef SOP_DEBUG
 #define SOPLOG(...) Serial.print(__VA_ARGS__)
 #define SOPLOGLN(...) Serial.println(__VA_ARGS__)
