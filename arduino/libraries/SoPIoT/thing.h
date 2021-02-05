@@ -6,8 +6,9 @@
 #include "function.h"
 #include "attribute.h"
 
-class Thing {
- public:
+class Thing
+{
+public:
   // Constructor.
   // Developer can easily set class name and zigbee serial stream
   Thing();
@@ -34,7 +35,7 @@ class Thing {
   // This should be called in the loop() on Arduino
   void Loop(int pub_period = 100);
 
- protected:
+protected:
   /*
   virtual void subscribeByName(const uint8_t flags, const char* topic_name) = 0;
   virtual	void unsubscribeByName(const uint8_t flags, const char*
@@ -49,11 +50,11 @@ class Thing {
 
 */
 
-#ifdef USE_QOS2
+//#ifdef USE_QOS2
   void pubrecHandler(const msg_pubqos2 *msg);
   void pubrelHandler(const msg_pubqos2 *msg);
   void pubcompHandler(const msg_pubqos2 *msg);
-#endif
+//#endif
 
   /*
   virtual void unsubackHandler(const msg_unsuback* msg) = 0; // it is needed,
@@ -87,7 +88,7 @@ class Thing {
   void print_message_buffer_(void *buf, int length);
   void print_message_buffer_(int start, int length);
 
- private:
+private:
   // Set serial that connected to the zigbee output and input
   void SetSerial(Stream &serial);
 
@@ -104,11 +105,11 @@ class Thing {
   void SendAliveMessage();
   void sendAliveMessageNoCond();
 
-#ifdef USE_QOS2
+//#ifdef USE_QOS2
   void pubrec(const msg_publish *msg);
   void pubrel(const msg_pubqos2 *msg);
   void pubcomp(const msg_pubqos2 *msg);
-#endif
+//#endif
 
   bool waitForResponse();
   bool connected();
@@ -180,7 +181,7 @@ class Thing {
   bool valid_;
   bool registered_;
   bool device_register_;
-  bool in_process_;  // for handling publish processing
+  bool in_process_; // for handling publish processing
 
   uint8_t response_wait_for_;
 
@@ -196,4 +197,4 @@ class Thing {
   uint16_t last_ping_;
 };
 
-#endif  // SMALL_THING_THING_H_
+#endif // SMALL_THING_THING_H_
