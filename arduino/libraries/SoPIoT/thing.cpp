@@ -1159,7 +1159,7 @@ void Thing::pingreqHandler() {
 
 void Thing::pingrespHandler() {}
 
-//#ifdef USE_QOS2
+#ifdef USE_QOS2
 void Thing::pubrec(const msg_publish *recv_msg) {
   waiting_for_response_ = true;
   response_wait_for_ = PUBREL;
@@ -1213,4 +1213,4 @@ void Thing::pubcompHandler(const msg_pubqos2 *msg) {
   response_wait_for_ = PUBLISH;
 }
 
-//#endif
+#endif
