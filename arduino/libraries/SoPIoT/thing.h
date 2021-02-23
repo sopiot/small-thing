@@ -105,6 +105,9 @@ private:
   void SendAliveMessage();
   void sendAliveMessageNoCond();
 
+  // Send Initial Value when register thing
+  void SendInitialValueNoCond();
+
 #ifdef USE_QOS2
   void pubrec(const msg_publish *msg);
   void pubrel(const msg_pubqos2 *msg);

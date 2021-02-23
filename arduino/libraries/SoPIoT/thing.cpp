@@ -203,6 +203,7 @@ void Thing::Setup() {
 
   devreg();
   sendAliveMessageNoCond();
+  SendInitialValueNoCond();
   SOPLOGLN(F("[SUCCESS] Registeration to the Middleware Finished."));
 }
 
@@ -381,6 +382,15 @@ void Thing::sendAliveMessageNoCond() {
   char *pszDummy = (char *)"AliveNoCond";
 
   publish(QOS_FLAG, id_2003_, pszDummy, strlen(pszDummy));
+}
+
+void Thing::SendInitialValueNoCond() {
+  for (uint8_t i = 0; i < num_values_; i++) {
+    // Value to Json String
+    values_[i]->capVal2str(buffer);
+    // Publish values
+    publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////
