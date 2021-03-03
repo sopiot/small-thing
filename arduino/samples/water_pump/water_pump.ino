@@ -52,6 +52,10 @@ void SetupSerial() { SafeSerial.begin(9600); }
 void SetupModules() {
   // Setup Pin mode
   pinMode(kRelayPin, OUTPUT);
+  
+  // Setup initial state
+  digitalWrite(kRelayPin, LOW);
+  pump_status_ = 0;
 }
 
 void SetupThing() {
