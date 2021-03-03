@@ -153,23 +153,15 @@ int led_status_ = 0;
 
 int SenseBrightness() {
   brightness_ = (double) analogRead(kLightPin) / 1024 * 100;
-  if(brightness_ < 0 || brightness_ > 2048) {
-    return -1; // Wrong sensor value
-  }else{
-    return brightness_; 
-  }
+  return brightness_; 
 }
 
 int SenseLEDStatus() {
-  if(led_status_ < 0 || led_status_ > 2) {
-    return -1; // Wrong value
-  }else{
-    return led_status_; 
-  }
+  return led_status_;
 }
 
-Value brightness((const char *) "brightness", SenseBrightness, -1, 2048, 3000);
-Value led_status((const char *) "led_status", SenseLEDStatus, -1, 2, 3000);
+Value brightness((const char *) "brightness", SenseBrightness, 0, 1024, 3000);
+Value led_status((const char *) "led_status", SenseLEDStatus, 0, 2, 3000);
 
 //----------------------------------------
 // Functions
@@ -219,6 +211,10 @@ void SetupModules() {
   // Setup Pin mode
   pinMode(kTransmitterPin, OUTPUT);
   pinMode(kLightPin, INPUT);
+
+  //Setup initial state
+  SendIR(kOffSignal, sizeof(kOffSignal) / sizeof(kOffSignal[0]));
+  led_status_ = 0;
 }
 
 void SetupThing() {
