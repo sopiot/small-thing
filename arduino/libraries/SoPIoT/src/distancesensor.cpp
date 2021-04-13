@@ -1,6 +1,5 @@
-#include "distancesensor.h"
-
 #include "../thing.h"
+#include "distancesensor.h"
 
 using namespace sopiot;
 using namespace std;

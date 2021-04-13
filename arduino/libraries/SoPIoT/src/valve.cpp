@@ -1,6 +1,5 @@
-#include "valve.h"
-
 #include "thing.h"
+#include "valve.h"
 
 using namespace sopiot;
 using namespace std;

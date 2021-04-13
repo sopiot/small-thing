@@ -1,5 +1,4 @@
 #include "lightsensor.h"
-
 #include "thing.h"
 
 using namespace sopiot;

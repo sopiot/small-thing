@@ -177,7 +177,7 @@ uint16_t ZBRxIoSampleResponse::getAnalog(uint8_t pin) {
   }
 
   //	std::cout << "spacing is " << static_cast<unsigned int>(spacing) <<
-  //std::endl;
+  // std::endl;
 
   // start depends on how many pins before this pin are enabled
   for (int i = 0; i < pin; i++) {
@@ -188,14 +188,14 @@ uint16_t ZBRxIoSampleResponse::getAnalog(uint8_t pin) {
 
   //	std::cout << "start for analog pin ["<< static_cast<unsigned int>(pin)
   //<< "]/sample " << static_cast<unsigned int>(sample) << " is " <<
-  //static_cast<unsigned int>(start) << std::endl;
+  // static_cast<unsigned int>(start) << std::endl;
 
   //	std::cout << "returning index " << static_cast<unsigned
-  //int>(getSampleOffset() + start) << " and index " <<  static_cast<unsigned
-  //int>(getSampleOffset() + start + 1) << ", val is " << static_cast<unsigned
-  //int>(getFrameData()[getSampleOffset() + start] << 8) <<  " and " <<  +
-  //static_cast<unsigned int>(getFrameData()[getSampleOffset() + start + 1]) <<
-  //std::endl;
+  // int>(getSampleOffset() + start) << " and index " <<  static_cast<unsigned
+  // int>(getSampleOffset() + start + 1) << ", val is " << static_cast<unsigned
+  // int>(getFrameData()[getSampleOffset() + start] << 8) <<  " and " <<  +
+  // static_cast<unsigned int>(getFrameData()[getSampleOffset() + start + 1]) <<
+  // std::endl;
 
   return (uint16_t)((getFrameData()[start] << 8) + getFrameData()[start + 1]);
 }
@@ -288,16 +288,16 @@ bool RxIoSampleBaseResponse::isDigitalEnabled(uint8_t pin) {
 //		int width = 0;
 //
 //		// width of sample depends on how many I/O pins are enabled. add
-//one for each analog that's enabled 		for (int i = 0; i <= 5; i++) { 			if
-//(isAnalogEnabled(i)) {
+// one for each analog that's enabled 		for (int i = 0; i <= 5; i++) {
+// if (isAnalogEnabled(i)) {
 //				// each analog is two bytes
 //				width+=2;
 //			}
 //		}
 //
 //		if (this.containsDigital()) {
-//			// digital enabled takes two bytes, no matter how many pins
-//enabled 			width+= 2;
+//			// digital enabled takes two bytes, no matter how many
+// pins enabled 			width+= 2;
 //		}
 //
 //		return width;
@@ -321,19 +321,20 @@ bool RxIoSampleBaseResponse::isDigitalEnabled(uint8_t pin) {
 //	public int getDigitalMsb(int sample) {
 //		// msb digital always starts 3 bytes after sample size
 //		return this.getProcessedPacketBytes()[this.getStartIndex() + 3 +
-//this.getSampleWidth() * sample];
+// this.getSampleWidth() * sample];
 //	}
 //
 //	public int getDigitalLsb(int sample) {
 //		return this.getProcessedPacketBytes()[this.getStartIndex() + 3 +
-//this.getSampleWidth() * sample + 1];
+// this.getSampleWidth() * sample + 1];
 //	}
 //
 //	public Boolean isDigitalOn(int pin, int sample) {
 //
 //		if (sample < 0 || sample >= this.getSampleSize()) {
-//			throw new IllegalArgumentException("invalid sample size: " +
-//sample);
+//			throw new IllegalArgumentException("invalid sample size:
+//"
+//+ sample);
 //		}
 //
 //		if (!this.containsDigital()) {
@@ -347,19 +348,20 @@ bool RxIoSampleBaseResponse::isDigitalEnabled(uint8_t pin) {
 //			return (this.getDigitalMsb(sample) & 1) == 1;
 //		} else {
 //			throw new IllegalArgumentException("Invalid pin: " +
-//pin);
+// pin);
 //		}
 //	}
 //
 //	public Integer getAnalog(int pin, int sample) {
 //
 //		if (sample < 0 || sample >= this.getSampleSize()) {
-//			throw new IllegalArgumentException("invalid sample size: " +
-//sample);
+//			throw new IllegalArgumentException("invalid sample size:
+//"
+//+ sample);
 //		}
 //
 //		// analog starts 3 bytes after start of sample, if no dio
-//enabled 		int startIndex = this.getStartIndex() + 3;
+// enabled 		int startIndex = this.getStartIndex() + 3;
 //
 //		if (this.containsDigital()) {
 //			// make room for digital i/o sample (2 bytes per sample)
@@ -377,7 +379,7 @@ bool RxIoSampleBaseResponse::isDigitalEnabled(uint8_t pin) {
 //		}
 //
 //		return (this.getProcessedPacketBytes()[startIndex] << 8) +
-//this.getProcessedPacketBytes()[startIndex + 1];
+// this.getProcessedPacketBytes()[startIndex + 1];
 //	}
 
 // THIS IS WRONG
@@ -402,7 +404,7 @@ uint16_t RxIoSampleBaseResponse::getAnalog(uint8_t pin, uint8_t sample) {
   }
 
   //	std::cout << "spacing is " << static_cast<unsigned int>(spacing) <<
-  //std::endl;
+  // std::endl;
 
   // start depends on how many pins before this pin are enabled
   for (int i = 0; i < pin; i++) {
@@ -415,14 +417,14 @@ uint16_t RxIoSampleBaseResponse::getAnalog(uint8_t pin, uint8_t sample) {
 
   //	std::cout << "start for analog pin ["<< static_cast<unsigned int>(pin)
   //<< "]/sample " << static_cast<unsigned int>(sample) << " is " <<
-  //static_cast<unsigned int>(start) << std::endl;
+  // static_cast<unsigned int>(start) << std::endl;
 
   //	std::cout << "returning index " << static_cast<unsigned
-  //int>(getSampleOffset() + start) << " and index " <<  static_cast<unsigned
-  //int>(getSampleOffset() + start + 1) << ", val is " << static_cast<unsigned
-  //int>(getFrameData()[getSampleOffset() + start] << 8) <<  " and " <<  +
-  //static_cast<unsigned int>(getFrameData()[getSampleOffset() + start + 1]) <<
-  //std::endl;
+  // int>(getSampleOffset() + start) << " and index " <<  static_cast<unsigned
+  // int>(getSampleOffset() + start + 1) << ", val is " << static_cast<unsigned
+  // int>(getFrameData()[getSampleOffset() + start] << 8) <<  " and " <<  +
+  // static_cast<unsigned int>(getFrameData()[getSampleOffset() + start + 1]) <<
+  // std::endl;
 
   return (uint16_t)((getFrameData()[getSampleOffset() + start] << 8) +
                     getFrameData()[getSampleOffset() + start + 1]);
@@ -519,7 +521,7 @@ void XBeeResponse::getRx16Response(XBeeResponse& rx16Response) {
   setCommon(rx16Response);
 
   //	rx16->getRemoteAddress16().setAddress((getFrameData()[0] << 8) +
-  //getFrameData()[1]);
+  // getFrameData()[1]);
 }
 
 uint8_t Rx64Response::getRssiOffset() { return RX_64_RSSI_OFFSET; }
@@ -1319,7 +1321,9 @@ void XBee::send(XBeeRequest& request) {
   // int>(request.getFrameDataLength()) << std::endl;
 
   for (int i = 0; i < request.getFrameDataLength(); i++) {
-    //		std::cout << "sending byte [" << static_cast<unsigned int>(i) << "] "
+    //		std::cout << "sending byte [" << static_cast<unsigned int>(i) <<
+    //"]
+    //"
     //<< std::endl;
     sendByte(request.getFrameData(i), true);
     checksum += request.getFrameData(i);
@@ -1329,7 +1333,7 @@ void XBee::send(XBeeRequest& request) {
   checksum = 0xff - checksum;
 
   //	std::cout << "checksum is " << static_cast<unsigned int>(checksum) <<
-  //std::endl;
+  // std::endl;
 
   // send checksum
   sendByte(checksum, true);
@@ -1342,7 +1346,7 @@ void XBee::send(XBeeRequest& request) {
 void XBee::sendByte(uint8_t b, bool escape) {
   if (escape && (b == START_BYTE || b == ESCAPE || b == XON || b == XOFF)) {
     //		std::cout << "escaping byte [" << toHexString(b) << "] " <<
-    //std::endl;
+    // std::endl;
     write(ESCAPE);
     write(b ^ 0x20);
   } else {

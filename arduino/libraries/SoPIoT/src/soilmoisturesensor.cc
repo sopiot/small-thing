@@ -1,5 +1,4 @@
 #include "soilmoisturesensor.h"
-
 #include "thing.h"
 
 using namespace sopiot;

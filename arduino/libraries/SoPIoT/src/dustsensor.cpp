@@ -1,5 +1,4 @@
 #include "dustsensor.h"
-
 #include "thing.h"
 
 using namespace sopiot;

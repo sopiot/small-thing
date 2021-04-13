@@ -1,5 +1,4 @@
 #include "function.h"
-
 #include "utils.h"
 
 void Function::Initialize() {

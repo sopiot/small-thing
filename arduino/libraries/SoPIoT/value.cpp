@@ -1,6 +1,5 @@
-#include "value.h"
-
 #include "utils.h"
+#include "value.h"
 
 void Value::Initialize() {
   name_ = NULL;

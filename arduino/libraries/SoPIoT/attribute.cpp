@@ -1,5 +1,4 @@
 #include "attribute.h"
-
 #include "utils.h"
 
 void Attribute::Initialize() {

@@ -1,6 +1,6 @@
-#include "switch.h"
-
 #include <Arduino.h>
+
+#include "switch.h"
 
 using namespace sopiot;
 using namespace std;

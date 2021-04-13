@@ -1,5 +1,4 @@
 #include "temperaturesensor.h"
-
 #include "thing.h"
 
 using namespace sopiot;

@@ -1,5 +1,4 @@
 #include "humiditysensor.h"
-
 #include "templete.h"
 #include "thing.h"
 

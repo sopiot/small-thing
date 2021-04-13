@@ -1,6 +1,6 @@
 #include "thing.h"
-
 #include "utils.h"
+
 #define MAC_ADDRESS_SIZE 16
 #define READ_ZBEE_TIMEOUT 1000
 #define SEARCH_RADIUS 100

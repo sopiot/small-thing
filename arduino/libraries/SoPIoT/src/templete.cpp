@@ -1,6 +1,5 @@
-#include "templete.h"
-
 #include "../thing.h"
+#include "templete.h"
 
 Templete::Templete(const std::string& broker_ip, int broker_port,
                    const std::string& class_name, int alive_cycle)

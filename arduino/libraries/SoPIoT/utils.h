@@ -16,4 +16,4 @@ int GetDoubleArgumentByName(void* pData, const char* name, double* pdbOut);
 
 // dtostrf works differently on ARM board.
 char* safe_dtostrf(double val, signed char width, unsigned char prec,
-  char* sout);
+                   char* sout);

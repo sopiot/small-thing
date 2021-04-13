@@ -1,5 +1,4 @@
 #include "ircontrol.h"
-
 #include "thing.h"
 
 using namespace sopiot;

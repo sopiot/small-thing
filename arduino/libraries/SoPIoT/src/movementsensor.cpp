@@ -1,5 +1,4 @@
 #include "movementsensor.h"
-
 #include "thing.h"
 
 using namespace sopiot;

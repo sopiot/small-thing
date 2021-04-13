@@ -1,5 +1,4 @@
 #include "argument.h"
-
 #include "utils.h"
 
 void Argument::Initialize() {
