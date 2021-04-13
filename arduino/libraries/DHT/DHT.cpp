@@ -26,8 +26,8 @@
 #include "DHT.h"
 
 #define MIN_INTERVAL 2000 /**< min interval value */
-#define TIMEOUT                                                                \
-  UINT32_MAX /**< Used programmatically for timeout.                           \
+#define TIMEOUT                                      \
+  UINT32_MAX /**< Used programmatically for timeout. \
                    Not a timeout duration. Type: uint32_t. */
 
 /*!
@@ -40,7 +40,7 @@
  *          number of sensors
  */
 DHT::DHT(uint8_t pin, uint8_t type, uint8_t count) {
-  (void)count; // Workaround to avoid compiler warning.
+  (void)count;  // Workaround to avoid compiler warning.
   _pin = pin;
   _type = type;
 #ifdef __AVR
@@ -48,8 +48,8 @@ DHT::DHT(uint8_t pin, uint8_t type, uint8_t count) {
   _port = digitalPinToPort(pin);
 #endif
   _maxcycles =
-      microsecondsToClockCycles(1000); // 1 millisecond timeout for
-                                       // reading pulses from DHT sensor.
+      microsecondsToClockCycles(1000);  // 1 millisecond timeout for
+                                        // reading pulses from DHT sensor.
   // Note that count is now ignored as the DHT reading algorithm adjusts itself
   // based on the speed of the processor.
 }
@@ -87,37 +87,37 @@ float DHT::readTemperature(bool S, bool force) {
 
   if (read(force)) {
     switch (_type) {
-    case DHT11:
-      f = data[2];
-      if (data[3] & 0x80) {
-        f = -1 - f;
-      }
-      f += (data[3] & 0x0f) * 0.1;
-      if (S) {
-        f = convertCtoF(f);
-      }
-      break;
-    case DHT12:
-      f = data[2];
-      f += (data[3] & 0x0f) * 0.1;
-      if (data[2] & 0x80) {
-        f *= -1;
-      }
-      if (S) {
-        f = convertCtoF(f);
-      }
-      break;
-    case DHT22:
-    case DHT21:
-      f = ((word)(data[2] & 0x7F)) << 8 | data[3];
-      f *= 0.1;
-      if (data[2] & 0x80) {
-        f *= -1;
-      }
-      if (S) {
-        f = convertCtoF(f);
-      }
-      break;
+      case DHT11:
+        f = data[2];
+        if (data[3] & 0x80) {
+          f = -1 - f;
+        }
+        f += (data[3] & 0x0f) * 0.1;
+        if (S) {
+          f = convertCtoF(f);
+        }
+        break;
+      case DHT12:
+        f = data[2];
+        f += (data[3] & 0x0f) * 0.1;
+        if (data[2] & 0x80) {
+          f *= -1;
+        }
+        if (S) {
+          f = convertCtoF(f);
+        }
+        break;
+      case DHT22:
+      case DHT21:
+        f = ((word)(data[2] & 0x7F)) << 8 | data[3];
+        f *= 0.1;
+        if (data[2] & 0x80) {
+          f *= -1;
+        }
+        if (S) {
+          f = convertCtoF(f);
+        }
+        break;
     }
   }
   return f;
@@ -149,15 +149,15 @@ float DHT::readHumidity(bool force) {
   float f = NAN;
   if (read(force)) {
     switch (_type) {
-    case DHT11:
-    case DHT12:
-      f = data[0] + data[1] * 0.1;
-      break;
-    case DHT22:
-    case DHT21:
-      f = ((word)data[0]) << 8 | data[1];
-      f *= 0.1;
-      break;
+      case DHT11:
+      case DHT12:
+        f = data[0] + data[1] * 0.1;
+        break;
+      case DHT22:
+      case DHT21:
+        f = ((word)data[0]) << 8 | data[1];
+        f *= 0.1;
+        break;
     }
   }
   return f;
@@ -193,8 +193,7 @@ float DHT::computeHeatIndex(float temperature, float percentHumidity,
                             bool isFahrenheit) {
   float hi;
 
-  if (!isFahrenheit)
-    temperature = convertCtoF(temperature);
+  if (!isFahrenheit) temperature = convertCtoF(temperature);
 
   hi = 0.5 * (temperature + 61.0 + ((temperature - 68.0) * 1.2) +
               (percentHumidity * 0.094));
@@ -233,7 +232,7 @@ bool DHT::read(bool force) {
   // to use last reading.
   uint32_t currenttime = millis();
   if (!force && ((currenttime - _lastreadtime) < MIN_INTERVAL)) {
-    return _lastresult; // return last correct measurement
+    return _lastresult;  // return last correct measurement
   }
   _lastreadtime = currenttime;
 
@@ -241,7 +240,7 @@ bool DHT::read(bool force) {
   data[0] = data[1] = data[2] = data[3] = data[4] = 0;
 
 #if defined(ESP8266)
-  yield(); // Handle WiFi / reset software watchdog
+  yield();  // Handle WiFi / reset software watchdog
 #endif
 
   // Send start signal.  See DHT datasheet for full signal diagram:
@@ -256,14 +255,14 @@ bool DHT::read(bool force) {
   pinMode(_pin, OUTPUT);
   digitalWrite(_pin, LOW);
   switch (_type) {
-  case DHT22:
-  case DHT21:
-    delayMicroseconds(1100); // data sheet says "at least 1ms"
-    break;
-  case DHT11:
-  default:
-    delay(20); // data sheet says at least 18ms, 20ms just to be safe
-    break;
+    case DHT22:
+    case DHT21:
+      delayMicroseconds(1100);  // data sheet says "at least 1ms"
+      break;
+    case DHT11:
+    default:
+      delay(20);  // data sheet says at least 18ms, 20ms just to be safe
+      break;
   }
 
   uint32_t cycles[80];
@@ -305,7 +304,7 @@ bool DHT::read(bool force) {
       cycles[i] = expectPulse(LOW);
       cycles[i + 1] = expectPulse(HIGH);
     }
-  } // Timing critical code is now complete.
+  }  // Timing critical code is now complete.
 
   // Inspect pulses and determine which ones are 0 (high state cycle count < low
   // state cycle count), or 1 (high state cycle count > low state cycle count).
@@ -363,7 +362,7 @@ uint32_t DHT::expectPulse(bool level) {
 #if (F_CPU > 16000000L)
   uint32_t count = 0;
 #else
-  uint16_t count = 0; // To work fast enough on slower AVR boards
+  uint16_t count = 0;  // To work fast enough on slower AVR boards
 #endif
 // On AVR platforms use direct GPIO port access as it's much faster and better
 // for catching pulses that are 10's of microseconds in length:
@@ -371,15 +370,15 @@ uint32_t DHT::expectPulse(bool level) {
   uint8_t portState = level ? _bit : 0;
   while ((*portInputRegister(_port) & _bit) == portState) {
     if (count++ >= _maxcycles) {
-      return TIMEOUT; // Exceeded timeout, fail.
+      return TIMEOUT;  // Exceeded timeout, fail.
     }
   }
-// Otherwise fall back to using digitalRead (this seems to be necessary on
-// ESP8266 right now, perhaps bugs in direct port access functions?).
+  // Otherwise fall back to using digitalRead (this seems to be necessary on
+  // ESP8266 right now, perhaps bugs in direct port access functions?).
 #else
   while (digitalRead(_pin) == level) {
     if (count++ >= _maxcycles) {
-      return TIMEOUT; // Exceeded timeout, fail.
+      return TIMEOUT;  // Exceeded timeout, fail.
     }
   }
 #endif

@@ -5,7 +5,7 @@
 // SoPIoT Thing library
 #include <thing.h>
 // Module libraries
- 
+
 // Pins
 static const int kLight1Pin = A0;
 

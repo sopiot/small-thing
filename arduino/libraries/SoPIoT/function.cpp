@@ -13,21 +13,21 @@ void Function::Initialize() {
   function_classifier_ = UNDEFINED;
 }
 
-Function::Function(const char *name, VoidFunction func, int nArguments,
+Function::Function(const char* name, VoidFunction func, int nArguments,
                    int nFunctionAttributes) {
   Initialize();
   set_name(name);
   set_function(func);
   nmaxArguments_ = nArguments;
   if (nArguments > 0) {
-    ptsArguments_ = (Argument **)malloc(sizeof(Argument *) * nArguments);
+    ptsArguments_ = (Argument**)malloc(sizeof(Argument*) * nArguments);
     MEM_ALLOC_CHECK(ptsArguments_);
   }
 
   nMaxFunctionAttributes_ = nFunctionAttributes;
   if (nFunctionAttributes > 0) {
     ptsFunctionAttributes_ =
-        (Attribute **)malloc(sizeof(Attribute *) * nFunctionAttributes);
+        (Attribute**)malloc(sizeof(Attribute*) * nFunctionAttributes);
     MEM_ALLOC_CHECK(ptsFunctionAttributes_);
   }
 }
@@ -52,7 +52,7 @@ Function::~Function() {
   free(ptsFunctionAttributes_);
 }
 
-void Function::AddArgument(Argument &argument) {
+void Function::AddArgument(Argument& argument) {
   // set order of argument to distinguish when receiving function request from
   // middleware
   if (ncurArguments_ >= nmaxArguments_) {
@@ -63,27 +63,27 @@ void Function::AddArgument(Argument &argument) {
   argument.set_order(ncurArguments_++);
 }
 
-void Function::AddFunctionAttribute(Attribute &function_attribute) {
+void Function::AddFunctionAttribute(Attribute& function_attribute) {
   ptsFunctionAttributes_[ncurFunctionAttributes_] = &function_attribute;
   ncurFunctionAttributes_++;
 }
 
-char *Function::name() { return (char *)name_; }
+char* Function::name() { return (char*)name_; }
 
-void Function::set_name(const char *name) {
+void Function::set_name(const char* name) {
   name_ = strdup(name);
   MEM_ALLOC_CHECK(name_);
 }
 
 void Function::set_function(VoidFunction func) {
-  function_ = (void *)func;
+  function_ = (void*)func;
   function_classifier_ = VOID;
 }
 
-void Function::Execute(char *args, int *success) const {
+void Function::Execute(char* args, int* success) const {
   int i;
   //	char *pTokPtr = NULL;
-  char *target = NULL;
+  char* target = NULL;
   if (!function_ || function_classifier_ != VOID) {
     *success = -1;
     return;
@@ -101,7 +101,7 @@ void Function::Execute(char *args, int *success) const {
   }
   VoidFunction executer = (VoidFunction)function_;
   SOPLOGLN(F("[DEBUG]: Execute function"));
-  executer((void *)this);
+  executer((void*)this);
   *success = 0;
 }
 
@@ -125,7 +125,7 @@ uint16_t Function::id_2004() { return id_2004_; }
 
 CapType Function::function_classifier() { return function_classifier_; }
 
-void Function::GetInformation(char *buffer) {
+void Function::GetInformation(char* buffer) {
   int i, len;
   switch (function_classifier_) {
     case INTEGER:

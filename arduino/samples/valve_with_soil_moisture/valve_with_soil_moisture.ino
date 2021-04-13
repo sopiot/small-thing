@@ -25,7 +25,7 @@ Servo servo1;
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
 // class name should not include '_'
-Thing valve_with_soil_moisture((const char *) "SmartPotVSoil", 60, SafeSerial);
+Thing valve_with_soil_moisture((const char *)"SmartPotVSoil", 60, SafeSerial);
 
 //----------------------------------------
 // Values
@@ -43,9 +43,9 @@ int SensePot1Moisture() {
   return (double)analogRead(kMoisturePin) / 1024 * 100;
 }
 
-Value valve1_status((const char *) "valve1_status", SenseValve1Status, 0, 2,
+Value valve1_status((const char *)"valve1_status", SenseValve1Status, 0, 2,
                     1000);
-Value pot1_moisture((const char *) "pot1_moisture", SensePot1Moisture, 0, 2000,
+Value pot1_moisture((const char *)"pot1_moisture", SensePot1Moisture, 0, 2000,
                     3000);
 
 //----------------------------------------
@@ -63,8 +63,8 @@ void ActuateValve1Close(void *pData) {
   valve1_status_ = 0;
 }
 
-Function valve1_open((const char *) "valve1_open", ActuateValve1Open, 0, 0);
-Function valve1_close((const char *) "valve1_close", ActuateValve1Close, 0, 0);
+Function valve1_open((const char *)"valve1_open", ActuateValve1Open, 0, 0);
+Function valve1_close((const char *)"valve1_close", ActuateValve1Close, 0, 0);
 
 void SetupSerial() { SafeSerial.begin(9600); }
 

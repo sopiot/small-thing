@@ -41,15 +41,13 @@ int humid_status_;
 int temp_status_;
 
 // Getter functions of each Value variable
-int SenseHumidStatus(){ return humid_status_ = (int)dht.readHumidity(); }
-int SenseTempStatus(){ return temp_status_ = (int)dht.readTemperature(); }
+int SenseHumidStatus() { return humid_status_ = (int)dht.readHumidity(); }
+int SenseTempStatus() { return temp_status_ = (int)dht.readTemperature(); }
 
 // Value declarations
 // Value(name, sense_function, min, max, period(ms));
-Value humid_status((const char *)"humid_status", SenseHumidStatus, 0, 2,
-                    3000);
-Value temp_status((const char *)"temp_status", SenseTempStatus, 0, 2,
-                    3000);
+Value humid_status((const char *)"humid_status", SenseHumidStatus, 0, 2, 3000);
+Value temp_status((const char *)"temp_status", SenseTempStatus, 0, 2, 3000);
 
 //----------------------------------------
 // Functions

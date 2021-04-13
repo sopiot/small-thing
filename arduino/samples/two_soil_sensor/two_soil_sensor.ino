@@ -15,7 +15,7 @@ static const int kMoisture2Pin = A2;
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
 // class name should not include '_'
-Thing two_soil_sensor((const char *) "SmartPotTwoSoil", 60, SafeSerial);
+Thing two_soil_sensor((const char *)"SmartPotTwoSoil", 60, SafeSerial);
 
 //----------------------------------------
 // Values
@@ -34,9 +34,9 @@ int SensePot2Moisture() {
   return (double)analogRead(kMoisture2Pin) / 1024.0 * 100;
 }
 
-Value pot1_moisture((const char *) "pot1_moisture", SensePot1Moisture, 0, 2000,
+Value pot1_moisture((const char *)"pot1_moisture", SensePot1Moisture, 0, 2000,
                     3000);
-Value pot2_moisture((const char *) "pot2_moisture", SensePot2Moisture, 0, 2000,
+Value pot2_moisture((const char *)"pot2_moisture", SensePot2Moisture, 0, 2000,
                     3000);
 
 void SetupSerial() { SafeSerial.begin(9600); }

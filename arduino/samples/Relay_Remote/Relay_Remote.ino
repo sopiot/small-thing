@@ -46,12 +46,11 @@ Value switch_status((const char *)"switch_status", SenseSwitchStatus, 0, 2,
 // an ActuateXXX actuates a Function XXX
 //----------------------------------------
 
-void RelayFunction(void *pData)
-{
-    Serial.print("Switch = ");
-    Serial.println(switch_status_);
-    switch_status_ = !switch_status_;
-    digitalWrite(kRelayPin, switch_status_);
+void RelayFunction(void *pData) {
+  Serial.print("Switch = ");
+  Serial.println(switch_status_);
+  switch_status_ = !switch_status_;
+  digitalWrite(kRelayPin, switch_status_);
 }
 
 // Function declarations

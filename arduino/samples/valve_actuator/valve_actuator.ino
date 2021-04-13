@@ -25,7 +25,7 @@ Servo servo2;
 //----------------------------------------
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
-Thing valve_act1_thing((const char *) "SmartPotValve", 60, SafeSerial);
+Thing valve_act1_thing((const char *)"SmartPotValve", 60, SafeSerial);
 
 //----------------------------------------
 // Values
@@ -40,9 +40,9 @@ int valve2_status_;
 int SenseValve1Status() { return valve1_status_; }
 int SenseValve2Status() { return valve2_status_; }
 
-Value valve1_status((const char *) "valve1_status", SenseValve1Status, 0, 2,
+Value valve1_status((const char *)"valve1_status", SenseValve1Status, 0, 2,
                     1000);
-Value valve2_status((const char *) "valve2_status", SenseValve2Status, 0, 2,
+Value valve2_status((const char *)"valve2_status", SenseValve2Status, 0, 2,
                     1000);
 
 //----------------------------------------
@@ -72,10 +72,10 @@ void ActuateValve2Close(void *pData) {
 
 // Function declarations
 // Function(name, actuate_function, arguments_num, function_attributes_num);
-Function valve1_open((const char *) "valve1_open", ActuateValve1Open, 0, 0);
-Function valve1_close((const char *) "valve1_close", ActuateValve1Close, 0, 0);
-Function valve2_open((const char *) "valve2_open", ActuateValve2Open, 0, 0);
-Function valve2_close((const char *) "valve2_close", ActuateValve2Close, 0, 0);
+Function valve1_open((const char *)"valve1_open", ActuateValve1Open, 0, 0);
+Function valve1_close((const char *)"valve1_close", ActuateValve1Close, 0, 0);
+Function valve2_open((const char *)"valve2_open", ActuateValve2Open, 0, 0);
+Function valve2_close((const char *)"valve2_close", ActuateValve2Close, 0, 0);
 
 void SetupSerial() { SafeSerial.begin(9600); }
 
