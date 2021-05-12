@@ -1,28 +1,27 @@
 #ifndef SMALL_THING_THING_H_
 #define SMALL_THING_THING_H_
 
-#include "common.h"
-#include "value.h"
-#include "function.h"
 #include "attribute.h"
+#include "common.h"
+#include "function.h"
+#include "value.h"
 
-class Thing
-{
-public:
+class Thing {
+ public:
   // Constructor.
   // Developer can easily set class name and zigbee serial stream
   Thing();
-  Thing(const char *class_name, int alive_cycle, Stream &serial);
-  Thing(const char *class_name, Stream &serial);
+  Thing(const char* class_name, int alive_cycle, Stream& serial);
+  Thing(const char* class_name, Stream& serial);
 
   // Destrcutor
   ~Thing();
 
   // Attach stuffs to Thing.
   // For convenience, can be overrided with Value, Function, Attribute
-  void Add(Value &v);
-  void Add(Function &f);
-  void Add(Attribute &a);
+  void Add(Value& v);
+  void Add(Function& f);
+  void Add(Attribute& a);
 
   // Setup
   // Call it after setting up Serial, client config, Functions, Values
@@ -35,7 +34,7 @@ public:
   // This should be called in the loop() on Arduino
   void Loop(int pub_period = 100);
 
-protected:
+ protected:
   /*
   virtual void subscribeByName(const uint8_t flags, const char* topic_name) = 0;
   virtual	void unsubscribeByName(const uint8_t flags, const char*
@@ -51,9 +50,9 @@ protected:
 */
 
 #ifdef USE_QOS2
-  void pubrecHandler(const msg_pubqos2 *msg);
-  void pubrelHandler(const msg_pubqos2 *msg);
-  void pubcompHandler(const msg_pubqos2 *msg);
+  void pubrecHandler(const msg_pubqos2* msg);
+  void pubrelHandler(const msg_pubqos2* msg);
+  void pubcompHandler(const msg_pubqos2* msg);
 #endif
 
   /*
@@ -63,34 +62,34 @@ protected:
   virtual void willtopicrespHandler(const msg_willtopicresp* msg) = 0;
   virtual void willmsgrespHandler(const msg_willmsgresp* msg) = 0;
 */
-  virtual void pingreqHandler();
-  virtual void pingrespHandler();
-  virtual void subackHandler(const msg_suback *msg);
-  virtual void disconnectHandler(const msg_disconnect *msg);
+  void pingreqHandler();
+  void pingrespHandler();
+  void subackHandler(const msg_suback* msg);
+  void disconnectHandler(const msg_disconnect* msg);
   void regack(const uint16_t topicId, const uint16_t messageId,
               const return_code_t return_code);
   void puback(const uint16_t topicId, const uint16_t messageId,
               const return_code_t return_code);
   void subscribe(const uint8_t flags, const uint16_t topicId);
-  void subscribe(const uint8_t flags, const char *name);
+  void subscribe(const uint8_t flags, const char* name);
   void unsubscribe(const uint8_t flags, const uint16_t topicId);
-  void unsubscribe(const uint8_t flags, const char *name);
-  void regackHandler(const msg_regack *msg);
-  void publishHandler(const msg_publish *msg);
-  void advertiseHandler(const msg_advertise *msg);
-  void gwinfoHandler(const msg_gwinfo *msg);
-  void connackHandler(const msg_connack *msg);
+  void unsubscribe(const uint8_t flags, const char* name);
+  void regackHandler(const msg_regack* msg);
+  void publishHandler(const msg_publish* msg);
+  void advertiseHandler(const msg_advertise* msg);
+  void gwinfoHandler(const msg_gwinfo* msg);
+  void connackHandler(const msg_connack* msg);
   void devregHandler();
-  void devregackHandler(const msg_devregack *msg);
+  void devregackHandler(const msg_devregack* msg);
 
   // for debug
   void print_message_buffer_();
-  void print_message_buffer_(void *buf, int length);
+  void print_message_buffer_(void* buf, int length);
   void print_message_buffer_(int start, int length);
 
-private:
+ private:
   // Set serial that connected to the zigbee output and input
-  void SetSerial(Stream &serial);
+  void SetSerial(Stream& serial);
 
   // Initialize client id with class name and mac address
   void GenerateClientId();
@@ -99,7 +98,7 @@ private:
   void GetMacAddress();
 
   // Set class name of client
-  void SetClassName(char *class_name);
+  void SetClassName(char* class_name);
 
   // Send Alive message to middleware for every alive cycle
   void SendAliveMessage();
@@ -109,9 +108,9 @@ private:
   void SendInitialValueNoCond();
 
 #ifdef USE_QOS2
-  void pubrec(const msg_publish *msg);
-  void pubrel(const msg_pubqos2 *msg);
-  void pubcomp(const msg_pubqos2 *msg);
+  void pubrec(const msg_publish* msg);
+  void pubrel(const msg_pubqos2* msg);
+  void pubcomp(const msg_pubqos2* msg);
 #endif
 
   bool waitForResponse();
@@ -120,9 +119,9 @@ private:
 
   void searchgw(const uint8_t radius);
   void connect(const uint8_t flags, const uint16_t duration,
-               const char *client_id_);
-  bool registerTopic(const char *name);
-  void publish(const uint8_t flags, const uint16_t topicId, const void *data,
+               const char* client_id_);
+  bool registerTopic(const char* name);
+  void publish(const uint8_t flags, const uint16_t topicId, const void* data,
                const uint8_t data_len);
   void devreg(void);
 
@@ -133,7 +132,7 @@ private:
   void pingresp(int flag);
   void disconnect(const uint16_t duration);
 
-  void ParseStream(char *buf, uint16_t len);
+  void ParseStream(char* buf, uint16_t len);
   void dispatch();
 
   void unicast();
@@ -141,7 +140,7 @@ private:
   void sendPacket();
 
   // f~ : function pointers
-  bool compareTimeStamp(Value *t);
+  bool compareTimeStamp(Value* t);
 
   void (*connect_handler_)();
   void (*disconnect_handler_)();
@@ -151,9 +150,9 @@ private:
   uint8_t num_functions_;
   uint8_t num_attributes_;
 
-  Value *values_[MAX_VALUE_NUM];
-  Function *functions_[MAX_FUNCTION_NUM];
-  Attribute *attributes_[MAX_ATTRIBUTE_NUM];
+  Value* values_[MAX_VALUE_NUM];
+  Function* functions_[MAX_FUNCTION_NUM];
+  Attribute* attributes_[MAX_ATTRIBUTE_NUM];
 
   uint16_t id_1001_;
   uint16_t id_1002_;
@@ -165,8 +164,8 @@ private:
   char save_buffer[MAX_BUFFER_SIZE];
   uint8_t mac_address_[8];
 
-  char *client_id_;
-  char *class_name_;
+  char* client_id_;
+  char* class_name_;
   unsigned long alive_cycle_;
 
   /////// MQTT-SN
@@ -184,7 +183,7 @@ private:
   bool valid_;
   bool registered_;
   bool device_register_;
-  bool in_process_; // for handling publish processing
+  bool in_process_;  // for handling publish processing
 
   uint8_t response_wait_for_;
 
@@ -200,4 +199,4 @@ private:
   uint16_t last_ping_;
 };
 
-#endif // SMALL_THING_THING_H_
+#endif  // SMALL_THING_THING_H_

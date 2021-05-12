@@ -23,7 +23,7 @@ static const int kmovement1Pin = 7;
 // Thing declaration
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
-Thing movement_thing((const char *)"Move" , 60, SafeSerial);
+Thing movement_thing((const char *)"Move", 60, SafeSerial);
 
 //----------------------------------------
 // Values
@@ -33,18 +33,17 @@ Thing movement_thing((const char *)"Move" , 60, SafeSerial);
 // Value variables
 
 // Getter functions of each Value variable
-int SenseMovementStatus(){ return (int)digitalRead(kmovement1Pin); }
+int SenseMovementStatus() { return (int)digitalRead(kmovement1Pin); }
 
 // Value declarations
 // Value(name, sense_function, min, max, period(ms));
 Value movement_value((const char *)"movement_value", SenseMovementStatus, 0, 2,
-                    10000);
+                     1000);
 
 //----------------------------------------
 // Functions
 // an ActuateXXX actuates a Function XXX
 //----------------------------------------
-
 
 // Function declarations
 // Function(name, actuate_function, arguments_num, function_attributes_num);

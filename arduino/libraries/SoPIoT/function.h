@@ -7,32 +7,32 @@
 
 class Function {
  public:
-  Function(const char *name, VoidFunction func, int nArguments,
+  Function(const char* name, VoidFunction func, int nArguments,
            int nFunctionAttributes);
 
   ~Function();
 
-  void AddArgument(Argument &argument);
+  void AddArgument(Argument& argument);
 
-  void AddFunctionAttribute(Attribute &function_attribute);
+  void AddFunctionAttribute(Attribute& function_attribute);
 
-  void set_name(const char *name);
+  void set_name(const char* name);
 
-  char *name();
+  char* name();
 
   int ncurArguments() { return ncurArguments_; }
 
-  Argument *getIdxArgument(int idx) { return ptsArguments_[idx]; }
+  Argument* getIdxArgument(int idx) { return ptsArguments_[idx]; }
 
-  Attribute *getIdxFunctionAttribute(int idx) {
+  Attribute* getIdxFunctionAttribute(int idx) {
     return ptsFunctionAttributes_[idx];
   }
 
   int ncurFunctionAttributes() { return ncurFunctionAttributes_; }
 
-  void GetInformation(char *buffer);
+  void GetInformation(char* buffer);
 
-  void Execute(char *args, int *success) const;
+  void Execute(char* args, int* success) const;
 
   uint16_t set_id_1003(uint16_t id_1003);
   uint16_t id_1003();
@@ -50,13 +50,13 @@ class Function {
 
   void Initialize();
 
-  char *name_;
-  void *function_;
+  char* name_;
+  void* function_;
   int nmaxArguments_;
   int ncurArguments_;
-  Argument **ptsArguments_;
+  Argument** ptsArguments_;
   int nMaxFunctionAttributes_;
-  Attribute **ptsFunctionAttributes_;
+  Attribute** ptsFunctionAttributes_;
   int ncurFunctionAttributes_;
 
   uint16_t id_1003_;

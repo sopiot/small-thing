@@ -25,7 +25,7 @@ Servo servo1;
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
 // class name should not include '_'
-Thing valve_with_soil_moisture((const char *) "SmartPotVSoil", 180, SafeSerial);
+Thing valve_with_soil_moisture((const char *)"SmartPotVSoil", 60, SafeSerial);
 
 //----------------------------------------
 // Values
@@ -44,10 +44,9 @@ int SensePotMoisture() {
   return pot_moisture_;
 }
 
-Value valve_status((const char *) "valve_status", SenseValveStatus, 0, 2,
-                    1000);
-Value pot_moisture((const char *) "pot_moisture", SensePotMoisture, 0, 2000,
-                    3000);
+Value valve_status((const char *)"valve_status", SenseValveStatus, 0, 2, 1000);
+Value pot_moisture((const char *)"pot_moisture", SensePotMoisture, 0, 2000,
+                   3000);
 
 //----------------------------------------
 // Functions
@@ -64,8 +63,8 @@ void ActuateValveClose(void *pData) {
   valve_status_ = 0;
 }
 
-Function valve_open((const char *) "valve_open", ActuateValveOpen, 0, 0);
-Function valve_close((const char *) "valve_close", ActuateValveClose, 0, 0);
+Function valve_open((const char *)"valve_open", ActuateValveOpen, 0, 0);
+Function valve_close((const char *)"valve_close", ActuateValveClose, 0, 0);
 
 void SetupSerial() { SafeSerial.begin(9600); }
 

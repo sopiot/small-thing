@@ -140,7 +140,7 @@ void SendIR(unsigned int *signal, int length) {
 // Thing declaration
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
-Thing ir_led((const char *) "SmartPotLEDIR", 60, SafeSerial);
+Thing ir_led((const char *)"SmartPotLEDIR", 60, SafeSerial);
 
 //----------------------------------------
 // Values
@@ -152,16 +152,24 @@ int brightness_ = 0;
 int led_status_ = 0;
 
 int SenseBrightness() {
-  brightness_ = (double) analogRead(kLightPin) / 1024 * 100;
-  return brightness_; 
+  brightness_ = (double)analogRead(kLightPin) / 1024 * 100;
+  if (brightness_ < 0 || brightness_ > 2048) {
+    return -1;  // Wrong sensor value
+  } else {
+    return brightness_;
+  }
 }
 
 int SenseLEDStatus() {
-  return led_status_;
+  if (led_status_ < 0 || led_status_ > 2) {
+    return -1;  // Wrong value
+  } else {
+    return led_status_;
+  }
 }
 
-Value brightness((const char *) "brightness", SenseBrightness, 0, 1024, 3000);
-Value led_status((const char *) "led_status", SenseLEDStatus, 0, 2, 3000);
+Value brightness((const char *)"brightness", SenseBrightness, -1, 2048, 3000);
+Value led_status((const char *)"led_status", SenseLEDStatus, -1, 2, 3000);
 
 //----------------------------------------
 // Functions
@@ -196,11 +204,11 @@ void ActuateStrobe(void *pData) {
 
 // Function declarations
 // Function(name, actuate_function, arguments_num, function_attributes_num);
-Function led_on((const char *) "led_on", ActuateLEDOn, 0, 0);
-Function led_off((const char *) "led_off", ActuateLEDOff, 0, 0);
-Function color_red((const char *) "color_red", ActuateRed, 0, 0);
-Function color_green((const char *) "color_green", ActuateGreen, 0, 0);
-Function strobe_mode((const char *) "strobe_mode", ActuateStrobe, 0, 0);
+Function led_on((const char *)"led_on", ActuateLEDOn, 0, 0);
+Function led_off((const char *)"led_off", ActuateLEDOff, 0, 0);
+Function color_red((const char *)"color_red", ActuateRed, 0, 0);
+Function color_green((const char *)"color_green", ActuateGreen, 0, 0);
+Function strobe_mode((const char *)"strobe_mode", ActuateStrobe, 0, 0);
 
 //----------------------------------------
 // Setup
@@ -211,10 +219,6 @@ void SetupModules() {
   // Setup Pin mode
   pinMode(kTransmitterPin, OUTPUT);
   pinMode(kLightPin, INPUT);
-
-  //Setup initial state
-  SendIR(kOffSignal, sizeof(kOffSignal) / sizeof(kOffSignal[0]));
-  led_status_ = 0;
 }
 
 void SetupThing() {
@@ -228,7 +232,7 @@ void SetupThing() {
   // Setup Values
   ir_led.Add(brightness);
   ir_led.Add(led_status);
-  
+
   // Setup Thing
   ir_led.Setup();
 }

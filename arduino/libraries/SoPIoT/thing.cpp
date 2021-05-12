@@ -1,6 +1,6 @@
 #include "thing.h"
-
 #include "utils.h"
+
 #define MAC_ADDRESS_SIZE 16
 #define READ_ZBEE_TIMEOUT 1000
 #define SEARCH_RADIUS 100
@@ -26,11 +26,11 @@ Thing::Thing()
 }
 
 // Default alive_cycle is 60
-Thing::Thing(const char *class_name, Stream &serial) {
+Thing::Thing(const char* class_name, Stream& serial) {
   Thing(class_name, 60, serial);
 }
 
-Thing::Thing(const char *class_name, int alive_cycle, Stream &serial)
+Thing::Thing(const char* class_name, int alive_cycle, Stream& serial)
     : waiting_for_response_(true),
       response_wait_for_(ADVERTISE),
       connected_(false),
@@ -58,7 +58,7 @@ Thing::~Thing() {
   free(class_name_);
 }
 
-void Thing::Add(Value &v) {
+void Thing::Add(Value& v) {
   if (num_values_ < MAX_VALUE_NUM) {
     values_[num_values_++] = &v;
   } else {
@@ -66,7 +66,7 @@ void Thing::Add(Value &v) {
   }
 }
 
-void Thing::Add(Function &f) {
+void Thing::Add(Function& f) {
   if (num_functions_ < MAX_FUNCTION_NUM) {
     functions_[num_functions_++] = &f;
   } else {
@@ -74,7 +74,7 @@ void Thing::Add(Function &f) {
   }
 }
 
-void Thing::Add(Attribute &a) {
+void Thing::Add(Attribute& a) {
   if (num_attributes_ < MAX_ATTRIBUTE_NUM) {
     attributes_[num_attributes_++] = &a;
   } else {
@@ -237,14 +237,14 @@ void Thing::Loop(int pub_period) {
     ReadZbeeIfAvailable();
   }
   SOPLOGLN(F("[INT DEBUG] Loop finished"));
-  //delay(pub_period);
+  // delay(pub_period);
 }
 
 //----------------------------------------
 // Private Functions
 //----------------------------------------
 
-void Thing::SetSerial(Stream &serial) { zbee_.setSerial(serial); }
+void Thing::SetSerial(Stream& serial) { zbee_.setSerial(serial); }
 
 void Thing::GetMacAddress() {
   // Serial High
@@ -307,7 +307,7 @@ void Thing::GenerateClientId() {
         sprintf(temp_mac_address + len, "%.2X", (unsigned char)mac_address_[i]);
   }
 
-  client_id_ = (char *)malloc(
+  client_id_ = (char*)malloc(
       sizeof(char) * (strlen(class_name_) + strlen(temp_mac_address) + 2));
   MEM_ALLOC_CHECK(client_id_);
 
@@ -316,9 +316,9 @@ void Thing::GenerateClientId() {
   SOPLOGLN(client_id_);
 };
 
-void Thing::SetClassName(char *class_name) { class_name_ = class_name; }
+void Thing::SetClassName(char* class_name) { class_name_ = class_name; }
 
-bool Thing::compareTimeStamp(Value *t) {
+bool Thing::compareTimeStamp(Value* t) {
   bool time_passed = false;
   unsigned long curr_time = 0;
   unsigned long diff_time = 0;
@@ -353,7 +353,7 @@ void Thing::SendAliveMessage() {
   static unsigned long curr_time = 0;
   static unsigned long last_sent_time = 0;
   unsigned long diff_time = 0;
-  char *pszDummy = (char *)"AliveCycleReached";
+  char* pszDummy = (char*)"AliveCycleReached";
 
   curr_time = millis();
 
@@ -371,7 +371,7 @@ void Thing::SendAliveMessage() {
   if ((diff_time < 0) || (diff_time >= alive_cycle_ / 2 * 1000)) {
     SOPLOG(F("[DEBUG] Send Alive in "));
     SOPLOGLN(diff_time);
-    
+
     publish(QOS_FLAG, id_2003_, pszDummy, strlen(pszDummy));
     last_sent_time = curr_time;
   }
@@ -379,7 +379,7 @@ void Thing::SendAliveMessage() {
 }
 
 void Thing::sendAliveMessageNoCond() {
-  char *pszDummy = (char *)"AliveNoCond";
+  char* pszDummy = (char*)"AliveNoCond";
 
   publish(QOS_FLAG, id_2003_, pszDummy, strlen(pszDummy));
 }
@@ -408,7 +408,7 @@ void Thing::ReadZbeeTimeout(int timeout) {
       zbee_.getResponse().getZBRxResponse(zbee_rx_);
       SOPLOGLN(F("[SUCCESS] Zigbee Receive Success... parsing the stream"));
 
-      ParseStream((char *)zbee_rx_.getData(), zbee_rx_.getDataLength());
+      ParseStream((char*)zbee_rx_.getData(), zbee_rx_.getDataLength());
       timeout = 50;  // exit instantly after receiving a packet from gateway
     } else if (zbee_.getResponse().isError()) {
       SOPLOGLN(F("[ERROR] ZigBee Response Error."));
@@ -433,7 +433,7 @@ void Thing::ReadZbeeIfAvailable() {
       } else if (zbee_.getResponse().getApiId() == ZB_RX_RESPONSE) {
         zbee_.getResponse().getZBRxResponse(zbee_rx_);
         SOPLOGLN(F("[LED DEBUG SUCCESS] Zigbee Receive Success"));
-        ParseStream((char *)zbee_rx_.getData(), zbee_rx_.getDataLength());
+        ParseStream((char*)zbee_rx_.getData(), zbee_rx_.getDataLength());
       } else if (zbee_.getResponse().isError()) {
         SOPLOGLN(F("[ERROR] ZigBee Response Error."));
       } else {
@@ -470,18 +470,18 @@ bool Thing::waitForResponse() {
 
 bool Thing::connected() { return connected_; }
 
-void Thing::ParseStream(char *buf, uint16_t len) {
+void Thing::ParseStream(char* buf, uint16_t len) {
   if (len > MAX_BUFFER_SIZE) {
     SOPLOGLN(F("[ERROR] packet length is larger than MAX_BUFFER_SIZE"));
 
     return;
   }
-  memcpy(message_buffer_, (const void *)buf, len);
+  memcpy(message_buffer_, (const void*)buf, len);
   dispatch();
 }
 
 void Thing::dispatch() {
-  message_header *response_message = (message_header *)message_buffer_;
+  message_header* response_message = (message_header*)message_buffer_;
   SOPLOG(F("[DEBUG] response_msg len="));
   SOPLOGLN(response_message->length);
   SOPLOG(F("[DEBUG] response_msg type= "));
@@ -492,17 +492,17 @@ void Thing::dispatch() {
       if (!waiting_for_response_ ||
           (response_wait_for_ != ADVERTISE && response_wait_for_ != GWINFO))
         return;
-      advertiseHandler((msg_advertise *)message_buffer_);
+      advertiseHandler((msg_advertise*)message_buffer_);
       break;
 
     case GWINFO:
       if (response_wait_for_ != GWINFO) return;
-      gwinfoHandler((msg_gwinfo *)message_buffer_);
+      gwinfoHandler((msg_gwinfo*)message_buffer_);
       break;
 
     case CONNACK:
       if (!waiting_for_response_ || response_wait_for_ != CONNACK) return;
-      connackHandler((msg_connack *)message_buffer_);
+      connackHandler((msg_connack*)message_buffer_);
       break;
 
     case REGACK:
@@ -513,7 +513,7 @@ void Thing::dispatch() {
         return;
       }
 
-      regackHandler((msg_regack *)message_buffer_);
+      regackHandler((msg_regack*)message_buffer_);
       break;
 
     case PUBLISH:
@@ -523,12 +523,12 @@ void Thing::dispatch() {
               "message"));
         return;
       }
-      publishHandler((msg_publish *)message_buffer_);
+      publishHandler((msg_publish*)message_buffer_);
       break;
 
     case SUBACK:
       if (!waiting_for_response_ || response_wait_for_ != SUBACK) return;
-      subackHandler((msg_suback *)message_buffer_);
+      subackHandler((msg_suback*)message_buffer_);
       break;
 
     case PINGREQ:
@@ -541,7 +541,7 @@ void Thing::dispatch() {
       break;
 
     case DISCONNECT:
-      disconnectHandler((msg_disconnect *)message_buffer_);
+      disconnectHandler((msg_disconnect*)message_buffer_);
       break;
 
     case DEVREG:
@@ -552,20 +552,20 @@ void Thing::dispatch() {
     case DEVREGACK:
       //	if (!waiting_for_response_ || response_wait_for_ != DEVREGACK)
       // return;
-      devregackHandler((msg_devregack *)message_buffer_);
+      devregackHandler((msg_devregack*)message_buffer_);
       break;
 
 #ifdef USE_QOS2
     case PUBREC:
-      pubrecHandler((msg_pubqos2 *)message_buffer_);
+      pubrecHandler((msg_pubqos2*)message_buffer_);
       break;
 
     case PUBREL:
-      pubrelHandler((msg_pubqos2 *)message_buffer_);
+      pubrelHandler((msg_pubqos2*)message_buffer_);
       break;
 
     case PUBCOMP:
-      pubcompHandler((msg_pubqos2 *)message_buffer_);
+      pubcompHandler((msg_pubqos2*)message_buffer_);
       break;
 #endif
 
@@ -578,7 +578,7 @@ void Thing::dispatch() {
 }
 
 void Thing::broadcast() {
-  message_header *hdr = reinterpret_cast<message_header *>(message_buffer_);
+  message_header* hdr = reinterpret_cast<message_header*>(message_buffer_);
   uint16_t addr16 = ZB_BROADCAST_ADDRESS;
   XBeeAddress64 addr64 = XBeeAddress64(0, 0xffff);
 
@@ -602,7 +602,7 @@ void Thing::unicast() {
     return;
   }
 
-  message_header *hdr = reinterpret_cast<message_header *>(message_buffer_);
+  message_header* hdr = reinterpret_cast<message_header*>(message_buffer_);
 
   zbee_tx_ = ZBTxRequest(gateway_address_64_, message_buffer_, hdr->length);
   sendPacket();
@@ -630,14 +630,14 @@ void Thing::unicast() {
   */
 }
 
-void Thing::advertiseHandler(const msg_advertise *msg) {
+void Thing::advertiseHandler(const msg_advertise* msg) {
   if (!valid_) {
     gateway_id_ = msg->gw_id;
     valid_ = true;
   }
 }
 
-void Thing::gwinfoHandler(const msg_gwinfo *msg) {
+void Thing::gwinfoHandler(const msg_gwinfo* msg) {
   if (!valid_) {
     gateway_address_64_ = zbee_rx_.getRemoteAddress64();
     gateway_address_16_ = zbee_rx_.getRemoteAddress16();
@@ -648,12 +648,12 @@ void Thing::gwinfoHandler(const msg_gwinfo *msg) {
   }
 }
 
-void Thing::connackHandler(const msg_connack *msg) {
+void Thing::connackHandler(const msg_connack* msg) {
   connected_ = 1;
   if (connect_handler_ != NULL) connect_handler_();
 }
 
-void Thing::regackHandler(const msg_regack *msg) {
+void Thing::regackHandler(const msg_regack* msg) {
   SOPLOGLN(F("in regackHandler"));
   if (msg->return_code == 0 && bswap(msg->message_id) == message_id_) {
     SOPLOGLN(F("in regackHandler if"));
@@ -662,14 +662,14 @@ void Thing::regackHandler(const msg_regack *msg) {
   SOPLOGLN(F("in regackHandler if end"));
 }
 
-void Thing::disconnectHandler(const msg_disconnect *msg) {
+void Thing::disconnectHandler(const msg_disconnect* msg) {
   if (connected_ && disconnect_handler_ != NULL) disconnect_handler_();
   connected_ = false;
   valid_ = false;
   registered_ = false;
 }
 
-void Thing::publishHandler(const msg_publish *msg) {
+void Thing::publishHandler(const msg_publish* msg) {
   return_code_t ret = REJECTED_INVALID_TOPIC_ID;
 
   SOPLOG("publshHandler - meesage topic id: ");
@@ -720,9 +720,9 @@ void Thing::publishHandler(const msg_publish *msg) {
     SOPLOGLN(functions_[i]->id_1003());
     if (topic_id == functions_[i]->id_1003()) {
       int success = -1;
-      char *pTokPtr = NULL;
-      char *t_name = NULL;
-      char *t_args = NULL;
+      char* pTokPtr = NULL;
+      char* t_name = NULL;
+      char* t_args = NULL;
 
       in_process_ = true;
       strncpy(save_buffer, msg->data,
@@ -759,10 +759,10 @@ void Thing::publishHandler(const msg_publish *msg) {
   }
 }
 
-void Thing::subackHandler(const msg_suback *msg) {}
+void Thing::subackHandler(const msg_suback* msg) {}
 
 void Thing::searchgw(const uint8_t radius) {
-  msg_searchgw *msg = reinterpret_cast<msg_searchgw *>(message_buffer_);
+  msg_searchgw* msg = reinterpret_cast<msg_searchgw*>(message_buffer_);
 
   msg->length = sizeof(msg_searchgw);
   msg->type = SEARCHGW;
@@ -774,8 +774,8 @@ void Thing::searchgw(const uint8_t radius) {
 }
 
 void Thing::connect(const uint8_t flags, const uint16_t duration,
-                    const char *client_id_) {
-  msg_connect *msg = reinterpret_cast<msg_connect *>(message_buffer_);
+                    const char* client_id_) {
+  msg_connect* msg = reinterpret_cast<msg_connect*>(message_buffer_);
 
   msg->length = sizeof(msg_connect) + strlen(client_id_);
   msg->type = CONNECT;
@@ -791,7 +791,7 @@ void Thing::connect(const uint8_t flags, const uint16_t duration,
 }
 
 void Thing::disconnect(const uint16_t duration) {
-  msg_disconnect *msg = reinterpret_cast<msg_disconnect *>(message_buffer_);
+  msg_disconnect* msg = reinterpret_cast<msg_disconnect*>(message_buffer_);
 
   msg->length = sizeof(message_header);
   msg->type = DISCONNECT;
@@ -805,7 +805,7 @@ void Thing::disconnect(const uint16_t duration) {
   waiting_for_response_ = true;
 }
 
-bool Thing::registerTopic(const char *name) {
+bool Thing::registerTopic(const char* name) {
   SOPLOGLN(F("in registerTopic"));
   if (!waiting_for_response_) {
     ++message_id_;
@@ -815,7 +815,7 @@ bool Thing::registerTopic(const char *name) {
     // another REGISTER until we have resolved this one.
 
     registered_id_ = -1;
-    msg_register *msg = reinterpret_cast<msg_register *>(message_buffer_);
+    msg_register* msg = reinterpret_cast<msg_register*>(message_buffer_);
 
     msg->length = sizeof(msg_register) + strlen(name);
     msg->type = REGISTER;
@@ -835,10 +835,10 @@ bool Thing::registerTopic(const char *name) {
 }
 
 void Thing::publish(const uint8_t flags, const uint16_t topicId,
-                    const void *data, const uint8_t data_len) {
+                    const void* data, const uint8_t data_len) {
   ++message_id_;
 
-  msg_publish *msg = reinterpret_cast<msg_publish *>(message_buffer_);
+  msg_publish* msg = reinterpret_cast<msg_publish*>(message_buffer_);
 
   msg->length = sizeof(msg_publish) + data_len;
   msg->type = PUBLISH;
@@ -872,7 +872,7 @@ void Thing::publish(const uint8_t flags, const uint16_t topicId,
 void Thing::devreg() {
   SOPLOGLN(F("DEVREG start"));
 
-  msg_devreg *msg = reinterpret_cast<msg_devreg *>(message_buffer_);
+  msg_devreg* msg = reinterpret_cast<msg_devreg*>(message_buffer_);
   response_wait_for_ = DEVREGACK;
   waiting_for_response_ = true;
 
@@ -1015,7 +1015,7 @@ void Thing::devreg() {
   SOPLOGLN(F("out of FINISH state"));
 }
 
-void Thing::devregackHandler(const msg_devregack *msg) {
+void Thing::devregackHandler(const msg_devregack* msg) {
   SOPLOGLN(F("[SUCCESS] REGISTER_THING SUCESS"));
   device_register_ = true;
 }
@@ -1028,7 +1028,7 @@ void Thing::devregHandler() {
 void Thing::subscribe(const uint8_t flags, const uint16_t topicId) {
   ++message_id_;
 
-  msg_subscribe *msg = reinterpret_cast<msg_subscribe *>(message_buffer_);
+  msg_subscribe* msg = reinterpret_cast<msg_subscribe*>(message_buffer_);
 
   msg->length = sizeof(msg_subscribe);
   msg->type = SUBSCRIBE;
@@ -1057,9 +1057,9 @@ void Thing::print_message_buffer_(int start, int length) {
   Serial.println("");
 }
 
-void Thing::print_message_buffer_(void *buf, int length) {
+void Thing::print_message_buffer_(void* buf, int length) {
   // print message_buffer_ BYTE *buf to *(buf + length)
-  char *tmp = (char *)buf;
+  char* tmp = (char*)buf;
   if (length == -1) length = MAX_BUFFER_SIZE;
   for (int i = 0; i < length; i++) {
     Serial.print(*(tmp + i), HEX);
@@ -1076,10 +1076,10 @@ void Thing::print_message_buffer_() {
   }
   Serial.println("");
 }
-void Thing::subscribe(const uint8_t flags, const char *name) {
+void Thing::subscribe(const uint8_t flags, const char* name) {
   ++message_id_;
 
-  msg_subscribe *msg = reinterpret_cast<msg_subscribe *>(message_buffer_);
+  msg_subscribe* msg = reinterpret_cast<msg_subscribe*>(message_buffer_);
 
   msg->length = sizeof(msg_subscribe) + strlen(name) - sizeof(uint16_t);
   msg->type = SUBSCRIBE;
@@ -1098,7 +1098,7 @@ void Thing::subscribe(const uint8_t flags, const char *name) {
 }
 
 void Thing::pingresp(int flag) {
-  message_header *msg = reinterpret_cast<message_header *>(message_buffer_);
+  message_header* msg = reinterpret_cast<message_header*>(message_buffer_);
   msg->length = sizeof(message_header);
   msg->type = PINGRESP;
 
@@ -1108,10 +1108,10 @@ void Thing::pingresp(int flag) {
     broadcast();
 }
 
-void Thing::unsubscribe(const uint8_t flags, const char *name) {
+void Thing::unsubscribe(const uint8_t flags, const char* name) {
   ++message_id_;
 
-  msg_unsubscribe *msg = reinterpret_cast<msg_unsubscribe *>(message_buffer_);
+  msg_unsubscribe* msg = reinterpret_cast<msg_unsubscribe*>(message_buffer_);
 
   msg->length = sizeof(msg_unsubscribe);
   msg->type = UNSUBSCRIBE;
@@ -1132,7 +1132,7 @@ void Thing::unsubscribe(const uint8_t flags, const char *name) {
 void Thing::unsubscribe(const uint8_t flags, const uint16_t topicId) {
   ++message_id_;
 
-  msg_unsubscribe *msg = reinterpret_cast<msg_unsubscribe *>(message_buffer_);
+  msg_unsubscribe* msg = reinterpret_cast<msg_unsubscribe*>(message_buffer_);
 
   msg->length = sizeof(msg_unsubscribe);
   msg->type = UNSUBSCRIBE;
@@ -1150,7 +1150,7 @@ void Thing::unsubscribe(const uint8_t flags, const uint16_t topicId) {
 }
 
 void Thing::pingreq() {
-  msg_pingreq *msg = reinterpret_cast<msg_pingreq *>(message_buffer_);
+  msg_pingreq* msg = reinterpret_cast<msg_pingreq*>(message_buffer_);
   msg->length = sizeof(msg_pingreq) + strlen(client_id_);
   msg->type = PINGREQ;
   strcpy(msg->client_id, client_id_);
@@ -1170,11 +1170,11 @@ void Thing::pingreqHandler() {
 void Thing::pingrespHandler() {}
 
 #ifdef USE_QOS2
-void Thing::pubrec(const msg_publish *recv_msg) {
+void Thing::pubrec(const msg_publish* recv_msg) {
   waiting_for_response_ = true;
   response_wait_for_ = PUBREL;
   while (response_wait_for_ == PUBREL) {
-    msg_pubqos2 *msg = reinterpret_cast<msg_pubqos2 *>(message_buffer_);
+    msg_pubqos2* msg = reinterpret_cast<msg_pubqos2*>(message_buffer_);
     msg->length = sizeof(msg_pubqos2);
     msg->type = PUBREC;
     msg->message_id = recv_msg->message_id;
@@ -1188,11 +1188,11 @@ void Thing::pubrec(const msg_publish *recv_msg) {
   }
 }
 
-void Thing::pubrel(const msg_pubqos2 *recv_msg) {
+void Thing::pubrel(const msg_pubqos2* recv_msg) {
   waiting_for_response_ = true;
   response_wait_for_ = PUBCOMP;
   while (response_wait_for_ == PUBCOMP) {
-    msg_pubqos2 *msg = reinterpret_cast<msg_pubqos2 *>(message_buffer_);
+    msg_pubqos2* msg = reinterpret_cast<msg_pubqos2*>(message_buffer_);
     msg->length = sizeof(msg_pubqos2);
     msg->type = PUBREL;
     msg->message_id = recv_msg->message_id;
@@ -1201,8 +1201,8 @@ void Thing::pubrel(const msg_pubqos2 *recv_msg) {
   }
 }
 
-void Thing::pubcomp(const msg_pubqos2 *recv_msg) {
-  msg_pubqos2 *msg = reinterpret_cast<msg_pubqos2 *>(message_buffer_);
+void Thing::pubcomp(const msg_pubqos2* recv_msg) {
+  msg_pubqos2* msg = reinterpret_cast<msg_pubqos2*>(message_buffer_);
   msg->length = sizeof(msg_pubqos2);
   msg->type = PUBCOMP;
   msg->message_id = recv_msg->message_id;
@@ -1210,15 +1210,15 @@ void Thing::pubcomp(const msg_pubqos2 *recv_msg) {
   unicast();
 }
 
-void Thing::pubrecHandler(const msg_pubqos2 *msg) { pubrel(msg); }
+void Thing::pubrecHandler(const msg_pubqos2* msg) { pubrel(msg); }
 
-void Thing::pubrelHandler(const msg_pubqos2 *msg) {
+void Thing::pubrelHandler(const msg_pubqos2* msg) {
   waiting_for_response_ = false;
   response_wait_for_ = PUBLISH;
   pubcomp(msg);
 }
 
-void Thing::pubcompHandler(const msg_pubqos2 *msg) {
+void Thing::pubcompHandler(const msg_pubqos2* msg) {
   waiting_for_response_ = false;
   response_wait_for_ = PUBLISH;
 }
