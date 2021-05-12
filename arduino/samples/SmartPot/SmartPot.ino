@@ -12,7 +12,6 @@
 // Pins
 static const int kRelayPin = 3;
 static const int kMoisture1Pin = A1;
-static const int kMoisture2Pin = A2;
 
 //----------------------------------------
 // Modules
@@ -35,23 +34,22 @@ Thing smartpot_thing((const char *)"SmartPot", 60, SafeSerial);
 //----------------------------------------
 
 // Value variables
-int pot_status_ = 0;  // == valve status. 0: open, 1: closed
+int pot_status_ = 0;    // == TODO:
+int valve_status_ = 0;  // == valve status. 1: power on
 
 // Getter functions of each Value variable
 int SensePotStatus() { return pot_status_; }
+int SensePotStatus() { return valve_status_; }
 
-int SensePot1Moisture() {
+int SensePotMoisture() {
   return (double)analogRead(kMoisture1Pin) / 1024.0 * 100;
 }
 
-int SensePot2Moisture() {
-  return (double)analogRead(kMoisture2Pin) / 1024.0 * 100;
-}
 // Value declarations
 // Value(name, sense_function, min, max, period(ms));
-Value pot_status((const char *)"pot_status", SensePotStatus, 0, 2, 10000);
-
-Value soil_moisture((const char *)"soil_moisture", SensePot1Moisture, 0, 2000,
+Value pot_status((const char *)"pot_status", SensePotStatus, 0, 3, 10000);
+Value valvue_status((const char *)"pot_status", SensePotStatus, 0, 1, 10000);
+Value soil_moisture((const char *)"soil_moisture", SensePotMoisture, 0, 1000,
                     3000);
 
 //----------------------------------------
@@ -59,22 +57,22 @@ Value soil_moisture((const char *)"soil_moisture", SensePot1Moisture, 0, 2000,
 // an ActuateXXX actuates a Function XXX
 //----------------------------------------
 
-void ActuateValveLock(void *pData) {
+void ActuateValveClose(void *pData) {
   digitalWrite(kRelayPin, HIGH);
-  // delay(300);
-  pot_status_ = 0;
-}
-
-void ActuateValveUnlock(void *pData) {
-  digitalWrite(kRelayPin, LOW);
   // delay(300);
   pot_status_ = 1;
 }
 
+void ActuateValveOpen(void *pData) {
+  digitalWrite(kRelayPin, LOW);
+  // delay(300);
+  pot_status_ = 0;
+}
+
 // Function declarations
 // Function(name, actuate_function, arguments_num, function_attributes_num);
-Function valve_lock((const char *)"valve_lock", ActuateValveLock, 0, 0);
-Function valve_unlock((const char *)"valve_unlock", ActuateValveUnlock, 0, 0);
+Function valve_close((const char *)"valve_close", ActuateValveClose, 0, 0);
+Function valve_open((const char *)"valve_open", ActuateValveOpen, 0, 0);
 
 //----------------------------------------
 // Setup
@@ -91,8 +89,8 @@ void SetupModules() {
 
 void SetupThing() {
   // Setup Functions
-  smartpot_thing.Add(valve_lock);
-  smartpot_thing.Add(valve_unlock);
+  smartpot_thing.Add(valve_close);
+  smartpot_thing.Add(valve_open);
 
   // Setup Values
   smartpot_thing.Add(pot_status);
