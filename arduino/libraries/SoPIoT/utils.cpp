@@ -1,10 +1,10 @@
-#include "utils.h"
-
 #include "argument.h"
 #include "function.h"
+#include "utils.h"
 
-int GetStringArgumentByName(void *pData, const char *name, char **ppszOut) {
-  char *pszData = (char *)GetArgumentByName(pData, name);
+
+int GetStringArgumentByName(void* pData, const char* name, char** ppszOut) {
+  char* pszData = (char*)GetArgumentByName(pData, name);
 
   if (pszData == NULL) {
     return -1;
@@ -14,8 +14,8 @@ int GetStringArgumentByName(void *pData, const char *name, char **ppszOut) {
   return 0;
 }
 
-int GetIntArgumentByName(void *pData, const char *name, int *pnOut) {
-  int *pnData = (int *)GetArgumentByName(pData, name);
+int GetIntArgumentByName(void* pData, const char* name, int* pnOut) {
+  int* pnData = (int*)GetArgumentByName(pData, name);
   if (pnData == NULL) {
     return -1;
   }
@@ -23,8 +23,8 @@ int GetIntArgumentByName(void *pData, const char *name, int *pnOut) {
   return 0;
 }
 
-int GetDoubleArgumentByName(void *pData, const char *name, double *pdbOut) {
-  double *pdbData = (double *)GetArgumentByName(pData, name);
+int GetDoubleArgumentByName(void* pData, const char* name, double* pdbOut) {
+  double* pdbData = (double*)GetArgumentByName(pData, name);
 
   if (pdbData == NULL) {
     return -1;
@@ -34,11 +34,11 @@ int GetDoubleArgumentByName(void *pData, const char *name, double *pdbOut) {
   return 0;
 }
 
-void *GetArgumentByName(void *pData, const char *name) {
-  Function *function = (Function *)pData;
+void* GetArgumentByName(void* pData, const char* name) {
+  Function* function = (Function*)pData;
   int idx = 0;
   int nargs = function->ncurArguments();
-  Argument *ptrarg;
+  Argument* ptrarg;
   for (idx = 0; idx < nargs; idx++) {
     ptrarg = function->getIdxArgument(idx);
     if (strcmp(name, ptrarg->name()) == 0) {
@@ -50,8 +50,8 @@ void *GetArgumentByName(void *pData, const char *name) {
 
 // dtostrf works differently on ARM board.
 // TODO(thsvkd): fix it with the best practice
-char *safe_dtostrf(double val, signed char width, unsigned char prec,
-                  char *sout) {
+char* safe_dtostrf(double val, signed char width, unsigned char prec,
+                   char* sout) {
 #if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM) || \
     defined(ARDUINO_ARCH_MBED)
   asm(".global _printf_float");

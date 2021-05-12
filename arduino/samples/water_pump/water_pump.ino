@@ -14,7 +14,7 @@ static const int kRelayPin = 3;
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
 // class name should not include '_'
-Thing water_pump((const char *) "SmartPotPump", 60, SafeSerial);
+Thing water_pump((const char *)"SmartPotPump", 60, SafeSerial);
 
 //----------------------------------------
 // Values
@@ -27,7 +27,7 @@ int pump_status_ = 0;
 // Getter functions of each Value variable
 int SensePumpStatus() { return pump_status_; }
 
-Value pump_status((const char *) "pump_status", SensePumpStatus, 0, 2, 1000);
+Value pump_status((const char *)"pump_status", SensePumpStatus, 0, 2, 1000);
 
 //----------------------------------------
 // Functions
@@ -44,8 +44,8 @@ void ActuatePumpOff(void *pData) {
   pump_status_ = 0;
 }
 
-Function pump_on((const char *) "pump_on", ActuatePumpOn, 0, 0);
-Function pump_off((const char *) "pump_off", ActuatePumpOff, 0, 0);
+Function pump_on((const char *)"pump_on", ActuatePumpOn, 0, 0);
+Function pump_off((const char *)"pump_off", ActuatePumpOff, 0, 0);
 
 void SetupSerial() { SafeSerial.begin(9600); }
 

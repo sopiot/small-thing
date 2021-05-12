@@ -35,25 +35,24 @@ Thing distance_thing((const char *)"Distance", 60, SafeSerial);
 int distance_status_;
 
 // Getter functions of each Value variable
-int SenseDistanceStatus()
-{
-    long Duration = 0;
-    digitalWrite(kTriggerPin, LOW);
-    delayMicroseconds(2);
-    digitalWrite(kTriggerPin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(kTriggerPin, LOW);
+int SenseDistanceStatus() {
+  long Duration = 0;
+  digitalWrite(kTriggerPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(kTriggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(kTriggerPin, LOW);
 
-    Duration = pulseIn(kReceivePin, HIGH);
-    int Distance_mm = ((Duration / 2.9) / 2);
+  Duration = pulseIn(kReceivePin, HIGH);
+  int Distance_mm = ((Duration / 2.9) / 2);
 
-    return Distance_mm;
+  return Distance_mm;
 }
 
 // Value declarations
 // Value(name, sense_function, min, max, period(ms));
-Value distance_status((const char *)"distance_status", SenseDistanceStatus, 0, 2,
-                    3000);
+Value distance_status((const char *)"distance_status", SenseDistanceStatus, 0,
+                      2, 3000);
 
 //----------------------------------------
 // Functions

@@ -16,11 +16,11 @@ class Attribute {
   /**
    * constructor with name and real value.
    */
-  Attribute(const char *name, double attribute_value, CapType attribute_type);
+  Attribute(const char* name, double attribute_value, CapType attribute_type);
   /**
    * constructor with name and string value.
    */
-  Attribute(const char *name, char *attribute_value, CapType attribute_type);
+  Attribute(const char* name, char* attribute_value, CapType attribute_type);
 
   /** @} */
   /**
@@ -31,16 +31,16 @@ class Attribute {
   /**
    * set name of the attribute
    */
-  void set_name(const char *name);
+  void set_name(const char* name);
   /**
    * get name's pointer of the attribute
    */
-  char *name();
+  char* name();
 
   /**
    * set string or binary value of the attribute
    */
-  void set_attribute_value(const char *attribute_value);
+  void set_attribute_value(const char* attribute_value);
 
   /**
    * set real value of the attribute
@@ -51,7 +51,7 @@ class Attribute {
    * get json_object* to register to the middleware, it will not be used in user
    * level
    */
-  void GetInformation(char *buffer);
+  void GetInformation(char* buffer);
 
   /**
    * get type status of the attribute, it also not be used in user level
@@ -64,8 +64,8 @@ class Attribute {
    */
   void Initialize();
   double real_value_;
-  char *string_value_;
-  char *name_;             /** < A name of the value*/
+  char* string_value_;
+  char* name_;             /** < A name of the value*/
   CapType attribute_type_; /** < represents type of the value */
 };
 

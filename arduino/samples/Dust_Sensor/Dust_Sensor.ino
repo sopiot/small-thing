@@ -6,6 +6,7 @@
 #include <thing.h>
 
 // Module libraries
+#include <pm2008_i2c.h>
 
 // Pins
 static const int kTriggerPin = 3;
@@ -24,7 +25,7 @@ static const int kReceivePin = 4;
 // Thing declaration
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
-Thing distance_thing((const char *)"Distance", 60, SafeSerial);
+Thing dust_sensor_thing((const char*)"DustSensor", 60, SafeSerial);
 
 //----------------------------------------
 // Values
@@ -32,28 +33,46 @@ Thing distance_thing((const char *)"Distance", 60, SafeSerial);
 //----------------------------------------
 
 // Value variables
-int distance_status_;
+int dust_status_;
 
 // Getter functions of each Value variable
-int SenseDistanceStatus()
-{
-    long Duration = 0;
-    digitalWrite(kTriggerPin, LOW);
-    delayMicroseconds(2);
-    digitalWrite(kTriggerPin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(kTriggerPin, LOW);
+int SenseDustStatus() {
+  uint8_t ret = pm2008_i2c.read();
+  if (ret == 0) {
+    // Serial.print("PM 1.0 (GRIMM) : ");
+    // Serial.println(pm2008_i2c.pm1p0_grimm);
+    // Serial.print("PM 2.5 (GRIMM) : : ");
+    // Serial.println(pm2008_i2c.pm2p5_grimm);
+    // Serial.print("PM 10 (GRIMM) : : ");
+    // Serial.println(pm2008_i2c.pm10_grimm);
+    // Serial.print("PM 1.0 (TSI) : ");
+    // Serial.println(pm2008_i2c.pm1p0_tsi);
+    // Serial.print("PM 2.5 (TSI) : : ");
+    // Serial.println(pm2008_i2c.pm2p5_tsi);
+    // Serial.print("PM 10 (TSI) : : ");
+    // Serial.println(pm2008_i2c.pm10_tsi);
+    // Serial.print("Number of 0.3 um : ");
+    // Serial.println(pm2008_i2c.number_of_0p3_um);
+    // Serial.print("Number of 0.5 um : ");
+    // Serial.println(pm2008_i2c.number_of_0p5_um);
+    // Serial.print("Number of 1 um : ");
+    // Serial.println(pm2008_i2c.number_of_1_um);
+    // Serial.print("Number of 2.5 um : ");
+    // Serial.println(pm2008_i2c.number_of_2p5_um);
+    // Serial.print("Number of 5 um : ");
+    // Serial.println(pm2008_i2c.number_of_5_um);
+    // Serial.print("Number of 10 um : ");
+    // Serial.println(pm2008_i2c.number_of_10_um);
 
-    Duration = pulseIn(kReceivePin, HIGH);
-    int Distance_mm = ((Duration / 2.9) / 2);
+    return (int)pm2008_i2c.pm2p5_grimm;
+  }
 
-    return Distance_mm;
+  return -1;
 }
 
 // Value declarations
 // Value(name, sense_function, min, max, period(ms));
-Value distance_status((const char *)"distance_status", SenseDistanceStatus, 0, 2,
-                    3000);
+Value dust_status((const char*)"dust_status", SenseDustStatus, 0, 2, 3000);
 
 //----------------------------------------
 // Functions
@@ -71,20 +90,20 @@ void SetupSerial() { SafeSerial.begin(9600); }
 
 void SetupModules() {
   // Setup Pin mode
-  pinMode(kTriggerPin, OUTPUT);
-  pinMode(kReceivePin, INPUT);
 
   // Attach modules
+  pm2008_i2c.begin();
+  pm2008_i2c.command();
 }
 
 void SetupThing() {
   // Setup Functions
 
   // Setup Values
-  distance_thing.Add(distance_status);
+  dust_sensor_thing.Add(dust_status);
 
   // Setup Thing
-  distance_thing.Setup();
+  dust_sensor_thing.Setup();
 }
 
 //----------------------------------------
@@ -97,4 +116,4 @@ void setup() {
   SetupThing();
 }
 
-void loop() { distance_thing.Loop(); }
+void loop() { dust_sensor_thing.Loop(); }
