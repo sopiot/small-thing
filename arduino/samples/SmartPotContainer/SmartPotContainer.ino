@@ -154,7 +154,7 @@ void SendIR(unsigned int *signal, int length) {
 // Value variables
 int pump_status_ = 0;
 int water_level_[2];
-double water_percentage_ = 0.0;
+int water_percentage_ = 0;
 double unit = 100.0 / WATER_LEVEL_SENSOR_NUM;
 int brightness_ = 0;
 int led_status_ = 0;  // for plant(value in IR)
@@ -171,7 +171,15 @@ int SenseWaterLevel() {
     sum += (water_level_[i] == 0) ? unit : 0.0;
   }
 
-  return (int)sum;
+  water_percentage_ = (int)sum;
+  if (water_percentage_ == 0) {
+    digitalWrite(kMiniRedPin, HIGH);
+  }
+  else {
+    digitalWrite(kMiniRedPin, LOW);
+  }
+
+  return water_percentage_;
 }
 
 // Getter functions of each Value variable
