@@ -1,4 +1,4 @@
-//pump(relay) + water level sensor + light sensor + IR
+// pump(relay) + water level sensor + light sensor + IR
 
 //----------------------------------------
 // Libraries
@@ -6,6 +6,7 @@
 
 // SoPIoT Thing library
 #include <thing.h>
+#define WATER_LEVEL_SENSOR_NUM 2
 
 //----------------------------------------
 // Thing
@@ -13,8 +14,8 @@
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
 // class name should not include '_'
-Thing smart_pot_container_thing((const char *) "SmartPotContainer", 60, SafeSerial);
-
+Thing smart_pot_container_thing((const char *)"SmartPotContainer", 60,
+                                SafeSerial);
 
 /* Remote Controller Signals ( 110V power charging)
 unsigned int kOn[] =
@@ -91,17 +92,13 @@ unsigned int kStrobeSignal[] = {
     580,  1644, 580, 1644, 580, 1632, 584, 40884, 9024, 2208, 588};
 
 // Pins
-static const int kLightPin = A0;
-static const int kTransmitterPin = 7;
+const int kLightPin = A0;       // light sensor
+const int kTransmitterPin = 7;  // IR transmitter
+const int kWaterLevelPin[WATER_LEVEL_SENSOR_NUM] = {2, 3};
+const int kRelayPin = 6;     // pump
+const int kMiniRedPin = 12;  // TODO: led status for water level low
 
-static const int kRelayPin = 3;
-
-static const int kWaterLevelPin = A4;
-
-static const int kMiniGreenPin = 10;
-static const int kMiniRedPin = 12;
-
-//led helper function
+// led helper function
 void custom_delay_usec(unsigned long uSecs) {
   unsigned long Start = micros();
   unsigned long endMicros = Start + uSecs;
@@ -156,46 +153,56 @@ void SendIR(unsigned int *signal, int length) {
 
 // Value variables
 int pump_status_ = 0;
-int water_level_;
-
+int water_level_[2];
+int water_percentage_ = 0;
+double unit = 100.0 / WATER_LEVEL_SENSOR_NUM;
 int brightness_ = 0;
-int led_status_ = 0; // for plant(value in IR)
-int led_color_ = 0; // 0: red, 1: green, 2: strobe
+int led_status_ = 0;  // for plant(value in IR)
+int led_color_ = 0;   // 0: red, 1: green, 2: strobe
 
-int mini_led_status_ = 0; // for water level status
+int mini_led_status_ = 0;  // for water level status
 
 // Getter functions of each Value variable
-int SensePumpStatus() { 
-  return pump_status_; 
+int SenseWaterLevel() {
+  double sum = 0;
+
+  for (int i = 0; i < WATER_LEVEL_SENSOR_NUM; i++) {
+    water_level_[i] = digitalRead(kWaterLevelPin[i]);
+    sum += (water_level_[i] == 0) ? unit : 0.0;
+  }
+
+  water_percentage_ = (int)sum;
+  if (water_percentage_ == 0) {
+    digitalWrite(kMiniRedPin, HIGH);
+  }
+  else {
+    digitalWrite(kMiniRedPin, LOW);
+  }
+
+  return water_percentage_;
 }
 
-int SenseWaterLevel() { 
-    water_level_ = analogRead(kWaterLevelPin); 
-    return water_level_;
-}
+// Getter functions of each Value variable
+int SensePumpStatus() { return pump_status_; }
 
 int SenseBrightness() {
-  brightness_ = (double) analogRead(kLightPin);
-  return brightness_; 
+  brightness_ = analogRead(kLightPin);
+  return brightness_;
 }
 
-int SenseLEDStatus() {
-  return led_status_;
-}
+int SenseLEDStatus() { return led_status_; }
 
 // Value declarations
 // Value(name, sense_function, min, max, period(ms));
-Value pump_status((const char *) "pump_status", SensePumpStatus, 0, 2, 1000);
-Value water_level((const char *)"water_level", SenseWaterLevel, 0, 2048, 1000);
-Value brightness((const char *) "brightness", SenseBrightness, 0, 1024, 3000);
-Value led_status((const char *) "led_status", SenseLEDStatus, 0, 2, 3000);
+Value water_level((const char *)"water_level", SenseWaterLevel, 0, 100, 1000);
+Value brightness((const char *)"brightness", SenseBrightness, 0, 1000, 3000);
+Value pump_status((const char *)"pump_status", SensePumpStatus, 0, 1, 1000);
+Value led_status((const char *)"led_status", SenseLEDStatus, 0, 1, 3000);
 
 //----------------------------------------
 // Functions
 // an ActuateXXX actuates a Function XXX
 //----------------------------------------
-
-
 
 void ActuateLEDOn(void *pData) {
   SendIR(kOnSignal, sizeof(kOnSignal) / sizeof(kOnSignal[0]));
@@ -208,16 +215,28 @@ void ActuateLEDOff(void *pData) {
 }
 
 void ActuateChangeColor(void *pData) {
+  if (led_status_ == 0) {
+    return;
+  }
+
   led_color_ = (led_color_ + 1) % 3;
-  switch(led_color_) {
-    case 0: SendIR(kRedSignal, sizeof(kRedSignal) / sizeof(kRedSignal[0])); break;
-    case 1: SendIR(kGreenSignal, sizeof(kGreenSignal) / sizeof(kGreenSignal[0])); break;
-    case 2: SendIR(kBlueSignal, sizeof(kBlueSignal) / sizeof(kBlueSignal[0])); break;
-    default: SendIR(kGreenSignal, sizeof(kGreenSignal) / sizeof(kGreenSignal[0])); break;
+  switch (led_color_) {
+    case 0:
+      SendIR(kRedSignal, sizeof(kRedSignal) / sizeof(kRedSignal[0]));
+      break;
+    case 1:
+      SendIR(kGreenSignal, sizeof(kGreenSignal) / sizeof(kGreenSignal[0]));
+      break;
+    case 2:
+      SendIR(kBlueSignal, sizeof(kBlueSignal) / sizeof(kBlueSignal[0]));
+      break;
+    default:
+      SendIR(kGreenSignal, sizeof(kGreenSignal) / sizeof(kGreenSignal[0]));
+      break;
   }
 }
 
-//pump function
+// pump function
 void ActuatePumpOn(void *pData) {
   digitalWrite(kRelayPin, HIGH);
   pump_status_ = 1;
@@ -228,31 +247,30 @@ void ActuatePumpOff(void *pData) {
   pump_status_ = 0;
 }
 
-Function led_on((const char *) "led_on", ActuateLEDOn, 0, 0);
-Function led_off((const char *) "led_off", ActuateLEDOff, 0, 0);
-Function change_color((const char *) "change_color", ActuateChangeColor, 0, 0);
+Function led_on((const char *)"led_on", ActuateLEDOn, 0, 0);
+Function led_off((const char *)"led_off", ActuateLEDOff, 0, 0);
+Function change_color((const char *)"change_color", ActuateChangeColor, 0, 0);
 
-Function pump_on((const char *) "pump_on", ActuatePumpOn, 0, 0);
-Function pump_off((const char *) "pump_off", ActuatePumpOff, 0, 0);
+Function pump_on((const char *)"pump_on", ActuatePumpOn, 0, 0);
+Function pump_off((const char *)"pump_off", ActuatePumpOff, 0, 0);
 
 void SetupSerial() { SafeSerial.begin(9600); }
 
 void SetupModules() {
   // Setup Pin mode
-  pinMode(kLightPin, INPUT);
-  pinMode(kWaterLevelPin, INPUT);
-
   pinMode(kRelayPin, OUTPUT);
   pinMode(kTransmitterPin, OUTPUT);
-  pinMode(kMiniGreenPin, OUTPUT);
   pinMode(kMiniRedPin, OUTPUT);
+  for (int i = 0; i < WATER_LEVEL_SENSOR_NUM; i++) {
+    pinMode(kWaterLevelPin[i], INPUT);
+  }
 
   // Setup initial state
   // pump
   digitalWrite(kRelayPin, LOW);
   pump_status_ = 0;
 
-  //led
+  // led
   SendIR(kOffSignal, sizeof(kOffSignal) / sizeof(kOffSignal[0]));
   led_status_ = 0;
   led_color_ = 0;
@@ -262,11 +280,11 @@ void SetupThing() {
   // Setup Functions
   smart_pot_container_thing.Add(pump_on);
   smart_pot_container_thing.Add(pump_off);
-  
+
   smart_pot_container_thing.Add(led_on);
   smart_pot_container_thing.Add(led_off);
   smart_pot_container_thing.Add(change_color);
- 
+
   // Setup Values
   smart_pot_container_thing.Add(pump_status);
   smart_pot_container_thing.Add(water_level);
