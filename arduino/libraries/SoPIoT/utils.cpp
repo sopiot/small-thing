@@ -40,7 +40,7 @@ void* GetArgumentByName(void* pData, const char* name) {
   int nargs = function->ncurArguments();
   Argument* ptrarg;
   for (idx = 0; idx < nargs; idx++) {
-    ptrarg = function->getIdxArgument(idx);
+    ptrarg = function->getArgument(idx);
     if (strcmp(name, ptrarg->name()) == 0) {
       return ptrarg->value();
     }

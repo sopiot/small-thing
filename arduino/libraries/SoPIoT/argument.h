@@ -5,8 +5,8 @@
 
 class Argument {
  public:
-  Argument(const char* name, int min, int max, CapType arg_type);
-  Argument(const char* name, double min, double max, CapType arg_type);
+  Argument(const char* name, int min, int max, SoPType arg_type);
+  Argument(const char* name, double min, double max, SoPType arg_type);
 
   ~Argument();
 
@@ -18,7 +18,7 @@ class Argument {
   int get_order();
   void set_order(const int order);
 
-  CapType arg_type(void);
+  SoPType arg_type(void);
 
   void GetInformation(char* buf);
 
@@ -36,7 +36,7 @@ class Argument {
   void* value_;
   void* min_;
   void* max_;
-  CapType arg_type_; /** < represents type of the argument */
+  SoPType arg_type_; /** < represents type of the argument */
   int order_;        /** < represents order of argument */
 };
 

@@ -58,6 +58,10 @@ Thing::~Thing() {
   free(class_name_);
 }
 
+const char *Thing::ClientId() {
+  return client_id_;
+}
+
 void Thing::Add(Value& v) {
   if (num_values_ < MAX_VALUE_NUM) {
     values_[num_values_++] = &v;
@@ -69,14 +73,6 @@ void Thing::Add(Value& v) {
 void Thing::Add(Function& f) {
   if (num_functions_ < MAX_FUNCTION_NUM) {
     functions_[num_functions_++] = &f;
-  } else {
-    SOPLOGLN(F("It cannot be added (more than limit)\n"));
-  }
-}
-
-void Thing::Add(Attribute& a) {
-  if (num_attributes_ < MAX_ATTRIBUTE_NUM) {
-    attributes_[num_attributes_++] = &a;
   } else {
     SOPLOGLN(F("It cannot be added (more than limit)\n"));
   }
@@ -162,6 +158,8 @@ void Thing::Setup() {
       ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
 
     } while ((values_[i]->set_publish_id(registered_id_)) == (UINT16_MAX));
+
+    values_[i]->AddTag(client_id_);
   }
 
   SOPLOGLN(F("Setup REGISTER Function Topics"));
@@ -194,6 +192,8 @@ void Thing::Setup() {
       registerTopic(buffer);
       ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     } while ((functions_[i]->set_id_2004(registered_id_)) == (UINT16_MAX));
+
+    functions_[i]->AddTag(client_id_);
 
     SOPLOG(F("Function Topic: "));
     SOPLOGLN(buffer);
@@ -893,24 +893,23 @@ void Thing::devreg() {
       unicast();
       ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     }
-  }
 
-  SOPLOG(F("num_attributes_: "));
-  SOPLOGLN(num_attributes_);
-  for (int i = 0; i < num_attributes_; i++) {
-    device_register_ = false;
-    while (!device_register_) {
-      message_id_++;
-      msg->type = DEVREG;
-      msg->pub_id = bswap(i);
-      msg->status = ATTRIBUTE;
-      msg->message_id = bswap(message_id_);
-      attributes_[i]->GetInformation(buffer);
-      SOPLOGLN(buffer);
-      memcpy(msg->data, buffer, strlen(buffer) + 1);
-      msg->length = sizeof(msg_devreg) + strlen(buffer) + 1;
-      unicast();
-      ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+    SOPLOG(F("num_value_tags: "));
+    SOPLOGLN(values_[i]->ncurValueTags());
+    for (int j = 0; j < values_[i]->ncurValueTags(); j++) {
+      device_register_ = false;
+      while (!device_register_) {
+        message_id_++;
+        msg->type = DEVREG;
+        msg->pub_id = bswap(j);
+        msg->status = VALUE_TAG;
+        msg->message_id = bswap(message_id_);
+        values_[i]->getTag(j)->GetInformation(buffer);
+        memcpy(msg->data, buffer, strlen(buffer) + 1);
+        msg->length = sizeof(msg_devreg) + strlen(buffer) + 1;
+        unicast();
+        ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+      }
     }
   }
 
@@ -942,7 +941,7 @@ void Thing::devreg() {
         msg->pub_id = bswap(j);
         msg->status = ARGUMENT;
         msg->message_id = bswap(message_id_);
-        functions_[i]->getIdxArgument(j)->GetInformation(buffer);
+        functions_[i]->getArgument(j)->GetInformation(buffer);
         memcpy(msg->data, buffer, strlen(buffer) + 1);
         msg->length = sizeof(msg_devreg) + strlen(buffer) + 1;
         unicast();
@@ -950,17 +949,17 @@ void Thing::devreg() {
       }
     }
 
-    SOPLOG(F("num_function_attributes: "));
-    SOPLOGLN(functions_[i]->ncurFunctionAttributes());
-    for (int j = 0; j < functions_[i]->ncurFunctionAttributes(); j++) {
+    SOPLOG(F("num_function_tags: "));
+    SOPLOGLN(functions_[i]->ncurFunctionTags());
+    for (int j = 0; j < functions_[i]->ncurFunctionTags(); j++) {
       device_register_ = false;
       while (!device_register_) {
         message_id_++;
         msg->type = DEVREG;
         msg->pub_id = bswap(j);
-        msg->status = FUNCTION_ATTRIBUTE;
+        msg->status = FUNCTION_TAG;
         msg->message_id = bswap(message_id_);
-        functions_[i]->getIdxFunctionAttribute(j)->GetInformation(buffer);
+        functions_[i]->getTag(j)->GetInformation(buffer);
         memcpy(msg->data, buffer, strlen(buffer) + 1);
         msg->length = sizeof(msg_devreg) + strlen(buffer) + 1;
         unicast();

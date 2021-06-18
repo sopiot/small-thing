@@ -233,7 +233,6 @@ struct msg_devregack : public message_header {
 // Config
 #define MAX_VALUE_NUM 10
 #define MAX_FUNCTION_NUM 5
-#define MAX_ATTRIBUTE_NUM 5
 #define MAX_NAME_LENGTH 20
 #define MAX_BUFFER_SIZE 66
 
@@ -284,21 +283,21 @@ struct msg_devregack : public message_header {
 #define SafeSerial Serial
 #endif
 
-typedef enum _captype {
+typedef enum _SoPType {
   UNDEFINED = 0,
   VOID,
   INTEGER,
   DOUBLE,
   BOOL,
   STRING,
-} CapType;
+} SoPType;
 
 typedef enum _capdevreg {
   VALUE = 0,
-  ATTRIBUTE,
+  VALUE_TAG,
   FUNCTION,
   ARGUMENT,
-  FUNCTION_ATTRIBUTE,
+  FUNCTION_TAG,
   DURATION,
   FINISH,
 } CapRegStatus;

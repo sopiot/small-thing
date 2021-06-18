@@ -6,14 +6,14 @@ void Function::Initialize() {
   function_ = NULL;
   nmaxArguments_ = 0;
   ncurArguments_ = 0;
-  nMaxFunctionAttributes_ = 0;
-  ncurFunctionAttributes_ = 0;
+  nmaxFunctionTags_ = 0;
+  ncurFunctionTags_ = 0;
   ptsArguments_ = NULL;
   function_classifier_ = UNDEFINED;
 }
 
 Function::Function(const char* name, VoidFunction func, int nArguments,
-                   int nFunctionAttributes) {
+                   int nFunctionTags) {
   Initialize();
   set_name(name);
   set_function(func);
@@ -23,11 +23,11 @@ Function::Function(const char* name, VoidFunction func, int nArguments,
     MEM_ALLOC_CHECK(ptsArguments_);
   }
 
-  nMaxFunctionAttributes_ = nFunctionAttributes;
-  if (nFunctionAttributes > 0) {
-    ptsFunctionAttributes_ =
-        (Attribute**)malloc(sizeof(Attribute*) * nFunctionAttributes);
-    MEM_ALLOC_CHECK(ptsFunctionAttributes_);
+  nmaxFunctionTags_ = nFunctionTags;
+  if (nFunctionTags > 0) {
+    ptsFunctionTags_ =
+        (Tag**)malloc(sizeof(Tag*) * nFunctionTags);
+    MEM_ALLOC_CHECK(ptsFunctionTags_);
   }
 }
 
@@ -42,13 +42,13 @@ Function::~Function() {
   }
   free(ptsArguments_);
 
-  for (int i = 0; i < nMaxFunctionAttributes_; i++) {
-    if (ptsFunctionAttributes_[i] != NULL) {
-      free(ptsFunctionAttributes_[i]);
-      ptsFunctionAttributes_[i] = NULL;
+  for (int i = 0; i < nmaxFunctionTags_; i++) {
+    if (ptsFunctionTags_[i] != NULL) {
+      free(ptsFunctionTags_[i]);
+      ptsFunctionTags_[i] = NULL;
     }
   }
-  free(ptsFunctionAttributes_);
+  free(ptsFunctionTags_);
 }
 
 void Function::AddArgument(Argument& argument) {
@@ -62,9 +62,15 @@ void Function::AddArgument(Argument& argument) {
   argument.set_order(ncurArguments_++);
 }
 
-void Function::AddFunctionAttribute(Attribute& function_attribute) {
-  ptsFunctionAttributes_[ncurFunctionAttributes_] = &function_attribute;
-  ncurFunctionAttributes_++;
+void Function::AddTag(const char *tag_name) {
+  Tag *p_tag = new Tag(tag_name);
+  ptsFunctionTags_[ncurFunctionTags_] = p_tag;
+  ncurFunctionTags_++;
+}
+
+void Function::AddTag(Tag& function_tag) {
+  ptsFunctionTags_[ncurFunctionTags_] = &function_tag;
+  ncurFunctionTags_++;
 }
 
 char* Function::name() { return (char*)name_; }
@@ -110,19 +116,13 @@ uint16_t Function::set_id_1003(uint16_t id_1003) {
 
 uint16_t Function::id_1003() { return id_1003_; }
 
-uint16_t Function::set_id_2004_deprecated(uint16_t id_2004) {
-  return (id_2004_deprecated_ = id_2004);
-}
-
-uint16_t Function::id_2004_deprecated() { return id_2004_deprecated_; }
-
 uint16_t Function::set_id_2004(uint16_t id_2004) {
   return (id_2004_ = id_2004);
 }
 
 uint16_t Function::id_2004() { return id_2004_; }
 
-CapType Function::function_classifier() { return function_classifier_; }
+SoPType Function::function_classifier() { return function_classifier_; }
 
 void Function::GetInformation(char* buffer) {
   int i, len;
@@ -131,10 +131,9 @@ void Function::GetInformation(char* buffer) {
     case DOUBLE:
     case BOOL:
     case VOID:
-      // index =
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s\t%d", name_, ncurArguments_);
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s\t%d\t%d", name_, ncurArguments_, ncurFunctionTags_);
       break;
-    default:  // error!
+    default:
       SOPLOGLN(F("[ERROR] Function::GetInformation -> ERROR!"));
       break;
   }

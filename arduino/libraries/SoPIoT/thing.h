@@ -1,7 +1,6 @@
 #ifndef SMALL_THING_THING_H_
 #define SMALL_THING_THING_H_
 
-#include "attribute.h"
 #include "common.h"
 #include "function.h"
 #include "value.h"
@@ -17,11 +16,12 @@ class Thing {
   // Destrcutor
   ~Thing();
 
+  const char *ClientId();
+
   // Attach stuffs to Thing.
   // For convenience, can be overrided with Value, Function, Attribute
   void Add(Value& v);
   void Add(Function& f);
-  void Add(Attribute& a);
 
   // Setup
   // Call it after setting up Serial, client config, Functions, Values
@@ -148,11 +148,9 @@ class Thing {
   // data members
   uint8_t num_values_;
   uint8_t num_functions_;
-  uint8_t num_attributes_;
 
   Value* values_[MAX_VALUE_NUM];
   Function* functions_[MAX_FUNCTION_NUM];
-  Attribute* attributes_[MAX_ATTRIBUTE_NUM];
 
   uint16_t id_1001_;
   uint16_t id_1002_;

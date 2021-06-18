@@ -9,7 +9,7 @@ void Argument::Initialize() {
   max_ = NULL;
 }
 
-Argument::Argument(const char* name, int min, int max, CapType arg_type) {
+Argument::Argument(const char* name, int min, int max, SoPType arg_type) {
   Initialize();
   arg_type_ = arg_type;
   set_min(min);
@@ -17,7 +17,7 @@ Argument::Argument(const char* name, int min, int max, CapType arg_type) {
   set_name(name);
 }
 
-Argument::Argument(const char* name, double min, double max, CapType arg_type) {
+Argument::Argument(const char* name, double min, double max, SoPType arg_type) {
   Initialize();
   arg_type_ = arg_type;
   set_min(min);
@@ -188,4 +188,4 @@ void Argument::GetInformation(char* buffer) {
   }
 }
 
-CapType Argument::arg_type(void) { return arg_type_; }
+SoPType Argument::arg_type(void) { return arg_type_; }

@@ -13,16 +13,25 @@ void Value::Initialize() {
   value_classifier_ = UNDEFINED;
 }
 
-Value::Value(const char* name, BoolValue value, int sleep_ms_interval) {
+void Value::InitTags(int nValueTags) {
+  nmaxValueTags_ = nValueTags;
+  if (nValueTags > 0) {
+  ptsValueTags_ = (Tag**)malloc(sizeof(Tag*) * nValueTags);
+  MEM_ALLOC_CHECK(ptsValueTags_);
+  }
+}
+
+Value::Value(const char* name, BoolValue value, int nValueTags, int sleep_ms_interval) {
   Initialize();
   set_name(name);
   set_value(value);
   set_max(1);
   set_min(0);
   set_sleep_interval(sleep_ms_interval);
+  InitTags(nValueTags);
 }
 
-Value::Value(const char* name, IntegerValue value, int min, int max,
+Value::Value(const char* name, IntegerValue value, int nValueTags, int min, int max,
              int sleep_ms_interval) {
   Initialize();
   set_name(name);
@@ -30,9 +39,10 @@ Value::Value(const char* name, IntegerValue value, int min, int max,
   set_min(min);
   set_max(max);
   set_sleep_interval(sleep_ms_interval);
+  InitTags(nValueTags);
 }
 
-Value::Value(const char* name, StringValue value, int min, int max,
+Value::Value(const char* name, StringValue value, int nValueTags, int min, int max,
              int sleep_ms_interval) {
   Initialize();
   set_name(name);
@@ -40,9 +50,10 @@ Value::Value(const char* name, StringValue value, int min, int max,
   set_min(min);
   set_max(max);
   set_sleep_interval(sleep_ms_interval);
+  InitTags(nValueTags);
 }
 
-Value::Value(const char* name, DoubleValue value, double min, double max,
+Value::Value(const char* name, DoubleValue value, int nValueTags, double min, double max,
              int sleep_ms_interval) {
   Initialize();
   set_name(name);
@@ -50,6 +61,7 @@ Value::Value(const char* name, DoubleValue value, double min, double max,
   set_min(min);
   set_max(max);
   set_sleep_interval(sleep_ms_interval);
+  InitTags(nValueTags);
 }
 
 Value::~Value() {
@@ -59,6 +71,25 @@ Value::~Value() {
   if (max_) free(max_);
   if (prev_) free(prev_);
   if (user_string_buffer_) free(user_string_buffer_);
+
+  for (int i = 0; i < nmaxValueTags_; i++) {
+    if (ptsValueTags_[i] != NULL) {
+      free(ptsValueTags_[i]);
+      ptsValueTags_[i] = NULL;
+    }
+  }
+  free(ptsValueTags_);
+}
+
+void Value::AddTag(const char *tag_name) {
+  Tag *p_tag = new Tag(tag_name);
+  ptsValueTags_[ncurValueTags_] = p_tag;
+  ncurValueTags_++;
+}
+
+void Value::AddTag(Tag& value_tag) {
+  ptsValueTags_[ncurValueTags_] = &value_tag;
+  ncurValueTags_++;
 }
 
 char* Value::name() { return (char*)name_; }
@@ -199,35 +230,29 @@ void Value::set_sleep_interval(const int sleep_ms_interval) {
 int Value::get_sleep_ms_interval() { return sleep_ms_interval_; }
 void Value::set_last_sent_time() { last_sent_time_ = millis(); }
 
-CapType Value::value_classifier() { return value_classifier_; }
-
-uint16_t Value::set_publish_id(uint16_t publish_id) {
-  return (publish_id_ = publish_id);
-}
-
-uint16_t Value::publish_id() { return publish_id_; }
+SoPType Value::value_classifier() { return value_classifier_; }
 
 void Value::GetInformation(char* buffer) {
   switch (value_classifier_) {
     case BOOL:
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tbool\t%d\t%d", name_, *(int*)min_,
-               *(int*)max_);
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tbool\t%d\t%d\t%d", name_, *(int*)min_,
+               *(int*)max_, ncurValueTags_);
       break;
     case INTEGER:
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tint\t%d\t%d", name_, *(int*)min_,
-               *(int*)max_);
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tint\t%d\t%d\t%d", name_, *(int*)min_,
+               *(int*)max_, ncurValueTags_);
       break;
     case STRING:
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tstring\t%d\t%d", name_,
-               *(int*)min_, *(int*)max_);
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tstring\t%d\t%d\t%d", name_,
+               *(int*)min_, *(int*)max_, ncurValueTags_);
       break;
     case DOUBLE: {
       char min_temp[10];
       char max_temp[10];
       safe_dtostrf(*(double*)min_, 8, 2, min_temp);
       safe_dtostrf(*(double*)max_, 8, 2, max_temp);
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tdouble\t%s\t%s", name_, min_temp,
-               max_temp);
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tdouble\t%s\t%s\t%d", name_, min_temp,
+               max_temp, ncurValueTags_);
       break;
     }
     default:
@@ -292,3 +317,9 @@ bool Value::capVal2str(char* buffer) {
 
   return value_changed(val);
 }
+
+uint16_t Value::set_publish_id(uint16_t publish_id) {
+  return (publish_id_ = publish_id);
+}
+
+uint16_t Value::publish_id() { return publish_id_; }
