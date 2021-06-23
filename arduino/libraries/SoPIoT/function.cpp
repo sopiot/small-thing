@@ -25,8 +25,7 @@ Function::Function(const char* name, VoidFunction func, int nArguments,
 
   nmaxFunctionTags_ = nFunctionTags;
   if (nFunctionTags > 0) {
-    ptsFunctionTags_ =
-        (Tag**)malloc(sizeof(Tag*) * nFunctionTags);
+    ptsFunctionTags_ = (Tag**)malloc(sizeof(Tag*) * nFunctionTags);
     MEM_ALLOC_CHECK(ptsFunctionTags_);
   }
 }
@@ -62,8 +61,8 @@ void Function::AddArgument(Argument& argument) {
   argument.set_order(ncurArguments_++);
 }
 
-void Function::AddTag(const char *tag_name) {
-  Tag *p_tag = new Tag(tag_name);
+void Function::AddTag(const char* tag_name) {
+  Tag* p_tag = new Tag(tag_name);
   ptsFunctionTags_[ncurFunctionTags_] = p_tag;
   ncurFunctionTags_++;
 }
@@ -131,7 +130,8 @@ void Function::GetInformation(char* buffer) {
     case DOUBLE:
     case BOOL:
     case VOID:
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s\t%d\t%d", name_, ncurArguments_, ncurFunctionTags_);
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s\t%s\t%s\t%d", name_, "", "void",
+               ncurArguments_);
       break;
     default:
       SOPLOGLN(F("[ERROR] Function::GetInformation -> ERROR!"));
