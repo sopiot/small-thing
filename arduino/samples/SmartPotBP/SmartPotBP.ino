@@ -44,8 +44,11 @@ Value soil_moisture_level((const char *)"soil_moisture_level",
 
 void ActuatePumpOnOff(void *pData) {
   int *time = (int *)pData;
+  SOPLOGLN("PUMP ON : ");
+  SOPLOGLN(*time);
   digitalWrite(kPumpPin, HIGH);
-  delay((*time)*1000);
+  delay(300);
+  SOPLOGLN("PUMP OFF");
   digitalWrite(kPumpPin, LOW);
   pump_status_ = 0;
 }
@@ -54,7 +57,7 @@ Argument argTime((const char *)"time", 0, 100, INTEGER);
 
 // Function declarations
 // Function(name, actuate_function, arguments_num, function_tags_num);
-Function pump_on_off((const char *)"pump_on_off", ActuatePumpOnOff, 1, 5);
+Function pump_on_off((const char *)"pump", ActuatePumpOnOff, 1, 5);
 
 //----------------------------------------
 // Setup
@@ -72,17 +75,17 @@ void SetupModules() {
 void SetupThing() {
   // Setup Functions
   pump_on_off.AddArgument(argTime);
-  pump_on_off.AddTag(tag_SmartPot);
-  pump_on_off.AddTag(tag_SmartPotBP);
+  // pump_on_off.AddTag(tag_SmartPot);
+  // pump_on_off.AddTag(tag_SmartPotBP);
   thing.Add(pump_on_off);
 
   // Setup Values
-  pump_status.AddTag(tag_SmartPot);
-  pump_status.AddTag(tag_SmartPotBP);
-  water_level.AddTag(tag_SmartPot);
-  water_level.AddTag(tag_SmartPotBP);
-  soil_moisture_level.AddTag(tag_SmartPot);
-  soil_moisture_level.AddTag(tag_SmartPotBP);
+  // pump_status.AddTag(tag_SmartPot);
+  // pump_status.AddTag(tag_SmartPotBP);
+  // water_level.AddTag(tag_SmartPot);
+  // water_level.AddTag(tag_SmartPotBP);
+  // soil_moisture_level.AddTag(tag_SmartPot);
+  // soil_moisture_level.AddTag(tag_SmartPotBP);
   thing.Add(pump_status);
   thing.Add(water_level);
   thing.Add(soil_moisture_level);

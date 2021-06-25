@@ -165,7 +165,7 @@ void _printf(const char* s, ...) {
 
 bool Value::value_changed(void* cur) {
   bool changed = false;
-  SOPLOGLN(F("[INT DEBUG] value_changed"));
+  // SOPLOGLN(F("[INT DEBUG] value_changed"));
   switch (value_classifier_) {
     case STRING:
       if (strncmp((char*)cur, (char*)prev_, *(int*)max_) != 0) {
@@ -174,7 +174,7 @@ bool Value::value_changed(void* cur) {
       memcpy(prev_, cur, *(int*)max_);
       break;
     case INTEGER:
-      SOPLOGLN(F("[INT DEBUG] INT CHANGED CHECK"));
+      // SOPLOGLN(F("[INT DEBUG] INT CHANGED CHECK"));
     case BOOL:
       if (*(int*)prev_ != *(int*)cur) {
         changed = true;

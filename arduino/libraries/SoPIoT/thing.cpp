@@ -208,7 +208,7 @@ void Thing::Setup() {
 }
 
 void Thing::Loop(int pub_period) {
-  SOPLOGLN(F("[LED DEBUG] Loop Start here!"));
+  // SOPLOGLN(F("[LED DEBUG] Loop Start here!"));
   bool time_passed = false;
   bool changed = false;
 
@@ -223,20 +223,23 @@ void Thing::Loop(int pub_period) {
       // Value to Json String
       if (changed) {
         publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
+        SOPLOG(F("[DEBUG] Value publish, buffer : "));
+        SOPLOGLN(F(buffer));
       } else {
-        SOPLOGLN(F("[DEBUG] Value is not changed. Not publishing value"));
+        // SOPLOGLN(F("[DEBUG] Value is not changed. Not publishing value"));
       }
       // if (time_passed) {
       //   publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
       //   sendAliveMessageNoCond();
       // }
     } else {
-      SOPLOGLN(F(
-          "[DEBUG] Value publish cycle is not finished. Not publishing value"));
+      // SOPLOGLN(F(
+      //     "[DEBUG] Value publish cycle is not finished. Not publishing
+      //     value"));
     }
     ReadZbeeIfAvailable();
   }
-  SOPLOGLN(F("[INT DEBUG] Loop finished"));
+  // SOPLOGLN(F("[INT DEBUG] Loop finished"));
   // delay(pub_period);
 }
 
@@ -432,7 +435,8 @@ void Thing::ReadZbeeIfAvailable() {
           SOPLOGLN(F("[ERROR] Zigbee Send Fail."));
       } else if (zbee_.getResponse().getApiId() == ZB_RX_RESPONSE) {
         zbee_.getResponse().getZBRxResponse(zbee_rx_);
-        SOPLOGLN(F("[LED DEBUG SUCCESS] Zigbee Receive Success"));
+        // SOPLOGLN(F("[LED DEBUG SUCCESS] Zigbee Receive Success"));
+
         ParseStream((char*)zbee_rx_.getData(), zbee_rx_.getDataLength());
       } else if (zbee_.getResponse().isError()) {
         SOPLOGLN(F("[ERROR] ZigBee Response Error."));
@@ -440,7 +444,7 @@ void Thing::ReadZbeeIfAvailable() {
         SOPLOGLN(F("[WARNING] Unexpected Response."));
       }
     } else {
-      SOPLOGLN(F("[LED DEBUG] zbee_.getResponse().isAvailable() is false"));
+      // SOPLOGLN(F("[LED DEBUG] zbee_.getResponse().isAvailable() is false"));
       break;
     }
   }
@@ -476,14 +480,15 @@ void Thing::ParseStream(char* buf, uint16_t len) {
 
     return;
   }
+
+  SOPLOGLN(F("xbee recv : "));
+  SOPLOGLN(F(message_buffer_));
   memcpy(message_buffer_, (const void*)buf, len);
   dispatch();
 }
 
 void Thing::dispatch() {
   message_header* response_message = (message_header*)message_buffer_;
-  SOPLOG(F("[DEBUG] response_msg len="));
-  SOPLOGLN(response_message->length);
   SOPLOG(F("[DEBUG] response_msg type= "));
   SOPLOGLN(response_message->type, HEX);
 
@@ -717,7 +722,8 @@ void Thing::publishHandler(const msg_publish* msg) {
   }*/
 
   for (int i = 0; i < num_functions_; i++) {
-    SOPLOGLN(functions_[i]->id_1003());
+    SOPLOG(F("functions_ name: "));
+    SOPLOGLN(functions_[i]->name());
     if (topic_id == functions_[i]->id_1003()) {
       int success = -1;
       char* pTokPtr = NULL;
@@ -726,7 +732,7 @@ void Thing::publishHandler(const msg_publish* msg) {
 
       in_process_ = true;
       strncpy(save_buffer, msg->data,
-              MAX_BUFFER_SIZE - sizeof(msg_publish));  // safe cpy
+              MAX_BUFFER_SIZE);  // safe cpy
 #ifdef USE_QOS2
       if (msg->flags & FLAG_QOS_2) {
         ret = ACCEPTED;
@@ -735,23 +741,39 @@ void Thing::publishHandler(const msg_publish* msg) {
 #endif
       in_process_ = false;
 
+      SOPLOG(F("rev_buffer : "));
+      SOPLOGLN(save_buffer);
+
       t_name = strtok_r(save_buffer, ":", &pTokPtr);
       t_args = strtok_r(NULL, ":", &pTokPtr);
 
+      SOPLOG(F("t_name : "));
+      SOPLOGLN(t_name);
+      SOPLOG(F("t_args : "));
+      SOPLOGLN(t_args);
+      SOPLOG(F("functions_[i]->function_classifier() : "));
+      SOPLOGLN(functions_[i]->function_classifier());
+
       switch (functions_[i]->function_classifier()) {
         case VOID:
-          functions_[i]->Execute(t_args, &success);
-          break;
         case INTEGER:
         case DOUBLE:
         case BOOL:
+          functions_[i]->Execute(t_args, &success);
+          break;
         default:
           success = -7;
           break;  // cannot be occured
       }
 
       snprintf(buffer, MAX_BUFFER_SIZE,
-               "{\"scenario\" : \"%s\" , \"error\" : %d }", t_name, success);
+               "{\"scenario\" : \"%s\" , \"error\" : %d}", t_name, success);
+      // snprintf(buffer, MAX_BUFFER_SIZE + 60,
+      //          "{\"scenario\" : \"%s\" , \"error\" : %d , \"return_type\" : "
+      //          "\"%s\" , \"return_value\" : \"%s\" }",
+      //          t_name, success, "", "");
+      SOPLOG(F("buffer : "));
+      SOPLOGLN(buffer);
       publish(QOS_FLAG, functions_[i]->id_2004(), buffer, strlen(buffer));
 
       return;
