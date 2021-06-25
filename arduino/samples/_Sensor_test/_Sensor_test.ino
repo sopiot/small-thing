@@ -48,7 +48,7 @@ void HumidTempSensor() {
 
   Serial.print("Humidity: ");     // 문자열 Humidity: 를 출력한다.
   Serial.print(h);                // 변수 h(습도)를 출력한다.
-  Serial.print("%\t");            // %를 출력한다
+  Serial.print("%#");             // %를 출력한다
   Serial.print("Temperature: ");  // 이하생략
   Serial.print(t);
   Serial.println(" C");

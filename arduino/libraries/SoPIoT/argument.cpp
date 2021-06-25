@@ -9,12 +9,14 @@ void Argument::Initialize() {
   max_ = NULL;
 }
 
+Argument::Argument() { Initialize(); }
+
 Argument::Argument(const char* name, int min, int max, SoPType arg_type) {
   Initialize();
   arg_type_ = arg_type;
   set_min(min);
   set_max(max);
-  set_name(name);
+  SetName(name);
 }
 
 Argument::Argument(const char* name, double min, double max, SoPType arg_type) {
@@ -22,7 +24,7 @@ Argument::Argument(const char* name, double min, double max, SoPType arg_type) {
   arg_type_ = arg_type;
   set_min(min);
   set_max(max);
-  set_name(name);
+  SetName(name);
 }
 
 Argument::~Argument() {
@@ -32,15 +34,19 @@ Argument::~Argument() {
   if (max_) free(max_);
 }
 
-int Argument::get_order() { return order_; }
+int Argument::GetOrder() { return order_; }
+
+void* Argument::GetMin() { return min_; }
+
+void* Argument::GetMax() { return max_; }
 
 void Argument::set_order(const int order) { order_ = (int)order; }
 
-char* Argument::name() { return name_; }
+char* Argument::GetName() { return name_; }
 
 void* Argument::value() { return value_; }
 
-void Argument::set_name(const char* name) {
+void Argument::SetName(const char* name) {
   name_ = strdup(name);
   MEM_ALLOC_CHECK(name_);
 
@@ -162,23 +168,23 @@ bool Argument::SetArgumentIfValid(char* val) {
 void Argument::GetInformation(char* buffer) {
   switch (arg_type_) {
     case BOOL:
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tbool\t%d\t%d\t", name_,
-               *(int*)min_, *(int*)max_);
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s#bool#%d#%d", name_, *(int*)min_,
+               *(int*)max_);
       break;
     case INTEGER:
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tint\t%d\t%d\t", name_, *(int*)min_,
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s#int#%d#%d", name_, *(int*)min_,
                *(int*)max_);
       break;
     case STRING:
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tstring\t%d\t%d\t", name_,
-               *(int*)min_, *(int*)max_);
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s#string#%d#%d", name_, *(int*)min_,
+               *(int*)max_);
       break;
     case DOUBLE: {
       char min_temp[10];
       char max_temp[10];
       safe_dtostrf(*(double*)min_, 8, 2, min_temp);
       safe_dtostrf(*(double*)max_, 8, 2, max_temp);
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tdouble\t%s\t%s\t", name_, min_temp,
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s#double#%s#%s", name_, min_temp,
                max_temp);
       break;
     }
@@ -188,4 +194,4 @@ void Argument::GetInformation(char* buffer) {
   }
 }
 
-SoPType Argument::arg_type(void) { return arg_type_; }
+SoPType Argument::GetArgType(void) { return arg_type_; }

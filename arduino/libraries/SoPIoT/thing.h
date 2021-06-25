@@ -3,7 +3,13 @@
 
 #include "common.h"
 #include "function.h"
+#include "utils.h"
 #include "value.h"
+
+#define MAC_ADDRESS_SIZE 16
+#define READ_ZBEE_TIMEOUT 1000
+#define ESCAPE_ZBEE_TIMEOUT 50
+#define SEARCH_RADIUS 100
 
 class Thing {
  public:
@@ -16,7 +22,7 @@ class Thing {
   // Destrcutor
   ~Thing();
 
-  const char *ClientId();
+  const char* ClientId();
 
   // Attach stuffs to Thing.
   // For convenience, can be overrided with Value, Function, Attribute
@@ -61,7 +67,8 @@ class Thing {
 
   virtual void willtopicrespHandler(const msg_willtopicresp* msg) = 0;
   virtual void willmsgrespHandler(const msg_willmsgresp* msg) = 0;
-*/
+  */
+
   void pingreqHandler();
   void pingrespHandler();
   void subackHandler(const msg_suback* msg);
@@ -79,8 +86,6 @@ class Thing {
   void advertiseHandler(const msg_advertise* msg);
   void gwinfoHandler(const msg_gwinfo* msg);
   void connackHandler(const msg_connack* msg);
-  void devregHandler();
-  void devregackHandler(const msg_devregack* msg);
 
   // for debug
   void print_message_buffer_();
@@ -102,7 +107,7 @@ class Thing {
 
   // Send Alive message to middleware for every alive cycle
   void SendAliveMessage();
-  void sendAliveMessageNoCond();
+  void SendAliveMessageNoCond();
 
   // Send Initial Value when register thing
   void SendInitialValueNoCond();
@@ -113,9 +118,8 @@ class Thing {
   void pubcomp(const msg_pubqos2* msg);
 #endif
 
-  bool waitForResponse();
-  bool connected();
-  bool valid();
+  bool GatewayConnected();
+  bool GatewayReady();
 
   void searchgw(const uint8_t radius);
   void connect(const uint8_t flags, const uint16_t duration,
@@ -123,7 +127,7 @@ class Thing {
   bool registerTopic(const char* name);
   void publish(const uint8_t flags, const uint16_t topicId, const void* data,
                const uint8_t data_len);
-  void devreg(void);
+  void Register();
 
   void ReadZbeeTimeout(int timeout);
   void ReadZbeeIfAvailable();
@@ -132,8 +136,7 @@ class Thing {
   void pingresp(int flag);
   void disconnect(const uint16_t duration);
 
-  void ParseStream(char* buf, uint16_t len);
-  void dispatch();
+  void ParseMQTTSNStream(char* buf, uint16_t len);
 
   void unicast();
   void broadcast();
@@ -141,6 +144,10 @@ class Thing {
 
   // f~ : function pointers
   bool compareTimeStamp(Value* t);
+
+  void PrintTags();
+  void PrintTopicID();
+  void TestPublish();
 
   void (*connect_handler_)();
   void (*disconnect_handler_)();
@@ -157,43 +164,43 @@ class Thing {
   uint16_t id_2001_;
   uint16_t id_2002_;
   uint16_t id_2003_;
+  uint16_t id_2010_;
+  uint16_t id_2011_;
+  uint16_t id_2012_;
+  uint16_t id_2013_;
+  uint16_t id_2014_;
+  uint16_t id_2015_;
+  uint16_t id_2016_;
 
-  char buffer[MAX_BUFFER_SIZE];
-  char save_buffer[MAX_BUFFER_SIZE];
+  char publish_buffer[MAX_BUFFER_SIZE];
+  char receive_buffer[MAX_BUFFER_SIZE];
   uint8_t mac_address_[8];
 
   char* client_id_;
   char* class_name_;
   unsigned long alive_cycle_;
 
-  /////// MQTT-SN
   XBee zbee_;
 
-  bool connected_;
+  bool gateway_connected_;
   XBeeAddress64 gateway_address_64_;
   uint16_t gateway_address_16_;
   uint8_t gateway_id_;
   ZBTxRequest zbee_tx_;
   ZBRxResponse zbee_rx_;
-  // Set to true when we're waiting for some sort of acknowledgement from the
-  // server that will transition our state.
-  bool waiting_for_response_;
-  bool valid_;
-  bool registered_;
-  bool device_register_;
-  bool in_process_;  // for handling publish processing
 
-  uint8_t response_wait_for_;
+  /** Set to true when we're waiting for some sort of acknowledgement from the
+   *server that will transition our state.
+   */
+  bool gateway_response_wait_;
+  bool gateway_ready_;
+  bool middleware_registered_;
+  bool publish_process_;  // for handling publish processing
 
+  uint8_t protocal_response_wait_;
   uint16_t message_id_;
-
   uint8_t message_buffer_[MAX_BUFFER_SIZE];
-
-  uint32_t response_timer_;
-  uint8_t response_retries_;
-
   uint16_t registered_id_;
-
   uint16_t last_ping_;
 };
 

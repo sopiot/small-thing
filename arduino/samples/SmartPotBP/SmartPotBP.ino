@@ -54,7 +54,7 @@ Argument argTime((const char *)"time", 0, 100, INTEGER);
 
 // Function declarations
 // Function(name, actuate_function, arguments_num, function_tags_num);
-Function pump_on_off((const char *)"pump_on_off", ActuatePumpOnOff, 1, 5);
+Function pump_on_off((const char *)"pump", ActuatePumpOnOff, 1, 5);
 
 //----------------------------------------
 // Setup

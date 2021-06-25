@@ -1,26 +1,21 @@
 #include "thing.h"
 #include "utils.h"
 
-#define MAC_ADDRESS_SIZE 16
-#define READ_ZBEE_TIMEOUT 1000
-#define SEARCH_RADIUS 100
-
 static inline uint16_t bswap(const uint16_t val) {
   return (val << 8) | (val >> 8);
 }
 
 Thing::Thing()
-    : waiting_for_response_(true),
-      response_wait_for_(ADVERTISE),
-      connected_(false),
+    : gateway_response_wait_(true),
+      protocal_response_wait_(ADVERTISE),
+      gateway_connected_(false),
       message_id_(0),
       gateway_id_(0),
-      valid_(0),
-      response_retries_(0),
-      registered_(0),
-      registered_id_(-1),
+      gateway_ready_(0),
+      middleware_registered_(0),
+      registered_id_(UINT16_MAX),
       zbee_(),
-      in_process_(false) {
+      publish_process_(false) {
   num_values_ = 0;
   num_functions_ = 0;
 }
@@ -31,22 +26,20 @@ Thing::Thing(const char* class_name, Stream& serial) {
 }
 
 Thing::Thing(const char* class_name, int alive_cycle, Stream& serial)
-    : waiting_for_response_(true),
-      response_wait_for_(ADVERTISE),
-      connected_(false),
+    : gateway_response_wait_(true),
+      protocal_response_wait_(ADVERTISE),
+      gateway_connected_(false),
       message_id_(0),
       gateway_id_(0),
-      valid_(0),
-      response_retries_(0),
-      registered_(0),
-      registered_id_(-1),
+      gateway_ready_(0),
+      middleware_registered_(0),
+      registered_id_(UINT16_MAX),
       zbee_() {
   zbee_.setSerial(serial);
   this->class_name_ = strdup(class_name);
   MEM_ALLOC_CHECK(class_name_);
 
   this->alive_cycle_ = alive_cycle;
-  response_timer_ = millis();
   memset(message_buffer_, 0, MAX_BUFFER_SIZE);
 
   num_values_ = 0;
@@ -58,9 +51,7 @@ Thing::~Thing() {
   free(class_name_);
 }
 
-const char *Thing::ClientId() {
-  return client_id_;
-}
+const char* Thing::ClientId() { return client_id_; }
 
 void Thing::Add(Value& v) {
   if (num_values_ < MAX_VALUE_NUM) {
@@ -79,170 +70,320 @@ void Thing::Add(Function& f) {
 }
 
 void Thing::Setup() {
+  SOPLOGLN(F("==== Small Thing start ===="));
+  SOPLOGLN(F("Start to get clientID"));
   GenerateClientId();
+  SOPLOGLN(F("ClientID : %s"), client_id_);
 
-  SOPLOGLN(F("Setup SEARCHGW"));
-  ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-  while (!valid()) {
+  SOPLOGLN(F("==== Setup SEARCHGW ===="));
+  while (!GatewayReady()) {
     searchgw(SEARCH_RADIUS);
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
   }
+  SOPLOGLN(F("Gateway ID : %d"), gateway_id_);
 
-  // CONNECT, CONNACK
-  SOPLOGLN(F("Setup CONNECT"));
-  while (!connected()) {
-    snprintf(buffer, MAX_BUFFER_SIZE, "%s", client_id_);
-    connect(0, 50, buffer);
+  SOPLOGLN(F("==== Setup CONNECT ===="));
+  while (!GatewayConnected()) {
+    snprintf(publish_buffer, MAX_BUFFER_SIZE, "%s", client_id_);
+    connect(0, 50, publish_buffer);
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
   }
+  SOPLOGLN(F("CONNECT success"));
 
-  // REGISTER, REGACK
-  SOPLOGLN(F("Setup REGISTER Topic MT1001"));
-  do {
-    snprintf(buffer, MAX_BUFFER_SIZE, MT1001, client_id_);  // id_1001_
-    registerTopic(buffer);
+  // Start REGISTER & SUBSCRIBE
+  SOPLOGLN(F("==== Setup REGISTER & SUBSCRIBE ===="));
+  registered_id_ = UINT16_MAX;
+  while (registered_id_ == UINT16_MAX) {
+    snprintf(publish_buffer, MAX_BUFFER_SIZE, MT1001, client_id_);  // id_1001_
+    registerTopic(publish_buffer);
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-  } while ((id_1001_ = registered_id_) == (UINT16_MAX));
+    id_1001_ = registered_id_;
+  }
+  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
 
-  SOPLOGLN(F("Setup SUBSCRIBE Topic MT1001"));
-  subscribe(QOS_FLAG, buffer);
+  subscribe(QOS_FLAG, publish_buffer);
   ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+  SOPLOGLN(F("SUBSCRIBE Topic %s"), publish_buffer);
+
+  // Author: thsvkd
+  // Remove PingReq part
 
   registered_id_ = UINT16_MAX;
-  SOPLOGLN(F("Setup REGISTER Topic MT1002"));
-  do {
-    snprintf(buffer, MAX_BUFFER_SIZE, MT1002, client_id_);  // id1105
-    registerTopic(buffer);
+  while (registered_id_ == UINT16_MAX) {
+    snprintf(publish_buffer, MAX_BUFFER_SIZE, TM2001, client_id_);  // id_2001_
+    registerTopic(publish_buffer);
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-  } while ((id_1002_ = registered_id_) == (UINT16_MAX));
-
-  SOPLOGLN(F("Setup SUBSCRIBE Topic MT1002"));
-  subscribe(QOS_FLAG, buffer);
-  ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+    id_2001_ = registered_id_;
+  }
+  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
 
   registered_id_ = UINT16_MAX;
-  SOPLOGLN(F("Setup REGISTER Topic TM2001"));
-  do {
-    snprintf(buffer, MAX_BUFFER_SIZE, TM2001, client_id_);  // id_2001_
-    registerTopic(buffer);
+  while (registered_id_ == UINT16_MAX) {
+    snprintf(publish_buffer, MAX_BUFFER_SIZE, TM2002, client_id_);  // id_2002_
+    registerTopic(publish_buffer);
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-  } while ((id_2001_ = registered_id_) == (UINT16_MAX));
+    id_2002_ = registered_id_;
+  }
+  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+
+  // publish(QOS_FLAG, registered_id_, "{}", 3);
+  // SOPLOGLN(F("Send UNREGISTER for clean start"));
 
   registered_id_ = UINT16_MAX;
-  SOPLOGLN(F("Setup REGISTER Topic TM2002"));
-  do {
-    snprintf(buffer, MAX_BUFFER_SIZE, TM2002, client_id_);  // id_2002_
-    registerTopic(buffer);
+  while (registered_id_ == UINT16_MAX) {
+    snprintf(publish_buffer, MAX_BUFFER_SIZE, TM2003, client_id_);  // id_2003_
+    registerTopic(publish_buffer);
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-  } while ((id_2002_ = registered_id_) == (UINT16_MAX));
+    id_2003_ = registered_id_;
+  }
+  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+
+  SOPLOGLN(F("==== Setup REGISTER *New* Topics for Small Thing ===="));
 
   registered_id_ = UINT16_MAX;
-  SOPLOGLN(F("Setup REGISTER Topic TM2003"));
-  do {
-    snprintf(buffer, MAX_BUFFER_SIZE, TM2003, client_id_);  // id_2003_
-    registerTopic(buffer);
+  while (registered_id_ == UINT16_MAX) {
+    snprintf(publish_buffer, MAX_BUFFER_SIZE, TM2010, client_id_);  // id_2010_
+    registerTopic(publish_buffer);
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-  } while ((id_2003_ = registered_id_) == (UINT16_MAX));
+    id_2010_ = registered_id_;
+  }
+  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
 
-  SOPLOGLN(F("Setup REGISTER Value Topics"));
+  registered_id_ = UINT16_MAX;
+  while (registered_id_ == UINT16_MAX) {
+    snprintf(publish_buffer, MAX_BUFFER_SIZE, TM2011, client_id_);  // id_2011_
+    registerTopic(publish_buffer);
+    ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+    id_2011_ = registered_id_;
+  }
+  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+
+  registered_id_ = UINT16_MAX;
+  while (registered_id_ == UINT16_MAX) {
+    snprintf(publish_buffer, MAX_BUFFER_SIZE, TM2012, client_id_);  // id_2012_
+    registerTopic(publish_buffer);
+    ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+    id_2012_ = registered_id_;
+  }
+  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+
+  registered_id_ = UINT16_MAX;
+  while (registered_id_ == UINT16_MAX) {
+    snprintf(publish_buffer, MAX_BUFFER_SIZE, TM2013, client_id_);  // id_2013_
+    registerTopic(publish_buffer);
+    ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+    id_2013_ = registered_id_;
+  }
+  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+
+  registered_id_ = UINT16_MAX;
+  while (registered_id_ == UINT16_MAX) {
+    snprintf(publish_buffer, MAX_BUFFER_SIZE, TM2014, client_id_);  // id_2014_
+    registerTopic(publish_buffer);
+    ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+    id_2014_ = registered_id_;
+  }
+  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+
+  registered_id_ = UINT16_MAX;
+  while (registered_id_ == UINT16_MAX) {
+    snprintf(publish_buffer, MAX_BUFFER_SIZE, TM2015, client_id_);  // id_2015_
+    registerTopic(publish_buffer);
+    ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+    id_2015_ = registered_id_;
+  }
+  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+
+  registered_id_ = UINT16_MAX;
+  while (registered_id_ == UINT16_MAX) {
+    snprintf(publish_buffer, MAX_BUFFER_SIZE, TM2016, client_id_);  // id_2016_
+    registerTopic(publish_buffer);
+    ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+    id_2016_ = registered_id_;
+  }
+  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+
+  // Start Value
+  SOPLOGLN(F("==== Setup REGISTER Value Topics ===="));
   for (int i = 0; i < num_values_; i++) {
     registered_id_ = UINT16_MAX;
-    do {
-      snprintf(buffer, MAX_BUFFER_SIZE, COMMON0000, client_id_,
-               values_[i]->name());
-      registerTopic(buffer);
+    while (values_[i]->set_publish_id(registered_id_) == UINT16_MAX) {
+      snprintf(publish_buffer, MAX_BUFFER_SIZE, COMMON0000, client_id_,
+               values_[i]->GetName());
+      registerTopic(publish_buffer);
 
-      SOPLOG(F("Value Topic: "));
-      SOPLOGLN(buffer);
-
+      SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
       ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-
-    } while ((values_[i]->set_publish_id(registered_id_)) == (UINT16_MAX));
-
+    }
     values_[i]->AddTag(client_id_);
   }
 
-  SOPLOGLN(F("Setup REGISTER Function Topics"));
+  // Start Function
+  SOPLOGLN(F("==== Setup REGISTER Function Topics ===="));
   for (int i = 0; i < num_functions_; i++) {
     registered_id_ = UINT16_MAX;
-    do {
-      snprintf(buffer, MAX_BUFFER_SIZE, MT1003, functions_[i]->name(),
-               client_id_);  // id1003
-      registerTopic(buffer);
+    while ((functions_[i]->set_id_1003(registered_id_)) == UINT16_MAX) {
+      snprintf(publish_buffer, MAX_BUFFER_SIZE, MT1003,
+               functions_[i]->GetName(), client_id_);
+      registerTopic(publish_buffer);
+
+      SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
       ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-    } while ((functions_[i]->set_id_1003(registered_id_)) == (UINT16_MAX));
+    }
 
-    subscribe(QOS_FLAG, buffer);
+    subscribe(QOS_FLAG, publish_buffer);
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-
-    // registered_id_ = UINT16_MAX;
-    // memset(buffer, 0, MAX_BUFFER_SIZE);
-    // do {
-    //   snprintf(buffer, MAX_BUFFER_SIZE, TM2004_DEPRECATED,
-    //            client_id_);  // id2004_deprecated
-    //   registerTopic(buffer);
-    //   ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-    // } while ((functions_[i]->set_id_2004_deprecated(registered_id_)) ==
-    //          (UINT16_MAX));
+    SOPLOGLN(F("SUBSCRIBE Topic %s"), publish_buffer);
 
     registered_id_ = UINT16_MAX;
-    do {
-      snprintf(buffer, MAX_BUFFER_SIZE, TM2004, functions_[i]->name(),
-               client_id_);  // id2004
-      registerTopic(buffer);
+    while ((functions_[i]->set_id_2004(registered_id_)) == UINT16_MAX) {
+      snprintf(publish_buffer, MAX_BUFFER_SIZE, TM2004,
+               functions_[i]->GetName(), client_id_);
+      registerTopic(publish_buffer);
+
+      SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
       ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-    } while ((functions_[i]->set_id_2004(registered_id_)) == (UINT16_MAX));
-
+    }
     functions_[i]->AddTag(client_id_);
-
-    SOPLOG(F("Function Topic: "));
-    SOPLOGLN(buffer);
   }
 
-  SOPLOGLN(F("[SUCCESS] Register & Subscribe Topics Finished."));
+  PrintTopicID();
+  // TestPublish();
 
-  devreg();
-  sendAliveMessageNoCond();
+  Register();
+
+  SendAliveMessageNoCond();
   SendInitialValueNoCond();
-  SOPLOGLN(F("[SUCCESS] Registeration to the Middleware Finished."));
+  SOPLOGLN(F("==== Registeration to the Middleware Finish ===="));
+}
+
+void Thing::PrintTags() {
+  for (int i = 0; i < num_values_; i++) {
+    SOPLOGLN(F("tag num: %d"), values_[i]->getTagNum());
+    for (int j = 0; j < values_[i]->getTagNum(); j++) {
+      SOPLOGLN(F("values_[%d] tag[%d]: %s"), i, j,
+               values_[i]->getTag(j)->GetName());
+    }
+  }
+
+  for (int i = 0; i < num_functions_; i++) {
+    SOPLOGLN(F("tag num: %d"), functions_[i]->getTagNum());
+    for (int j = 0; j < functions_[i]->getTagNum(); j++) {
+      SOPLOGLN(F("functions_[%d] tag[%d]: %s"), i, j,
+               functions_[i]->getTag(j)->GetName());
+    }
+  }
+}
+
+void Thing::PrintTopicID() {
+  SOPLOGLN(F("id_1001_: %d"), id_1001_);
+  SOPLOGLN(F("id_2001_: %d"), id_2001_);
+  SOPLOGLN(F("id_2002_: %d"), id_2002_);
+  SOPLOGLN(F("id_2003_: %d"), id_2003_);
+  SOPLOGLN(F("id_2010_: %d"), id_2010_);
+  SOPLOGLN(F("id_2011_: %d"), id_2011_);
+  SOPLOGLN(F("id_2012_: %d"), id_2012_);
+  SOPLOGLN(F("id_2013_: %d"), id_2013_);
+  SOPLOGLN(F("id_2014_: %d"), id_2014_);
+  SOPLOGLN(F("id_2015_: %d"), id_2015_);
+  SOPLOGLN(F("id_2016_: %d"), id_2016_);
+
+  for (int i = 0; i < num_values_; i++) {
+    SOPLOGLN(F("values_[%d] pub id: %d"), i, values_[i]->publish_id());
+  }
+
+  for (int i = 0; i < num_functions_; i++) {
+    SOPLOGLN(F("function_[%d] id_1003: %d"), i, functions_[i]->id_1003());
+    SOPLOGLN(F("function_[%d] id_2004: %d"), i, functions_[i]->id_2004());
+  }
+}
+
+void Thing::TestPublish() {
+  while (1) {
+    publish(QOS_FLAG, id_1001_, "id_1001_ test", strlen("id_1001_ test"));
+    publish(QOS_FLAG, id_2001_, "id_2001_ test", strlen("id_2001_ test"));
+    publish(QOS_FLAG, id_2002_, "id_2002_ test", strlen("id_2002_ test"));
+    publish(QOS_FLAG, id_2003_, "id_2003_ test", strlen("id_2003_ test"));
+    publish(QOS_FLAG, id_2010_, "id_2010_ test", strlen("id_2010_ test"));
+    publish(QOS_FLAG, id_2011_, "id_2011_ test", strlen("id_2011_ test"));
+    publish(QOS_FLAG, id_2012_, "id_2012_ test", strlen("id_2012_ test"));
+    publish(QOS_FLAG, id_2013_, "id_2013_ test", strlen("id_2013_ test"));
+    publish(QOS_FLAG, id_2014_, "id_2014_ test", strlen("id_2014_ test"));
+    publish(QOS_FLAG, id_2015_, "id_2015_ test", strlen("id_2015_ test"));
+    publish(QOS_FLAG, id_2016_, "id_2016_ test", strlen("id_2016_ test"));
+
+    for (int i = 0; i < num_values_; i++) {
+      publish(QOS_FLAG, values_[i]->publish_id(), "values_ test",
+              strlen("values_ test"));
+    }
+
+    for (int i = 0; i < num_functions_; i++) {
+      SOPLOGLN(F("function_[%d] id_1003: %d"), i, functions_[i]->id_1003());
+      SOPLOGLN(F("function_[%d] id_2004: %d"), i, functions_[i]->id_2004());
+    }
+
+    delay(2000);
+  }
 }
 
 void Thing::Loop(int pub_period) {
-  SOPLOGLN(F("[LED DEBUG] Loop Start here!"));
   bool time_passed = false;
   bool changed = false;
 
   // Wait for Response about Value
   SendAliveMessage();
-  // Wait for Response about Value
   ReadZbeeIfAvailable();
   for (uint8_t i = 0; i < num_values_; i++) {
     time_passed = compareTimeStamp(values_[i]);
     if (time_passed) {
-      changed = values_[i]->capVal2str(buffer);
-      // Value to Json String
+      changed = values_[i]->GetPublishJson(publish_buffer);
       if (changed) {
-        publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
-      } else {
-        SOPLOGLN(F("[DEBUG] Value is not changed. Not publishing value"));
+        SOPLOGLN(F("pub_id: %d, buffer: %s"), values_[i]->publish_id(),
+                 publish_buffer);
+        publish(QOS_FLAG, values_[i]->publish_id(), publish_buffer,
+                strlen(publish_buffer));
       }
-      // if (time_passed) {
-      //   publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
-      //   sendAliveMessageNoCond();
-      // }
-    } else {
-      SOPLOGLN(F(
-          "[DEBUG] Value publish cycle is not finished. Not publishing value"));
     }
     ReadZbeeIfAvailable();
   }
-  SOPLOGLN(F("[INT DEBUG] Loop finished"));
-  // delay(pub_period);
 }
 
 //----------------------------------------
 // Private Functions
 //----------------------------------------
+
+void Thing::Register() {
+  for (int i = 0; i < num_values_; i++) {
+    values_[i]->GetInformation(publish_buffer);
+    publish(QOS_FLAG, id_2010_, publish_buffer, strlen(publish_buffer));
+    for (int j = 0; j < values_[i]->getTagNum(); j++) {
+      publish(QOS_FLAG, id_2011_, values_[i]->getTag(j)->GetName(),
+              strlen(values_[i]->getTag(j)->GetName()));
+    }
+  }
+
+  for (int i = 0; i < num_functions_; i++) {
+    functions_[i]->GetInformation(publish_buffer);
+    publish(QOS_FLAG, id_2012_, publish_buffer, strlen(publish_buffer));
+    for (int j = 0; j < functions_[i]->getTagNum(); j++) {
+      publish(QOS_FLAG, id_2013_, functions_[i]->getTag(j)->GetName(),
+              strlen(functions_[i]->getTag(j)->GetName()));
+    }
+
+    for (int j = 0; j < functions_[i]->getArgumentNum(); j++) {
+      functions_[i]->getArgument(j)->GetInformation(publish_buffer);
+      publish(QOS_FLAG, id_2014_, publish_buffer, strlen(publish_buffer));
+    }
+  }
+
+  snprintf(publish_buffer, MAX_BUFFER_SIZE, "%d", alive_cycle_);
+  publish(QOS_FLAG, id_2015_, publish_buffer, strlen(publish_buffer));
+
+  while (!middleware_registered_) {
+    publish(QOS_FLAG, id_2016_, "{}", strlen("{}"));
+    ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+  }
+}
 
 void Thing::SetSerial(Stream& serial) { zbee_.setSerial(serial); }
 
@@ -312,8 +453,6 @@ void Thing::GenerateClientId() {
   MEM_ALLOC_CHECK(client_id_);
 
   sprintf(client_id_, "%s_%s", class_name_, temp_mac_address);
-  SOPLOG(F("Client ID: "));
-  SOPLOGLN(client_id_);
 };
 
 void Thing::SetClassName(char* class_name) { class_name_ = class_name; }
@@ -369,8 +508,8 @@ void Thing::SendAliveMessage() {
   // assume two QoS-0 packet in a row should not be missed!
   // millis() goes back to zero after approximately 50 days
   if ((diff_time < 0) || (diff_time >= alive_cycle_ / 2 * 1000)) {
-    SOPLOG(F("[DEBUG] Send Alive in "));
-    SOPLOGLN(diff_time);
+    SOPLOGLN(F("[DEBUG] Send Alive"));
+    // SOPLOGLN(diff_time);
 
     publish(QOS_FLAG, id_2003_, pszDummy, strlen(pszDummy));
     last_sent_time = curr_time;
@@ -378,7 +517,7 @@ void Thing::SendAliveMessage() {
   return;
 }
 
-void Thing::sendAliveMessageNoCond() {
+void Thing::SendAliveMessageNoCond() {
   char* pszDummy = (char*)"AliveNoCond";
 
   publish(QOS_FLAG, id_2003_, pszDummy, strlen(pszDummy));
@@ -387,9 +526,10 @@ void Thing::sendAliveMessageNoCond() {
 void Thing::SendInitialValueNoCond() {
   for (uint8_t i = 0; i < num_values_; i++) {
     // Value to Json String
-    values_[i]->capVal2str(buffer);
+    values_[i]->GetPublishJson(publish_buffer);
     // Publish values
-    publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
+    publish(QOS_FLAG, values_[i]->publish_id(), publish_buffer,
+            strlen(publish_buffer));
   }
 }
 
@@ -400,20 +540,22 @@ void Thing::ReadZbeeTimeout(int timeout) {
     if (zbee_.getResponse().getApiId() == ZB_TX_STATUS_RESPONSE) {
       ZBTxStatusResponse txStatus;
       zbee_.getResponse().getZBTxStatusResponse(txStatus);
-      if (txStatus.isSuccess())
-        SOPLOGLN(F("[SUCCESS] Zigbee Send Success... waiting for response"));
-      else
-        SOPLOGLN(F("[ERROR] Zigbee Send Fail."));
+      if (txStatus.isSuccess()) {
+        // SOPLOGLN(F("[SUCCESS] Zigbee send success... wait response"));
+      } else {
+        // SOPLOGLN(F("[ERROR] Zigbee send fail."));
+      }
     } else if (zbee_.getResponse().getApiId() == ZB_RX_RESPONSE) {
       zbee_.getResponse().getZBRxResponse(zbee_rx_);
-      SOPLOGLN(F("[SUCCESS] Zigbee Receive Success... parsing the stream"));
+      // SOPLOGLN(F("[SUCCESS] Zigbee receive success... parse stream"));
 
-      ParseStream((char*)zbee_rx_.getData(), zbee_rx_.getDataLength());
-      timeout = 50;  // exit instantly after receiving a packet from gateway
+      ParseMQTTSNStream((char*)zbee_rx_.getData(), zbee_rx_.getDataLength());
+      timeout = ESCAPE_ZBEE_TIMEOUT;  // exit instantly after receiving a packet
+                                      // from gateway
     } else if (zbee_.getResponse().isError()) {
-      SOPLOGLN(F("[ERROR] ZigBee Response Error."));
+      // SOPLOGLN(F("[ERROR] ZigBee response error."));
     } else {
-      SOPLOGLN(F("[WARNING] Unexpected Response."));
+      // SOPLOGLN(F("[ERROR] Unexpected response."));
     }
   }
 }
@@ -421,95 +563,68 @@ void Thing::ReadZbeeTimeout(int timeout) {
 void Thing::ReadZbeeIfAvailable() {
   while (1) {
     zbee_.readPacket();
-
     if (zbee_.getResponse().isAvailable()) {
       if (zbee_.getResponse().getApiId() == ZB_TX_STATUS_RESPONSE) {
         ZBTxStatusResponse txStatus;
         zbee_.getResponse().getZBTxStatusResponse(txStatus);
-        if (txStatus.isSuccess())
-          SOPLOGLN(F("[SUCCESS] Zigbee Send Success... waiting for response"));
-        else
-          SOPLOGLN(F("[ERROR] Zigbee Send Fail."));
+        if (txStatus.isSuccess()) {
+          // SOPLOGLN(F("[SUCCESS] Zigbee Send Success... waiting for
+          // response"));
+        } else {
+          // SOPLOGLN(F("[ERROR] Zigbee Send Fail."));
+        }
       } else if (zbee_.getResponse().getApiId() == ZB_RX_RESPONSE) {
         zbee_.getResponse().getZBRxResponse(zbee_rx_);
-        SOPLOGLN(F("[LED DEBUG SUCCESS] Zigbee Receive Success"));
-        ParseStream((char*)zbee_rx_.getData(), zbee_rx_.getDataLength());
+        SOPLOGLN(F("[DEBUG] Zigbee Receive Success"));
+        ParseMQTTSNStream((char*)zbee_rx_.getData(), zbee_rx_.getDataLength());
       } else if (zbee_.getResponse().isError()) {
-        SOPLOGLN(F("[ERROR] ZigBee Response Error."));
+        // SOPLOGLN(F("[ERROR] ZigBee Response Error."));
       } else {
-        SOPLOGLN(F("[WARNING] Unexpected Response."));
+        // SOPLOGLN(F("[WARNING] Unexpected Response."));
       }
     } else {
-      SOPLOGLN(F("[LED DEBUG] zbee_.getResponse().isAvailable() is false"));
+      // SOPLOGLN(F("[LED DEBUG] zbee_.getResponse().isAvailable() is false"));
       break;
     }
   }
 }
 
-bool Thing::valid() { return valid_; }
+bool Thing::GatewayReady() { return gateway_ready_; }
 
-bool Thing::waitForResponse() {
-  if (waiting_for_response_) {
-    // TODO: Watch out for overflow.
-    if ((millis() - response_timer_) > (T_RETRY * 1000L)) {
-      response_timer_ = millis();
-      SOPLOGLN(F("response_failed\n"));
-      if (response_retries_ == 0) {
-        waiting_for_response_ = false;
-        disconnectHandler(NULL);
-      } else {
-        unicast();
-      }
+bool Thing::GatewayConnected() { return gateway_connected_; }
 
-      --response_retries_;
-    }
-  }
+void Thing::ParseMQTTSNStream(char* buf, uint16_t len) {
+  message_header* response_message = (message_header*)message_buffer_;
 
-  return waiting_for_response_;
-}
-
-bool Thing::connected() { return connected_; }
-
-void Thing::ParseStream(char* buf, uint16_t len) {
   if (len > MAX_BUFFER_SIZE) {
-    SOPLOGLN(F("[ERROR] packet length is larger than MAX_BUFFER_SIZE"));
-
-    return;
+    SOPLOGLN(F("[DEBUG] packet length is larger than MAX_BUFFER_SIZE: %d"),
+             len);
+    // return;
   }
   memcpy(message_buffer_, (const void*)buf, len);
-  dispatch();
-}
-
-void Thing::dispatch() {
-  message_header* response_message = (message_header*)message_buffer_;
-  SOPLOG(F("[DEBUG] response_msg len="));
-  SOPLOGLN(response_message->length);
-  SOPLOG(F("[DEBUG] response_msg type= "));
-  SOPLOGLN(response_message->type, HEX);
 
   switch (response_message->type) {
     case ADVERTISE:
-      if (!waiting_for_response_ ||
-          (response_wait_for_ != ADVERTISE && response_wait_for_ != GWINFO))
+      if (!gateway_response_wait_ || (protocal_response_wait_ != ADVERTISE))
         return;
       advertiseHandler((msg_advertise*)message_buffer_);
       break;
 
     case GWINFO:
-      if (response_wait_for_ != GWINFO) return;
+      if (!gateway_response_wait_ || protocal_response_wait_ != GWINFO) return;
       gwinfoHandler((msg_gwinfo*)message_buffer_);
       break;
 
     case CONNACK:
-      if (!waiting_for_response_ || response_wait_for_ != CONNACK) return;
+      if (!gateway_response_wait_ || protocal_response_wait_ != CONNACK) return;
       connackHandler((msg_connack*)message_buffer_);
       break;
 
     case REGACK:
-      if (!waiting_for_response_ || response_wait_for_ != REGACK) {
-        SOPLOGLN(
-            F("[ERROR] in !waiting_for_response_ || response_wait_for_ != "
-              "REGACK"));
+      if (!gateway_response_wait_ || protocal_response_wait_ != REGACK) {
+        SOPLOGLN(F(
+            "[ERROR] in !gateway_response_wait_ || protocal_response_wait_ != "
+            "REGACK"));
         return;
       }
 
@@ -517,7 +632,7 @@ void Thing::dispatch() {
       break;
 
     case PUBLISH:
-      if (in_process_) {
+      if (publish_process_) {
         SOPLOGLN(
             F("[ERROR] Ignore PUBLISH message for waiting previous publish "
               "message"));
@@ -527,7 +642,7 @@ void Thing::dispatch() {
       break;
 
     case SUBACK:
-      if (!waiting_for_response_ || response_wait_for_ != SUBACK) return;
+      if (!gateway_response_wait_ || protocal_response_wait_ != SUBACK) return;
       subackHandler((msg_suback*)message_buffer_);
       break;
 
@@ -536,23 +651,13 @@ void Thing::dispatch() {
       break;
 
     case PINGRESP:
-      if (!waiting_for_response_ || response_wait_for_ != PINGRESP) return;
+      if (!gateway_response_wait_ || protocal_response_wait_ != PINGRESP)
+        return;
       pingrespHandler();
       break;
 
     case DISCONNECT:
       disconnectHandler((msg_disconnect*)message_buffer_);
-      break;
-
-    case DEVREG:
-      // cannot be happend
-      devregHandler();
-      break;
-
-    case DEVREGACK:
-      //	if (!waiting_for_response_ || response_wait_for_ != DEVREGACK)
-      // return;
-      devregackHandler((msg_devregack*)message_buffer_);
       break;
 
 #ifdef USE_QOS2
@@ -574,7 +679,7 @@ void Thing::dispatch() {
       return;
   }
 
-  waiting_for_response_ = false;
+  gateway_response_wait_ = false;
 }
 
 void Thing::broadcast() {
@@ -592,12 +697,12 @@ void Thing::broadcast() {
 }
 
 void Thing::sendPacket() {
-  SOPLOGLN(F("Send packet!"));
+  // SOPLOGLN(F("Send packet!"));
   zbee_.send(zbee_tx_);
 }
 
 void Thing::unicast() {
-  if (!valid_) {
+  if (!gateway_ready_) {
     broadcast();
     return;
   }
@@ -607,152 +712,130 @@ void Thing::unicast() {
   zbee_tx_ = ZBTxRequest(gateway_address_64_, message_buffer_, hdr->length);
   sendPacket();
 
-  if (!waiting_for_response_) {
-    response_timer_ = millis();
-    response_retries_ = N_RETRY;
+  if (!gateway_response_wait_) {
+    SOPLOG(F("[DEBUG] No gateway response\n"));
   }
-
-  /*
-  int8_t hi = ((client_id_ >> 8) & 0xff);
-  int8_t lo = ((client_id_ >> 0) & 0xff);
-  buffer[0] = 0x7e;
-  buffer[1] = hi;
-  buffer[2] = lo;
-  for(int i = 3; i<hdr->length+3; i++) buffer[i] = message_buffer_[i-3];
-
-  Serial.write("mySerial sends message\n"));
-  for(int i = 0; i< hdr->length+3; i++){CPDBG(F(" 0x"));
-  CPDBG(F(buffer[i],HEX);} CPDBG(F();
-
-
-  mySerial.write(buffer, hdr->length+3);
-  mySerial.flush();
-  */
 }
 
 void Thing::advertiseHandler(const msg_advertise* msg) {
-  if (!valid_) {
+  if (!gateway_ready_) {
     gateway_id_ = msg->gw_id;
-    valid_ = true;
+    gateway_ready_ = true;
   }
 }
 
 void Thing::gwinfoHandler(const msg_gwinfo* msg) {
-  if (!valid_) {
+  if (!gateway_ready_) {
     gateway_address_64_ = zbee_rx_.getRemoteAddress64();
     gateway_address_16_ = zbee_rx_.getRemoteAddress16();
-
     gateway_id_ = msg->gw_id;
-
-    valid_ = true;
+    gateway_ready_ = true;
   }
 }
 
 void Thing::connackHandler(const msg_connack* msg) {
-  connected_ = 1;
+  gateway_connected_ = true;
   if (connect_handler_ != NULL) connect_handler_();
 }
 
 void Thing::regackHandler(const msg_regack* msg) {
-  SOPLOGLN(F("in regackHandler"));
   if (msg->return_code == 0 && bswap(msg->message_id) == message_id_) {
-    SOPLOGLN(F("in regackHandler if"));
     registered_id_ = bswap(msg->topic_id);
   }
-  SOPLOGLN(F("in regackHandler if end"));
 }
 
 void Thing::disconnectHandler(const msg_disconnect* msg) {
-  if (connected_ && disconnect_handler_ != NULL) disconnect_handler_();
-  connected_ = false;
-  valid_ = false;
-  registered_ = false;
+  if (gateway_connected_ && disconnect_handler_ != NULL) disconnect_handler_();
+  gateway_connected_ = false;
+  gateway_ready_ = false;
+  middleware_registered_ = false;
 }
 
 void Thing::publishHandler(const msg_publish* msg) {
+  SOPLOGLN("publishHandler");
+  StaticJsonDocument<200> receive_doc;
+  StaticJsonDocument<200> publish_doc;
+  DeserializationError error;
+
+  int success = -1;
+  char* pTokPtr = NULL;
+  char* t_name = NULL;
+  char* t_args = NULL;
+
   return_code_t ret = REJECTED_INVALID_TOPIC_ID;
-
-  SOPLOG("publshHandler - meesage topic id: ");
-  SOPLOGLN(msg->topic_id);
-
   uint16_t topic_id = bswap(msg->topic_id);
 
   if (topic_id == id_1001_) {
-    snprintf(buffer, MAX_BUFFER_SIZE, "%s", msg->data);
-    char errNo = buffer[0];
+    SOPLOGLN("topic_id == id_1001_");
+    snprintf(receive_buffer, MAX_BUFFER_SIZE, "%s", msg->data);
 
-    SOPLOG(F("Error no :"));
-    SOPLOGLN(buffer);
-
-    if (errNo == '0') {
-      // registered_ = !registered_;
-      registered_ = true;
-    } else if (strcmp(buffer, "-4") == 0) {
-      SOPLOGLN(F("Duplicated Thing error message from middleware."));
-      // registered_ = !registered_;
-      registered_ = true;
-    } else {
-      // do nothing
+    error = deserializeJson(receive_doc, receive_buffer);
+    if (error) {
+      SOPLOG(F("deserializeJson() failed: "));
+      SOPLOGLN(error.f_str());
+      return;
     }
 
-    SOPLOG(F("Registered: "));
-    SOPLOGLN(registered_);
+    SOPLOGLN("receive_doc: %d", receive_doc["error"]);
+
+    if (receive_doc["error"] == 0) {
+      middleware_registered_ = true;
+    } else if (receive_doc["error"] == -4) {
+      SOPLOGLN(F("Duplicated Thing error message from middleware."));
+      middleware_registered_ = true;
+    }
 
 #ifdef USE_QOS2
-    in_process_ = true;
+    publish_process_ = true;
     if (msg->flags & FLAG_QOS_2) {
       ret = ACCEPTED;
       pubrec(msg);
     }
-    in_process_ = false;
+    publish_process_ = false;
 #endif
-
     return;
   }
-  /*
-  if (topic_id == id_1002_)
-  {
-          publish(QOS_FLAG, id_2003_, NULL, 0);
-          return ACCEPTED;
-  }*/
 
   for (int i = 0; i < num_functions_; i++) {
-    SOPLOGLN(functions_[i]->id_1003());
     if (topic_id == functions_[i]->id_1003()) {
-      int success = -1;
-      char* pTokPtr = NULL;
-      char* t_name = NULL;
-      char* t_args = NULL;
+      publish_process_ = true;
+      // safe cpy
+      strncpy(receive_buffer, msg->data, MAX_BUFFER_SIZE);
 
-      in_process_ = true;
-      strncpy(save_buffer, msg->data,
-              MAX_BUFFER_SIZE - sizeof(msg_publish));  // safe cpy
 #ifdef USE_QOS2
       if (msg->flags & FLAG_QOS_2) {
         ret = ACCEPTED;
         pubrec(msg);
       }
 #endif
-      in_process_ = false;
 
-      t_name = strtok_r(save_buffer, ":", &pTokPtr);
-      t_args = strtok_r(NULL, ":", &pTokPtr);
+      publish_process_ = false;
 
-      switch (functions_[i]->function_classifier()) {
+      t_name = strtok_r(receive_buffer, ":", &pTokPtr);  // dd:dd:sds
+      t_args = strtok_r(NULL, "#", &pTokPtr);
+
+      switch (functions_[i]->getReturnType()) {
         case VOID:
-          functions_[i]->Execute(t_args, &success);
-          break;
         case INTEGER:
         case DOUBLE:
         case BOOL:
+          functions_[i]->Execute(t_args, &success);
+          break;
         default:
           success = -7;
           break;  // cannot be occured
       }
 
-      snprintf(buffer, MAX_BUFFER_SIZE,
-               "{\"scenario\" : \"%s\" , \"error\" : %d }", t_name, success);
-      publish(QOS_FLAG, functions_[i]->id_2004(), buffer, strlen(buffer));
+      snprintf(publish_buffer, MAX_BUFFER_SIZE,
+               "{\"scenario\" : \"%s\" , \"error\" : %d}", t_name, success);
+      // snprintf(buffer, MAX_BUFFER_SIZE + 60,
+      //          "{\"scenario\" : \"%s\" , \"error\" : %d , \"return_type\" : "
+      //          "\"%s\" , \"return_value\" : \"%s\" }",
+      //          t_name, success, "", "");
+      SOPLOG(F("buffer : "));
+      SOPLOGLN(publish_buffer);
+      publish(QOS_FLAG, functions_[i]->id_2004(), publish_buffer,
+              strlen(publish_buffer));
 
       return;
     }
@@ -769,8 +852,8 @@ void Thing::searchgw(const uint8_t radius) {
   msg->radius = radius;
 
   broadcast();
-  waiting_for_response_ = true;
-  response_wait_for_ = GWINFO;
+  gateway_response_wait_ = true;
+  protocal_response_wait_ = GWINFO;
 }
 
 void Thing::connect(const uint8_t flags, const uint16_t duration,
@@ -785,9 +868,9 @@ void Thing::connect(const uint8_t flags, const uint16_t duration,
   strcpy(msg->client_id, client_id_);
 
   unicast();
-  connected_ = false;
-  waiting_for_response_ = true;
-  response_wait_for_ = CONNACK;
+  gateway_connected_ = false;
+  gateway_response_wait_ = true;
+  protocal_response_wait_ = CONNACK;
 }
 
 void Thing::disconnect(const uint16_t duration) {
@@ -802,17 +885,12 @@ void Thing::disconnect(const uint16_t duration) {
   }
 
   unicast();
-  waiting_for_response_ = true;
+  gateway_response_wait_ = true;
 }
 
 bool Thing::registerTopic(const char* name) {
-  SOPLOGLN(F("in registerTopic"));
-  if (!waiting_for_response_) {
-    ++message_id_;
-
-    // Fill in the next table entry, but we only increment the counter to
-    // the next topic when we get a REGACK from the broker. So don't issue
-    // another REGISTER until we have resolved this one.
+  if (!gateway_response_wait_) {
+    message_id_++;
 
     registered_id_ = -1;
     msg_register* msg = reinterpret_cast<msg_register*>(message_buffer_);
@@ -824,11 +902,11 @@ bool Thing::registerTopic(const char* name) {
     strcpy(msg->topic_name, name);
 
     unicast();
-    waiting_for_response_ = true;
-    response_wait_for_ = REGACK;
+    gateway_response_wait_ = true;
+    protocal_response_wait_ = REGACK;
     return true;
   } else {
-    SOPLOGLN(F("waiting_for_response_ is false error!"));
+    SOPLOGLN(F("gateway_response_wait_ is false error!"));
   }
 
   return false;
@@ -836,7 +914,9 @@ bool Thing::registerTopic(const char* name) {
 
 void Thing::publish(const uint8_t flags, const uint16_t topicId,
                     const void* data, const uint8_t data_len) {
-  ++message_id_;
+  // Author: thsvkd
+  // in QoS 0, message_id_ have to set to 0
+  message_id_ = 0;
 
   msg_publish* msg = reinterpret_cast<msg_publish*>(message_buffer_);
 
@@ -850,11 +930,11 @@ void Thing::publish(const uint8_t flags, const uint16_t topicId,
   unicast();
 
   if ((flags & QOS_MASK) == FLAG_QOS_2) {
-    waiting_for_response_ = true;
-    response_wait_for_ = PUBREC;
+    gateway_response_wait_ = true;
+    protocal_response_wait_ = PUBREC;
     while (true) {
       ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-      if (response_wait_for_ == PUBREC) {
+      if (protocal_response_wait_ == PUBREC) {
         msg->length = sizeof(msg_publish) + data_len;
         msg->type = PUBLISH;
         msg->flags = flags;
@@ -869,163 +949,8 @@ void Thing::publish(const uint8_t flags, const uint16_t topicId,
   }
 }
 
-void Thing::devreg() {
-  SOPLOGLN(F("DEVREG start"));
-
-  msg_devreg* msg = reinterpret_cast<msg_devreg*>(message_buffer_);
-  response_wait_for_ = DEVREGACK;
-  waiting_for_response_ = true;
-
-  SOPLOG(F("num_values_: "));
-  SOPLOGLN(num_values_);
-  for (int i = 0; i < num_values_; i++) {
-    device_register_ = false;
-    while (!device_register_) {
-      message_id_++;
-      msg->type = DEVREG;
-      msg->pub_id = bswap(i);
-      msg->status = VALUE;
-      msg->message_id = bswap(message_id_);
-      values_[i]->GetInformation(buffer);
-      SOPLOGLN(buffer);
-      memcpy(msg->data, buffer, strlen(buffer) + 1);
-      msg->length = sizeof(msg_devreg) + strlen(buffer) + 1;
-      unicast();
-      ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-    }
-
-    SOPLOG(F("num_value_tags: "));
-    SOPLOGLN(values_[i]->ncurValueTags());
-    for (int j = 0; j < values_[i]->ncurValueTags(); j++) {
-      device_register_ = false;
-      while (!device_register_) {
-        message_id_++;
-        msg->type = DEVREG;
-        msg->pub_id = bswap(j);
-        msg->status = VALUE_TAG;
-        msg->message_id = bswap(message_id_);
-        values_[i]->getTag(j)->GetInformation(buffer);
-        memcpy(msg->data, buffer, strlen(buffer) + 1);
-        msg->length = sizeof(msg_devreg) + strlen(buffer) + 1;
-        unicast();
-        ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-      }
-    }
-  }
-
-  SOPLOG(F("num_functions_: "));
-  SOPLOGLN(num_functions_);
-  for (int i = 0; i < num_functions_; i++) {
-    device_register_ = false;
-    while (!device_register_) {
-      message_id_++;
-      msg->type = DEVREG;
-      msg->pub_id = bswap(i);
-      msg->status = FUNCTION;
-      msg->message_id = bswap(message_id_);
-      functions_[i]->GetInformation(buffer);
-      SOPLOGLN(buffer);
-      memcpy(msg->data, buffer, strlen(buffer) + 1);
-      msg->length = sizeof(msg_devreg) + strlen(buffer) + 1;
-      unicast();
-      ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-    }
-
-    SOPLOG(F("num_arguments: "));
-    SOPLOGLN(functions_[i]->ncurArguments());
-    for (int j = 0; j < functions_[i]->ncurArguments(); j++) {
-      device_register_ = false;
-      while (!device_register_) {
-        message_id_++;
-        msg->type = DEVREG;
-        msg->pub_id = bswap(j);
-        msg->status = ARGUMENT;
-        msg->message_id = bswap(message_id_);
-        functions_[i]->getArgument(j)->GetInformation(buffer);
-        memcpy(msg->data, buffer, strlen(buffer) + 1);
-        msg->length = sizeof(msg_devreg) + strlen(buffer) + 1;
-        unicast();
-        ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-      }
-    }
-
-    SOPLOG(F("num_function_tags: "));
-    SOPLOGLN(functions_[i]->ncurFunctionTags());
-    for (int j = 0; j < functions_[i]->ncurFunctionTags(); j++) {
-      device_register_ = false;
-      while (!device_register_) {
-        message_id_++;
-        msg->type = DEVREG;
-        msg->pub_id = bswap(j);
-        msg->status = FUNCTION_TAG;
-        msg->message_id = bswap(message_id_);
-        functions_[i]->getTag(j)->GetInformation(buffer);
-        memcpy(msg->data, buffer, strlen(buffer) + 1);
-        msg->length = sizeof(msg_devreg) + strlen(buffer) + 1;
-        unicast();
-        ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-      }
-    }
-  }
-
-  // set alive cycle
-  device_register_ = false;
-  while (!device_register_) {
-    message_id_++;
-    msg->type = DEVREG;
-    msg->pub_id = 0;
-    msg->status = DURATION;
-    msg->message_id = bswap(message_id_);
-    snprintf(buffer, MAX_BUFFER_SIZE, "%ul", alive_cycle_);
-
-    SOPLOG(F("alive cycle: "));
-    SOPLOGLN(buffer);
-
-    memcpy(msg->data, buffer, strlen(buffer) + 1);
-    msg->length = sizeof(msg_devreg) + strlen(buffer) + 1;
-    unicast();
-    ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-  }
-
-  // finish
-  registered_ = false;
-  while (!registered_) {
-    SOPLOGLN(F("start of FINISH state"));
-
-    message_id_++;
-    msg->length = sizeof(msg_devreg);
-    msg->type = DEVREG;
-
-    SOPLOG(F("ID2001: "));
-    SOPLOGLN(id_2001_);
-
-    msg->pub_id = bswap(id_2001_);
-    msg->message_id = bswap(message_id_);
-    msg->length = sizeof(msg_devreg);
-    msg->status = FINISH;
-    unicast();
-    ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-
-    SOPLOG(F("end of FINISH state: "));
-    SOPLOGLN(registered_);
-  }
-
-  waiting_for_response_ = false;
-  SOPLOGLN(F("out of FINISH state"));
-}
-
-void Thing::devregackHandler(const msg_devregack* msg) {
-  SOPLOGLN(F("[SUCCESS] REGISTER_THING SUCESS"));
-  device_register_ = true;
-}
-
-void Thing::devregHandler() {
-  SOPLOGLN(F("[ERROR] INVALID PACKET"));
-  // do nothing
-}
-
 void Thing::subscribe(const uint8_t flags, const uint16_t topicId) {
-  ++message_id_;
+  message_id_++;
 
   msg_subscribe* msg = reinterpret_cast<msg_subscribe*>(message_buffer_);
 
@@ -1039,8 +964,8 @@ void Thing::subscribe(const uint8_t flags, const uint16_t topicId) {
   unicast();
 
   if ((flags & QOS_MASK) == FLAG_QOS_1 || (flags & QOS_MASK) == FLAG_QOS_2) {
-    waiting_for_response_ = true;
-    response_wait_for_ = SUBACK;
+    gateway_response_wait_ = true;
+    protocal_response_wait_ = SUBACK;
   }
 }
 
@@ -1076,7 +1001,7 @@ void Thing::print_message_buffer_() {
   Serial.println("");
 }
 void Thing::subscribe(const uint8_t flags, const char* name) {
-  ++message_id_;
+  message_id_++;
 
   msg_subscribe* msg = reinterpret_cast<msg_subscribe*>(message_buffer_);
 
@@ -1091,8 +1016,8 @@ void Thing::subscribe(const uint8_t flags, const char* name) {
   unicast();
 
   if ((flags & QOS_MASK) == FLAG_QOS_1 || (flags & QOS_MASK) == FLAG_QOS_2) {
-    waiting_for_response_ = true;
-    response_wait_for_ = SUBACK;
+    gateway_response_wait_ = true;
+    protocal_response_wait_ = SUBACK;
   }
 }
 
@@ -1108,7 +1033,7 @@ void Thing::pingresp(int flag) {
 }
 
 void Thing::unsubscribe(const uint8_t flags, const char* name) {
-  ++message_id_;
+  message_id_++;
 
   msg_unsubscribe* msg = reinterpret_cast<msg_unsubscribe*>(message_buffer_);
 
@@ -1123,13 +1048,13 @@ void Thing::unsubscribe(const uint8_t flags, const char* name) {
   unicast();
 
   if ((flags & QOS_MASK) == FLAG_QOS_1 || (flags & QOS_MASK) == FLAG_QOS_2) {
-    waiting_for_response_ = true;
-    response_wait_for_ = UNSUBACK;
+    gateway_response_wait_ = true;
+    protocal_response_wait_ = UNSUBACK;
   }
 }
 
 void Thing::unsubscribe(const uint8_t flags, const uint16_t topicId) {
-  ++message_id_;
+  message_id_++;
 
   msg_unsubscribe* msg = reinterpret_cast<msg_unsubscribe*>(message_buffer_);
 
@@ -1143,8 +1068,8 @@ void Thing::unsubscribe(const uint8_t flags, const uint16_t topicId) {
   unicast();
 
   if ((flags & QOS_MASK) == FLAG_QOS_1 || (flags & QOS_MASK) == FLAG_QOS_2) {
-    waiting_for_response_ = true;
-    response_wait_for_ = UNSUBACK;
+    gateway_response_wait_ = true;
+    protocal_response_wait_ = UNSUBACK;
   }
 }
 
@@ -1155,8 +1080,8 @@ void Thing::pingreq() {
   strcpy(msg->client_id, client_id_);
 
   unicast();
-  last_ping_ = waiting_for_response_ = true;
-  response_wait_for_ = PINGRESP;
+  last_ping_ = gateway_response_wait_ = true;
+  protocal_response_wait_ = PINGRESP;
 }
 
 void Thing::pingreqHandler() {
@@ -1170,9 +1095,9 @@ void Thing::pingrespHandler() {}
 
 #ifdef USE_QOS2
 void Thing::pubrec(const msg_publish* recv_msg) {
-  waiting_for_response_ = true;
-  response_wait_for_ = PUBREL;
-  while (response_wait_for_ == PUBREL) {
+  gateway_response_wait_ = true;
+  protocal_response_wait_ = PUBREL;
+  while (protocal_response_wait_ == PUBREL) {
     msg_pubqos2* msg = reinterpret_cast<msg_pubqos2*>(message_buffer_);
     msg->length = sizeof(msg_pubqos2);
     msg->type = PUBREC;
@@ -1188,9 +1113,9 @@ void Thing::pubrec(const msg_publish* recv_msg) {
 }
 
 void Thing::pubrel(const msg_pubqos2* recv_msg) {
-  waiting_for_response_ = true;
-  response_wait_for_ = PUBCOMP;
-  while (response_wait_for_ == PUBCOMP) {
+  gateway_response_wait_ = true;
+  protocal_response_wait_ = PUBCOMP;
+  while (protocal_response_wait_ == PUBCOMP) {
     msg_pubqos2* msg = reinterpret_cast<msg_pubqos2*>(message_buffer_);
     msg->length = sizeof(msg_pubqos2);
     msg->type = PUBREL;
@@ -1212,14 +1137,14 @@ void Thing::pubcomp(const msg_pubqos2* recv_msg) {
 void Thing::pubrecHandler(const msg_pubqos2* msg) { pubrel(msg); }
 
 void Thing::pubrelHandler(const msg_pubqos2* msg) {
-  waiting_for_response_ = false;
-  response_wait_for_ = PUBLISH;
+  gateway_response_wait_ = false;
+  protocal_response_wait_ = PUBLISH;
   pubcomp(msg);
 }
 
 void Thing::pubcompHandler(const msg_pubqos2* msg) {
-  waiting_for_response_ = false;
-  response_wait_for_ = PUBLISH;
+  gateway_response_wait_ = false;
+  protocal_response_wait_ = PUBLISH;
 }
 
 #endif

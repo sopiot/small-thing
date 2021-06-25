@@ -13,55 +13,43 @@ void Value::Initialize() {
   value_classifier_ = UNDEFINED;
 }
 
-void Value::InitTags(int nValueTags) {
-  nmaxValueTags_ = nValueTags;
-  if (nValueTags > 0) {
-  ptsValueTags_ = (Tag**)malloc(sizeof(Tag*) * nValueTags);
-  MEM_ALLOC_CHECK(ptsValueTags_);
-  }
-}
-
-Value::Value(const char* name, BoolValue value, int nValueTags, int sleep_ms_interval) {
+Value::Value(const char* name, BoolValue value, int sleep_ms_interval) {
   Initialize();
-  set_name(name);
+  SetName(name);
   set_value(value);
   set_max(1);
   set_min(0);
   set_sleep_interval(sleep_ms_interval);
-  InitTags(nValueTags);
 }
 
-Value::Value(const char* name, IntegerValue value, int nValueTags, int min, int max,
+Value::Value(const char* name, IntegerValue value, int min, int max,
              int sleep_ms_interval) {
   Initialize();
-  set_name(name);
+  SetName(name);
   set_value(value);
   set_min(min);
   set_max(max);
   set_sleep_interval(sleep_ms_interval);
-  InitTags(nValueTags);
 }
 
-Value::Value(const char* name, StringValue value, int nValueTags, int min, int max,
+Value::Value(const char* name, StringValue value, int min, int max,
              int sleep_ms_interval) {
   Initialize();
-  set_name(name);
+  SetName(name);
   set_value(value);
   set_min(min);
   set_max(max);
   set_sleep_interval(sleep_ms_interval);
-  InitTags(nValueTags);
 }
 
-Value::Value(const char* name, DoubleValue value, int nValueTags, double min, double max,
+Value::Value(const char* name, DoubleValue value, double min, double max,
              int sleep_ms_interval) {
   Initialize();
-  set_name(name);
+  SetName(name);
   set_value(value);
   set_min(min);
   set_max(max);
   set_sleep_interval(sleep_ms_interval);
-  InitTags(nValueTags);
 }
 
 Value::~Value() {
@@ -71,30 +59,28 @@ Value::~Value() {
   if (max_) free(max_);
   if (prev_) free(prev_);
   if (user_string_buffer_) free(user_string_buffer_);
-
-  for (int i = 0; i < nmaxValueTags_; i++) {
-    if (ptsValueTags_[i] != NULL) {
-      free(ptsValueTags_[i]);
-      ptsValueTags_[i] = NULL;
-    }
-  }
-  free(ptsValueTags_);
 }
 
-void Value::AddTag(const char *tag_name) {
-  Tag *p_tag = new Tag(tag_name);
-  ptsValueTags_[ncurValueTags_] = p_tag;
-  ncurValueTags_++;
+void Value::AddTag(const char* tag_name) {
+  Tag* tag = new Tag(tag_name);
+  AddTag(*tag);
 }
 
 void Value::AddTag(Tag& value_tag) {
-  ptsValueTags_[ncurValueTags_] = &value_tag;
-  ncurValueTags_++;
+  if (num_tag_ == 0) {
+    ValueTags_ = new Tag*[1];
+    MEM_ALLOC_CHECK(ValueTags_);
+  } else {
+    ValueTags_ = (Tag**)realloc(ValueTags_, sizeof(Tag*) * (num_tag_ + 1));
+  }
+  ValueTags_[num_tag_] = &value_tag;
+  MEM_ALLOC_CHECK(ValueTags_[num_tag_]);
+  num_tag_++;
 }
 
-char* Value::name() { return (char*)name_; }
+char* Value::GetName() { return (char*)name_; }
 
-void Value::set_name(const char* name) {
+void Value::SetName(const char* name) {
   name_ = strdup(name);
   MEM_ALLOC_CHECK(name_);
 }
@@ -234,36 +220,36 @@ SoPType Value::value_classifier() { return value_classifier_; }
 
 void Value::GetInformation(char* buffer) {
   switch (value_classifier_) {
-    case BOOL:
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tbool\t%d\t%d\t%d", name_, *(int*)min_,
-               *(int*)max_, ncurValueTags_);
-      break;
     case INTEGER:
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tint\t%d\t%d\t%d", name_, *(int*)min_,
-               *(int*)max_, ncurValueTags_);
-      break;
-    case STRING:
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tstring\t%d\t%d\t%d", name_,
-               *(int*)min_, *(int*)max_, ncurValueTags_);
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s#int#%d#%d", name_, *(int*)min_,
+               *(int*)max_);
       break;
     case DOUBLE: {
       char min_temp[10];
       char max_temp[10];
       safe_dtostrf(*(double*)min_, 8, 2, min_temp);
       safe_dtostrf(*(double*)max_, 8, 2, max_temp);
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s\tdouble\t%s\t%s\t%d", name_, min_temp,
-               max_temp, ncurValueTags_);
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s#double#%s#%s", name_, min_temp,
+               max_temp);
       break;
     }
+    case BOOL:
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s#bool#%d#%d", name_, *(int*)min_,
+               *(int*)max_);
+      break;
+    case STRING:
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s#string#%d#%d", name_, *(int*)min_,
+               *(int*)max_);
+      break;
     default:
-      // error!
+      SOPLOGLN("UNDEFINED Value type... error!");
       break;
   }
 }
 
 unsigned long Value::get_last_sent_time() { return last_sent_time_; }
 
-bool Value::capVal2str(char* buffer) {
+bool Value::GetPublishJson(char* buffer) {
   void* val;
   int nval;
   char dval;
@@ -296,7 +282,7 @@ bool Value::capVal2str(char* buffer) {
     case STRING: {
       ptsval = ((StringValue)value_)(user_string_buffer_, *(int*)max_);
       if (ptsval == NULL) {
-        SOPLOGLN(F("Fatal Error is occured on capVal2str!!\n"));
+        SOPLOGLN(F("Fatal Error is occured on GetPublishJson!!\n"));
         return false;
       }
       len = snprintf(buffer, MAX_BUFFER_SIZE,
@@ -311,7 +297,7 @@ bool Value::capVal2str(char* buffer) {
   }
 
   if (len < 0) {
-    SOPLOGLN(F("Fatal Error is occured on capVal2str!!\n"));
+    SOPLOGLN(F("Fatal Error is occured on GetPublishJson!!\n"));
     return false;
   }
 

@@ -2,46 +2,56 @@
 #include "function.h"
 #include "utils.h"
 
+int GetStringArgumentByName(void* pData, const char* name, char** out) {
+  char* data = (char*)GetArgumentByName(pData, name);
 
-int GetStringArgumentByName(void* pData, const char* name, char** ppszOut) {
-  char* pszData = (char*)GetArgumentByName(pData, name);
-
-  if (pszData == NULL) {
+  if (data == NULL) {
     return -1;
   }
 
-  *ppszOut = pszData;
+  *out = data;
   return 0;
 }
 
-int GetIntArgumentByName(void* pData, const char* name, int* pnOut) {
-  int* pnData = (int*)GetArgumentByName(pData, name);
-  if (pnData == NULL) {
+int GetIntArgumentByName(void* pData, const char* name, int* out) {
+  int* data = (int*)GetArgumentByName(pData, name);
+  if (data == NULL) {
     return -1;
   }
-  *pnOut = *pnData;
+
+  *out = *data;
   return 0;
 }
 
-int GetDoubleArgumentByName(void* pData, const char* name, double* pdbOut) {
-  double* pdbData = (double*)GetArgumentByName(pData, name);
+int GetDoubleArgumentByName(void* pData, const char* name, double* out) {
+  double* data = (double*)GetArgumentByName(pData, name);
 
-  if (pdbData == NULL) {
+  if (data == NULL) {
     return -1;
   }
 
-  *pdbOut = *pdbData;
+  *out = *data;
+  return 0;
+}
+
+int GetBoolArgumentByName(void* pData, const char* name, int* out) {
+  bool* data = (bool*)GetArgumentByName(pData, name);
+  if (data == NULL) {
+    return -1;
+  }
+
+  *out = *data;
   return 0;
 }
 
 void* GetArgumentByName(void* pData, const char* name) {
   Function* function = (Function*)pData;
   int idx = 0;
-  int nargs = function->ncurArguments();
+  int nargs = function->getArgumentNum();
   Argument* ptrarg;
   for (idx = 0; idx < nargs; idx++) {
     ptrarg = function->getArgument(idx);
-    if (strcmp(name, ptrarg->name()) == 0) {
+    if (strcmp(name, ptrarg->GetName()) == 0) {
       return ptrarg->value();
     }
   }

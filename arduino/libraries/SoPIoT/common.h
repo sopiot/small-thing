@@ -2,8 +2,10 @@
 #define SMALL_THING_COMMON_H_
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <Stream.h>
 #include <XBee.h>
+#include <stdarg.h>
 
 //----------------------------------------
 // Author: ikess
@@ -39,6 +41,8 @@
 #define T_WAIT 360
 #define T_RETRY 15
 #define N_RETRY 5
+
+#define SOPLOG_LIMIT 256
 
 enum return_code_t {
   ACCEPTED,
@@ -234,7 +238,7 @@ struct msg_devregack : public message_header {
 #define MAX_VALUE_NUM 10
 #define MAX_FUNCTION_NUM 5
 #define MAX_NAME_LENGTH 20
-#define MAX_BUFFER_SIZE 66
+#define MAX_BUFFER_SIZE 60
 
 // SoPIoT protocols (See specification documentation)
 #define COMMON0000 "%s/%s"
@@ -242,13 +246,21 @@ struct msg_devregack : public message_header {
 // MW --> Thing
 #define MT1001 "MT/REGACK/%s"
 #define MT1002 "MT/PINGREQ/%s"
-#define MT1003 "MT/%s/%s"
+#define MT1003 "MT/SN/%s/%s"
 
 // Thing --> MW
 #define TM2001 "TM/REGISTER/%s"
 #define TM2002 "TM/UNREGISTER/%s"
 #define TM2003 "TM/ALIVE/%s"
-// #define TM2004_DEPRECATED "TM/RESULT/FUNCTION/%s"
+
+#define TM2010 "TM/SN/REGISTER/VALUE/%s"
+#define TM2011 "TM/SN/REGISTER/VALUETAG/%s"
+#define TM2012 "TM/SN/REGISTER/FUNCTION/%s"
+#define TM2013 "TM/SN/REGISTER/FUNCTIONTAG/%s"
+#define TM2014 "TM/SN/REGISTER/ARGUMENT/%s"
+#define TM2015 "TM/SN/REGISTER/ALIVECYCLE/%s"
+#define TM2016 "TM/SN/REGISTER/FINISH/%s"
+
 #define TM2004 "TM/RESULT/FUNCTION/%s/%s"
 
 // Double data type comparison
@@ -269,7 +281,9 @@ struct msg_devregack : public message_header {
 // Depending arduino board,
 // Serial variable is different.
 // Some are Serial, the others are Serial1
-// TODO(thsvkd): fix it with the best practice
+
+// (thsvkd)
+// TODO: fix it with the best practice
 #if (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || \
     (defined(ARDUINO_ARCH_SAM) && !defined(ARDUINO_SAM_DUE)) ||    \
     defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) ||   \
@@ -283,47 +297,102 @@ struct msg_devregack : public message_header {
 #define SafeSerial Serial
 #endif
 
-typedef enum _SoPType {
-  UNDEFINED = 0,
-  VOID,
-  INTEGER,
-  DOUBLE,
-  BOOL,
-  STRING,
+typedef enum _soptype {
+  UNDEFINED = -1, /** < represents UNDEFINED */
+  INTEGER,        /** < represents IntegerFunction or IntegerValue */
+  DOUBLE,         /** < represents DoubleFunction or DoubleValue */
+  BOOL,           /** < represents BoolFunction or BoolValue */
+  STRING,         /** < represents Character array Value > */
+  BINARY,         /** <represents Binary Value> */
+  VOID,           /** < represents VoidFunction */
 } SoPType;
 
-typedef enum _capdevreg {
+typedef enum _sopdevreg {
   VALUE = 0,
   VALUE_TAG,
   FUNCTION,
-  ARGUMENT,
   FUNCTION_TAG,
+  ARGUMENT,
   DURATION,
   FINISH,
-} CapRegStatus;
+} SoPRegStatus;
 
-typedef enum _capstate {
+typedef enum _sopstate {
   UNREGISTERED = 0,
   REGISTERED,
-} CapState;
+} SoPState;
 
-typedef void (*VoidFunction)(void *);
-typedef int (*IntegerFunction)(void *);
-typedef double (*DoubleFunction)(void *);
-typedef bool (*BoolFunction)(void *);
+typedef void (*VoidFunction)(void);
+typedef int (*IntegerFunction)(void);
+typedef double (*DoubleFunction)(void);
+typedef bool (*BoolFunction)(void);
+
+typedef void (*VoidArgumentFunction)(void *);
+typedef int (*IntegerArgumentFunction)(void *);
+typedef double (*DoubleArgumentFunction)(void *);
+typedef bool (*BoolArgumentFunction)(void *);
 
 typedef int (*IntegerValue)(void);
 typedef double (*DoubleValue)(void);
 typedef bool (*BoolValue)(void);
 typedef char *(*StringValue)(char *, int);
 
-//#define SOP_DEBUG
+#define SOP_DEBUG
 #ifdef SOP_DEBUG
-#define SOPLOG(...) Serial.print(__VA_ARGS__)
-#define SOPLOGLN(...) Serial.println(__VA_ARGS__)
+// #define SOPLOG(fmt, ...) SoP_printf(fmt, __VA_ARGS__)
+// #define SOPLOGLN(fmt, ...) SoP_printlnf(fmt, __VA_ARGS__)
+
+static void SOPLOG(char *fmt, ...) {
+  char buf[SOPLOG_LIMIT];
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(buf, SOPLOG_LIMIT, fmt, args);
+  va_end(args);
+  Serial.print(buf);
+}
+
+static void SOPLOG(const __FlashStringHelper *fmt, ...) {
+  char buf[SOPLOG_LIMIT];
+  va_list args;
+  va_start(args, fmt);
+#ifdef __AVR__
+  // progmem for AVR
+  vsnprintf_P(buf, sizeof(buf), (const char *)fmt, args);
 #else
-#define SOPLOG(...)
-#define SOPLOGLN(...)
+  // for the rest of the world
+  vsnprintf(buf, sizeof(buf), (const char *)fmt, args);
+#endif
+  va_end(args);
+  Serial.print(buf);
+}
+
+static void SOPLOGLN(char *fmt, ...) {
+  char buf[SOPLOG_LIMIT];
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(buf, SOPLOG_LIMIT, fmt, args);
+  va_end(args);
+  Serial.println(buf);
+}
+
+static void SOPLOGLN(const __FlashStringHelper *fmt, ...) {
+  char buf[SOPLOG_LIMIT];
+  va_list args;
+  va_start(args, fmt);
+#ifdef __AVR__
+  // progmem for AVR
+  vsnprintf_P(buf, sizeof(buf), (const char *)fmt, args);
+#else
+  // for the rest of the world
+  vsnprintf(buf, sizeof(buf), (const char *)fmt, args);
+#endif
+  va_end(args);
+  Serial.println(buf);
+}
+
+#else
+#define SOPLOG(fmt, ...)
+#define SOPLOGLN(fmt, ...)
 #endif
 
 #define MEM_ALLOC_CHECK(var)           \

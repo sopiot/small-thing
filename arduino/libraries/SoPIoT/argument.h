@@ -5,21 +5,23 @@
 
 class Argument {
  public:
+  Argument();
   Argument(const char* name, int min, int max, SoPType arg_type);
   Argument(const char* name, double min, double max, SoPType arg_type);
 
   ~Argument();
 
-  void set_name(const char* name);
+  void SetName(const char* name);
 
-  char* name();
+  char* GetName();
   void* value();
 
-  int get_order();
+  int GetOrder();
+  void* GetMin();
+  void* GetMax();
   void set_order(const int order);
 
-  SoPType arg_type(void);
-
+  SoPType GetArgType(void);
   void GetInformation(char* buf);
 
   bool SetArgumentIfValid(char* val);

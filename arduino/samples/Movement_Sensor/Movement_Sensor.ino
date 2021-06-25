@@ -37,8 +37,9 @@ int SenseMovementStatus() { return (int)digitalRead(kmovement1Pin); }
 
 // Value declarations
 // Value(name, sense_function, min, max, period(ms));
-Value movement_value((const char *)"movement_value", SenseMovementStatus, 0, 2,
-                     1000);
+Value movement_value((const char *)"movement_value", SenseMovementStatus, 0,
+                     2, 1000);
+Tag movement_tag("Move");
 
 //----------------------------------------
 // Functions
@@ -65,6 +66,7 @@ void SetupThing() {
   // Setup Functions
 
   // Setup Values
+  movement_value.AddTag(movement_tag);
   movement_thing.Add(movement_value);
 
   // Setup Thing
