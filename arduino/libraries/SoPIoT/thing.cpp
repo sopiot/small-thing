@@ -327,10 +327,6 @@ void Thing::TestPublish() {
 }
 
 void Thing::Loop(int pub_period) {
-<<<<<<< HEAD
-  // SOPLOGLN(F("[LED DEBUG] Loop Start here!"));
-=======
->>>>>>> Refactoring_Stable/thsvkd
   bool time_passed = false;
   bool changed = false;
 
@@ -342,27 +338,6 @@ void Thing::Loop(int pub_period) {
     if (time_passed) {
       changed = values_[i]->GetPublishJson(publish_buffer);
       if (changed) {
-<<<<<<< HEAD
-        publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
-        SOPLOG(F("[DEBUG] Value publish, buffer : "));
-        SOPLOGLN(F(buffer));
-      } else {
-        // SOPLOGLN(F("[DEBUG] Value is not changed. Not publishing value"));
-      }
-      // if (time_passed) {
-      //   publish(QOS_FLAG, values_[i]->publish_id(), buffer, strlen(buffer));
-      //   sendAliveMessageNoCond();
-      // }
-    } else {
-      // SOPLOGLN(F(
-      //     "[DEBUG] Value publish cycle is not finished. Not publishing
-      //     value"));
-    }
-    ReadZbeeIfAvailable();
-  }
-  // SOPLOGLN(F("[INT DEBUG] Loop finished"));
-  // delay(pub_period);
-=======
         SOPLOGLN(F("pub_id: %d, buffer: %s"), values_[i]->publish_id(),
                  publish_buffer);
         publish(QOS_FLAG, values_[i]->publish_id(), publish_buffer,
@@ -371,7 +346,6 @@ void Thing::Loop(int pub_period) {
     }
     ReadZbeeIfAvailable();
   }
->>>>>>> Refactoring_Stable/thsvkd
 }
 
 //----------------------------------------
@@ -601,14 +575,8 @@ void Thing::ReadZbeeIfAvailable() {
         }
       } else if (zbee_.getResponse().getApiId() == ZB_RX_RESPONSE) {
         zbee_.getResponse().getZBRxResponse(zbee_rx_);
-<<<<<<< HEAD
-        // SOPLOGLN(F("[LED DEBUG SUCCESS] Zigbee Receive Success"));
-
-        ParseStream((char*)zbee_rx_.getData(), zbee_rx_.getDataLength());
-=======
         SOPLOGLN(F("[DEBUG] Zigbee Receive Success"));
         ParseMQTTSNStream((char*)zbee_rx_.getData(), zbee_rx_.getDataLength());
->>>>>>> Refactoring_Stable/thsvkd
       } else if (zbee_.getResponse().isError()) {
         // SOPLOGLN(F("[ERROR] ZigBee Response Error."));
       } else {
@@ -637,16 +605,6 @@ void Thing::ParseMQTTSNStream(char* buf, uint16_t len) {
   SOPLOGLN(F("xbee recv : "));
   SOPLOGLN(F(message_buffer_));
   memcpy(message_buffer_, (const void*)buf, len);
-<<<<<<< HEAD
-  dispatch();
-}
-
-void Thing::dispatch() {
-  message_header* response_message = (message_header*)message_buffer_;
-  SOPLOG(F("[DEBUG] response_msg type= "));
-  SOPLOGLN(response_message->type, HEX);
-=======
->>>>>>> Refactoring_Stable/thsvkd
 
   switch (response_message->type) {
     case ADVERTISE:
@@ -842,25 +800,11 @@ void Thing::publishHandler(const msg_publish* msg) {
   }
 
   for (int i = 0; i < num_functions_; i++) {
-<<<<<<< HEAD
-    SOPLOG(F("functions_ name: "));
-    SOPLOGLN(functions_[i]->name());
-    if (topic_id == functions_[i]->id_1003()) {
-      int success = -1;
-      char* pTokPtr = NULL;
-      char* t_name = NULL;
-      char* t_args = NULL;
-
-      in_process_ = true;
-      strncpy(save_buffer, msg->data,
-              MAX_BUFFER_SIZE);  // safe cpy
-=======
     if (topic_id == functions_[i]->id_1003()) {
       publish_process_ = true;
       // safe cpy
       strncpy(receive_buffer, msg->data, MAX_BUFFER_SIZE);
 
->>>>>>> Refactoring_Stable/thsvkd
 #ifdef USE_QOS2
       if (msg->flags & FLAG_QOS_2) {
         ret = ACCEPTED;
@@ -868,29 +812,12 @@ void Thing::publishHandler(const msg_publish* msg) {
       }
 #endif
 
-<<<<<<< HEAD
-      SOPLOG(F("rev_buffer : "));
-      SOPLOGLN(save_buffer);
-
-      t_name = strtok_r(save_buffer, ":", &pTokPtr);
-      t_args = strtok_r(NULL, ":", &pTokPtr);
-
-      SOPLOG(F("t_name : "));
-      SOPLOGLN(t_name);
-      SOPLOG(F("t_args : "));
-      SOPLOGLN(t_args);
-      SOPLOG(F("functions_[i]->function_classifier() : "));
-      SOPLOGLN(functions_[i]->function_classifier());
-
-      switch (functions_[i]->function_classifier()) {
-=======
       publish_process_ = false;
 
       t_name = strtok_r(receive_buffer, ":", &pTokPtr);  // dd:dd:sds
       t_args = strtok_r(NULL, "#", &pTokPtr);
 
       switch (functions_[i]->getReturnType()) {
->>>>>>> Refactoring_Stable/thsvkd
         case VOID:
         case INTEGER:
         case DOUBLE:
@@ -902,25 +829,16 @@ void Thing::publishHandler(const msg_publish* msg) {
           break;  // cannot be occured
       }
 
-<<<<<<< HEAD
-      snprintf(buffer, MAX_BUFFER_SIZE,
-=======
       snprintf(publish_buffer, MAX_BUFFER_SIZE,
->>>>>>> Refactoring_Stable/thsvkd
                "{\"scenario\" : \"%s\" , \"error\" : %d}", t_name, success);
       // snprintf(buffer, MAX_BUFFER_SIZE + 60,
       //          "{\"scenario\" : \"%s\" , \"error\" : %d , \"return_type\" : "
       //          "\"%s\" , \"return_value\" : \"%s\" }",
       //          t_name, success, "", "");
       SOPLOG(F("buffer : "));
-<<<<<<< HEAD
-      SOPLOGLN(buffer);
-      publish(QOS_FLAG, functions_[i]->id_2004(), buffer, strlen(buffer));
-=======
       SOPLOGLN(publish_buffer);
       publish(QOS_FLAG, functions_[i]->id_2004(), publish_buffer,
               strlen(publish_buffer));
->>>>>>> Refactoring_Stable/thsvkd
 
       return;
     }
