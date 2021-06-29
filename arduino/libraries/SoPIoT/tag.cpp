@@ -1,22 +1,22 @@
 #include "tag.h"
 #include "utils.h"
 
-void Tag::Initialize() {
-  name_ = NULL;
-}
+void Tag::Initialize() { name_ = NULL; }
+
+Tag::Tag() { Initialize(); }
 
 Tag::Tag(const char* name) {
   Initialize();
-  set_name(name);
+  SetName(name);
 }
 
 Tag::~Tag() {
   if (name_) free(name_);
 }
 
-char* Tag::name() { return name_; }
+char* Tag::GetName() { return name_; }
 
-void Tag::set_name(const char* name) {
+void Tag::SetName(const char* name) {
   name_ = strdup(name);
   MEM_ALLOC_CHECK(name_);
 }

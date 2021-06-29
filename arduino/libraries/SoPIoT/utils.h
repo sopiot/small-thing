@@ -1,3 +1,5 @@
+#include "common.h"
+
 // get argument from data by name
 void* GetArgumentByName(void* pData, const char* name);
 

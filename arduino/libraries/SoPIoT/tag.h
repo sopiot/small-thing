@@ -5,12 +5,12 @@
 
 class Tag {
  public:
-
+  Tag();
   Tag(const char* name);
   ~Tag();
 
-  void set_name(const char* name);
-  char* name();
+  void SetName(const char* name);
+  char* GetName();
 
   /**
    * get json_object* to register to the middleware, it will not be used in user
