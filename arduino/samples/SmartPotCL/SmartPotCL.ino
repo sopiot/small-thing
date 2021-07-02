@@ -1,17 +1,9 @@
-// solenoid valve + soil sensor
-
-//----------------------------------------
-// Libraries
-//----------------------------------------
-
-// SoPIoT Thing library
 #include <thing.h>
 
-// Module libraries
-
-// Pins
 const int kIRPin = 7;
 const int kLightPin = A0;
+
+int led_status_ = 0;
 
 unsigned int kOnSignal[] = {
     9024, 4460, 584, 564,  548, 520,  584, 532,   576,  568,  544, 528,
@@ -77,65 +69,29 @@ void SendIR(unsigned int *signal, int length) {
   // delay(100);
 }
 
-//----------------------------------------
-// Modules
-//----------------------------------------
-
-// Modules
-
-//----------------------------------------
-// Thing
-//----------------------------------------
-
-// Thing declaration
-// Thing(class_name, alive_cycle, serial);
-// Thing(class_name, serial);
-Thing thing((const char *)"SmartPotCL", 60, SafeSerial);
-
-Tag tag_SmartPot("SmartPot");
-Tag tag_SmartPotCL("SmartPotCL");
-
-//----------------------------------------
-// Values
-// an SenseXXX overwrites a Value XXX
-//----------------------------------------
-
-// Value variables
-int led_status_ = 0;  // == TODO:
-
-// Getter functions of each Value variable
 int SenseLedStatus() { return led_status_; }
 int SenseBrightness() { return analogRead(kLightPin); }
 
-// Value declarations
-// Value(name, sense_function, nValueTags, min, max, period(ms));
-Value led_status((const char *)"led_status", SenseLedStatus, 5, 0, 3, 3000);
-Value brightness((const char *)"brightness", SenseBrightness, 5, 0, 1024, 3000);
-
-//----------------------------------------
-// Functions
-// an ActuateXXX actuates a Function XXX
-//----------------------------------------
-
-void ActuateLedOn(void *pData) {
+void ActuateLedOn() {
   SOPLOGLN(F("[LED DEBUG]: LED On"));
   SendIR(kOnSignal, sizeof(kOnSignal) / sizeof(kOnSignal[0]));
   led_status_ = 1;
 }
 
-void ActuateLedOff(void *pData) {
+void ActuateLedOff() {
   SOPLOGLN(F("[LED DEBUG]: LED Off"));
   SendIR(kOffSignal, sizeof(kOffSignal) / sizeof(kOffSignal[0]));
   led_status_ = 0;
 }
 
-// Function declarations
-// Function(name, actuate_function, arguments_num, function_tags_num);
-Function led_on((const char *)"led_on", ActuateLedOn, 0, 5);
-Function led_off((const char *)"led_off", ActuateLedOff, 0, 5);
-//----------------------------------------
-// Setup
-//----------------------------------------
+Thing thing((const char *)"SmartPotCL", 60, SafeSerial);
+
+Value led_status((const char *)"led_status", SenseLedStatus, 0, 3, 3000);
+Value brightness((const char *)"brightness", SenseBrightness, 0, 1024, 3000);
+Function led_on((const char *)"led_on", ActuateLedOn);
+Function led_off((const char *)"led_off", ActuateLedOff);
+Tag tag_SmartPot("SmartPot");
+Tag tag_SmartPotCL("SmartPotCL");
 
 void SetupSerial() { SafeSerial.begin(9600); }
 
@@ -166,10 +122,6 @@ void SetupThing() {
   // Setup Thing
   thing.Setup();
 }
-
-//----------------------------------------
-// Main
-//----------------------------------------
 
 void setup() {
   SetupSerial();

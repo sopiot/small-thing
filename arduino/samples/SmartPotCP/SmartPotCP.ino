@@ -15,7 +15,7 @@ int pump_status_ = 0;
 int water_level_[2];
 double water_percentage_ = 0.0;
 double unit = 100.0 / WATER_LEVEL_SENSOR_NUM;
-
+  
 int SensePumpStatus() { return pump_status_; }
 
 int SenseWaterLevel() {
@@ -30,30 +30,24 @@ int SenseWaterLevel() {
 
 // Value declarations
 // Value(name, sense_function, min, max, period(ms));
-Value pump_status((const char *)"pump_status", SensePumpStatus, 5, 0, 3, 3000);
-Value water_level((const char *)"water_level", SenseWaterLevel, 5, 0, 100, 3000);
+Value pump_status((const char *)"pump_status", SensePumpStatus, 0, 3, 3000);
+Value water_level((const char *)"water_level", SenseWaterLevel, 0, 100, 3000);
 
 //----------------------------------------
 // Functions
 // an ActuateXXX actuates a Function XXX
 //----------------------------------------
 
-void ActuatePumpOn(void *pData) {
+void ActuatePumpOnoff() {
   digitalWrite(kPumpPin, HIGH);
-  // delay(300);
-  pump_status_ = 1;
-}
-
-void ActuatePumpOff(void *pData) {
+  delay(1000);
   digitalWrite(kPumpPin, LOW);
-  // delay(300);
   pump_status_ = 0;
 }
 
 // Function declarations
 // Function(name, actuate_function, arguments_num, function_tags_num);
-Function pump_on((const char *)"pump_on", ActuatePumpOn, 0, 5);
-Function pump_off((const char *)"pump_off", ActuatePumpOff, 0, 5);
+Function pump_onoff((const char *)"pump_onoff", ActuatePumpOnoff);
 
 //----------------------------------------
 // Setup
@@ -73,12 +67,9 @@ void SetupModules() {
 
 void SetupThing() {
   // Setup Functions
-  pump_on.AddTag(tag_SmartPot);
-  pump_on.AddTag(tag_SmartPotCP);
-  pump_off.AddTag(tag_SmartPot);
-  pump_off.AddTag(tag_SmartPotCP);
-  thing.Add(pump_on);  // pin 2
-  thing.Add(pump_off);
+  pump_onoff.AddTag(tag_SmartPot);
+  pump_onoff.AddTag(tag_SmartPotCP);
+  thing.Add(pump_onoff);  // pin 2
 
   // Setup Values
   pump_status.AddTag(tag_SmartPot);
