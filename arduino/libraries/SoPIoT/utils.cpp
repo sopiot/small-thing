@@ -47,12 +47,12 @@ int GetBoolArgumentByName(void* pData, const char* name, int* out) {
 void* GetArgumentByName(void* pData, const char* name) {
   Function* function = (Function*)pData;
   int idx = 0;
-  int nargs = function->getArgumentNum();
+  int nargs = function->GetArgumentNum();
   Argument* ptrarg;
   for (idx = 0; idx < nargs; idx++) {
-    ptrarg = function->getArgument(idx);
+    ptrarg = function->GetArgument(idx);
     if (strcmp(name, ptrarg->GetName()) == 0) {
-      return ptrarg->value();
+      return ptrarg->GetValue();
     }
   }
   if (idx == nargs) return NULL;  // not found
@@ -60,7 +60,7 @@ void* GetArgumentByName(void* pData, const char* name) {
 
 // dtostrf works differently on ARM board.
 // TODO(thsvkd): fix it with the best practice
-char* safe_dtostrf(double val, signed char width, unsigned char prec,
+char* Safe_dtostrf(double val, signed char width, unsigned char prec,
                    char* sout) {
 #if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM) || \
     defined(ARDUINO_ARCH_MBED)

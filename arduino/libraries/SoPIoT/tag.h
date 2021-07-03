@@ -16,7 +16,7 @@ class Tag {
    * get json_object* to register to the middleware, it will not be used in user
    * level
    */
-  void GetInformation(char* buffer);
+  void GetPublishData(char* buffer);
 
  private:
   void Initialize();

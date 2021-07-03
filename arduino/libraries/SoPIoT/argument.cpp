@@ -2,7 +2,7 @@
 #include "utils.h"
 
 void Argument::Initialize() {
-  arg_type_ = UNDEFINED;
+  argument_type_ = UNDEFINED;
   name_ = NULL;
   value_ = NULL;
   min_ = NULL;
@@ -11,19 +11,20 @@ void Argument::Initialize() {
 
 Argument::Argument() { Initialize(); }
 
-Argument::Argument(const char* name, int min, int max, SoPType arg_type) {
+Argument::Argument(const char* name, int min, int max, SoPType argument_type) {
   Initialize();
-  arg_type_ = arg_type;
-  set_min(min);
-  set_max(max);
+  argument_type_ = argument_type;
+  SetMin(min);
+  SetMax(max);
   SetName(name);
 }
 
-Argument::Argument(const char* name, double min, double max, SoPType arg_type) {
+Argument::Argument(const char* name, double min, double max,
+                   SoPType argument_type) {
   Initialize();
-  arg_type_ = arg_type;
-  set_min(min);
-  set_max(max);
+  argument_type_ = argument_type;
+  SetMin(min);
+  SetMax(max);
   SetName(name);
 }
 
@@ -40,17 +41,17 @@ void* Argument::GetMin() { return min_; }
 
 void* Argument::GetMax() { return max_; }
 
-void Argument::set_order(const int order) { order_ = (int)order; }
+void Argument::SetOrder(const int order) { order_ = (int)order; }
 
 char* Argument::GetName() { return name_; }
 
-void* Argument::value() { return value_; }
+void* Argument::GetValue() { return value_; }
 
 void Argument::SetName(const char* name) {
   name_ = strdup(name);
   MEM_ALLOC_CHECK(name_);
 
-  switch (arg_type_) {
+  switch (argument_type_) {
     case BOOL:
     case INTEGER:
       value_ = malloc(sizeof(int));
@@ -69,15 +70,16 @@ void Argument::SetName(const char* name) {
   }
 }
 
-void Argument::set_min(const int min) {
-  if (arg_type_ == INTEGER || arg_type_ == STRING || arg_type_ == BOOL) {
+void Argument::SetMin(const int min) {
+  if (argument_type_ == INTEGER || argument_type_ == STRING ||
+      argument_type_ == BOOL) {
     int* i_min = (int*)malloc(sizeof(int));
     MEM_ALLOC_CHECK(i_min);
     *i_min = min;
 
     if (min_) free(min_);
     min_ = (void*)i_min;
-  } else if (arg_type_ == DOUBLE) {
+  } else if (argument_type_ == DOUBLE) {
     double* d_min = (double*)malloc(sizeof(double));
     MEM_ALLOC_CHECK(d_min);
     *d_min = (double)min;
@@ -87,8 +89,8 @@ void Argument::set_min(const int min) {
   }
 }
 
-void Argument::set_min(const double min) {
-  if (arg_type_ == DOUBLE) {
+void Argument::SetMin(const double min) {
+  if (argument_type_ == DOUBLE) {
     double* d_min = (double*)malloc(sizeof(double));
     MEM_ALLOC_CHECK(d_min);
     *d_min = min;
@@ -100,15 +102,16 @@ void Argument::set_min(const double min) {
   }
 }
 
-void Argument::set_max(const int max) {
-  if (arg_type_ == INTEGER || arg_type_ == STRING || arg_type_ == BOOL) {
+void Argument::SetMax(const int max) {
+  if (argument_type_ == INTEGER || argument_type_ == STRING ||
+      argument_type_ == BOOL) {
     int* i_max = (int*)malloc(sizeof(int));
     MEM_ALLOC_CHECK(i_max);
     *i_max = max;
 
     if (max_) free(max_);
     max_ = (void*)i_max;
-  } else if (arg_type_ == DOUBLE) {
+  } else if (argument_type_ == DOUBLE) {
     double* d_max = (double*)malloc(sizeof(double));
     MEM_ALLOC_CHECK(d_max);
     *d_max = (double)max;
@@ -118,8 +121,8 @@ void Argument::set_max(const int max) {
   }
 }
 
-void Argument::set_max(const double max) {
-  if (arg_type_ == DOUBLE) {
+void Argument::SetMax(const double max) {
+  if (argument_type_ == DOUBLE) {
     double* d_max = (double*)malloc(sizeof(double));
     MEM_ALLOC_CHECK(d_max);
     *d_max = max;
@@ -133,7 +136,7 @@ void Argument::set_max(const double max) {
 
 bool Argument::SetArgumentIfValid(char* val) {
   bool flag = true;
-  switch (arg_type_) {
+  switch (argument_type_) {
     case BOOL:
     case INTEGER: {
       int nval = atoi(val);
@@ -165,8 +168,8 @@ bool Argument::SetArgumentIfValid(char* val) {
   return flag;
 }
 
-void Argument::GetInformation(char* buffer) {
-  switch (arg_type_) {
+void Argument::GetPublishData(char* buffer) {
+  switch (argument_type_) {
     case BOOL:
       snprintf(buffer, MAX_BUFFER_SIZE, "%s#bool#%d#%d", name_, *(int*)min_,
                *(int*)max_);
@@ -182,8 +185,8 @@ void Argument::GetInformation(char* buffer) {
     case DOUBLE: {
       char min_temp[10];
       char max_temp[10];
-      safe_dtostrf(*(double*)min_, 8, 2, min_temp);
-      safe_dtostrf(*(double*)max_, 8, 2, max_temp);
+      Safe_dtostrf(*(double*)min_, 8, 2, min_temp);
+      Safe_dtostrf(*(double*)max_, 8, 2, max_temp);
       snprintf(buffer, MAX_BUFFER_SIZE, "%s#double#%s#%s", name_, min_temp,
                max_temp);
       break;
@@ -194,4 +197,4 @@ void Argument::GetInformation(char* buffer) {
   }
 }
 
-SoPType Argument::GetArgType(void) { return arg_type_; }
+SoPType Argument::GetArgumentType(void) { return argument_type_; }

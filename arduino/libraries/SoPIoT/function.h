@@ -19,7 +19,7 @@ class Function {
 
   ~Function();
 
-  void* function();
+  void* GetCallbackFunction();
   void AddArgument(Argument& argument);
   void AddTag(const char* tag_name);
   void AddTag(Tag& function_tag);
@@ -27,47 +27,47 @@ class Function {
   void SetName(const char* name);
   char* GetName();
 
-  Argument* getArgument(int idx) { return Arguments_[idx]; }
-  int getArgumentNum() { return num_argument_; }
+  Argument* GetArgument(int idx) { return arguments_[idx]; }
+  int GetArgumentNum() { return num_argument_; }
 
-  Tag* getTag(int idx) { return FunctionTags_[idx]; }
-  int getTagNum() { return num_tag_; }
+  Tag* GetTag(int idx) { return function_tags_[idx]; }
+  int GetTagNum() { return num_tag_; }
 
-  void GetInformation(char* buffer);
+  void GetPublishData(char* buffer);
 
   int GetArgumentOrderAndTypeByName(const char* name, int* order, int* type);
   void Execute(char* args, int* success) const;
 
-  uint16_t set_id_1003(uint16_t id_1003);
-  uint16_t id_1003();
+  uint16_t SetID1003(uint16_t id_1003);
+  uint16_t GetID1003();
 
-  uint16_t set_id_2004(uint16_t id_2004);
-  uint16_t id_2004();
+  uint16_t SetID2004(uint16_t id_2004);
+  uint16_t GetID2004();
 
-  SoPType getReturnType(void);  // for function return type
+  SoPType GetReturnType(void);  // for function return type
 
  private:
-  void set_function(VoidFunction func);
-  void set_function(IntegerFunction func);
-  void set_function(DoubleFunction func);
-  void set_function(BoolFunction func);
+  void SetFunction(VoidFunction func);
+  void SetFunction(IntegerFunction func);
+  void SetFunction(DoubleFunction func);
+  void SetFunction(BoolFunction func);
 
-  void set_function(VoidArgumentFunction func);
-  void set_function(IntegerArgumentFunction func);
-  void set_function(DoubleArgumentFunction func);
-  void set_function(BoolArgumentFunction func);
+  void SetFunction(VoidArgumentFunction func);
+  void SetFunction(IntegerArgumentFunction func);
+  void SetFunction(DoubleArgumentFunction func);
+  void SetFunction(BoolArgumentFunction func);
 
   void Initialize();
 
   char* name_;
-  void* function_;
+  void* callback_function_;
   void* return_value_;
 
   int num_argument_;
-  Argument** Arguments_;
+  Argument** arguments_;
 
-  Tag** FunctionTags_;
   int num_tag_;
+  Tag** function_tags_;
 
   uint16_t id_1003_;
   uint16_t id_2004_;

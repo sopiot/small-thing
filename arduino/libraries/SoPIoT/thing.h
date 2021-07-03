@@ -56,9 +56,9 @@ class Thing {
 */
 
 #ifdef USE_QOS2
-  void pubrecHandler(const msg_pubqos2* msg);
-  void pubrelHandler(const msg_pubqos2* msg);
-  void pubcompHandler(const msg_pubqos2* msg);
+  void PubrecHandler(const msg_pubqos2* msg);
+  void PubrelHandler(const msg_pubqos2* msg);
+  void PubcompHandler(const msg_pubqos2* msg);
 #endif
 
   /*
@@ -69,28 +69,23 @@ class Thing {
   virtual void willmsgrespHandler(const msg_willmsgresp* msg) = 0;
   */
 
-  void pingreqHandler();
-  void pingrespHandler();
-  void subackHandler(const msg_suback* msg);
-  void disconnectHandler(const msg_disconnect* msg);
-  void regack(const uint16_t topicId, const uint16_t messageId,
+  void PingreqHandler();
+  void PingrespHandler();
+  void SubackHandler(const msg_suback* msg);
+  void DisconnectHandler(const msg_disconnect* msg);
+  void Regack(const uint16_t topicId, const uint16_t messageId,
               const return_code_t return_code);
-  void puback(const uint16_t topicId, const uint16_t messageId,
+  void Puback(const uint16_t topicId, const uint16_t messageId,
               const return_code_t return_code);
-  void subscribe(const uint8_t flags, const uint16_t topicId);
-  void subscribe(const uint8_t flags, const char* name);
-  void unsubscribe(const uint8_t flags, const uint16_t topicId);
-  void unsubscribe(const uint8_t flags, const char* name);
-  void regackHandler(const msg_regack* msg);
-  void publishHandler(const msg_publish* msg);
-  void advertiseHandler(const msg_advertise* msg);
-  void gwinfoHandler(const msg_gwinfo* msg);
-  void connackHandler(const msg_connack* msg);
-
-  // for debug
-  void print_message_buffer_();
-  void print_message_buffer_(void* buf, int length);
-  void print_message_buffer_(int start, int length);
+  void Subscribe(const uint8_t flags, const uint16_t topicId);
+  void Subscribe(const uint8_t flags, const char* name);
+  void Unsubscribe(const uint8_t flags, const uint16_t topicId);
+  void Unsubscribe(const uint8_t flags, const char* name);
+  void RegackHandler(const msg_regack* msg);
+  void PublishHandler(const msg_publish* msg);
+  void AdvertiseHandler(const msg_advertise* msg);
+  void GwinfoHandler(const msg_gwinfo* msg);
+  void ConnackHandler(const msg_connack* msg);
 
  private:
   // Set serial that connected to the zigbee output and input
@@ -113,37 +108,37 @@ class Thing {
   void SendInitialValueNoCond();
 
 #ifdef USE_QOS2
-  void pubrec(const msg_publish* msg);
-  void pubrel(const msg_pubqos2* msg);
-  void pubcomp(const msg_pubqos2* msg);
+  void Pubrec(const msg_publish* msg);
+  void Pubrel(const msg_pubqos2* msg);
+  void Pubcomp(const msg_pubqos2* msg);
 #endif
 
   bool GatewayConnected();
   bool GatewayReady();
 
-  void searchgw(const uint8_t radius);
-  void connect(const uint8_t flags, const uint16_t duration,
+  void Searchgw(const uint8_t radius);
+  void Connect(const uint8_t flags, const uint16_t duration,
                const char* client_id_);
-  bool registerTopic(const char* name);
-  void publish(const uint8_t flags, const uint16_t topicId, const void* data,
+  bool RegisterTopic(const char* name);
+  void Publish(const uint8_t flags, const uint16_t topicId, const void* data,
                const uint8_t data_len);
-  void Register();
+  void RegisterToMIddleware();
 
   void ReadZbeeTimeout(int timeout);
   void ReadZbeeIfAvailable();
 
-  void pingreq();
-  void pingresp(int flag);
-  void disconnect(const uint16_t duration);
+  void Pingreq();
+  void Pingresp(int flag);
+  void Disconnect(const uint16_t duration);
 
   void ParseMQTTSNStream(char* buf, uint16_t len);
 
-  void unicast();
-  void broadcast();
-  void sendPacket();
+  void Unicast();
+  void Broadcast();
+  void SendPacket();
 
   // f~ : function pointers
-  bool compareTimeStamp(Value* t);
+  bool CompareTimeStamp(Value* t);
 
   void PrintTags();
   void PrintTopicID();
@@ -181,8 +176,6 @@ class Thing {
   unsigned long alive_cycle_;
 
   XBee zbee_;
-
-  bool gateway_connected_;
   XBeeAddress64 gateway_address_64_;
   uint16_t gateway_address_16_;
   uint8_t gateway_id_;
@@ -192,10 +185,11 @@ class Thing {
   /** Set to true when we're waiting for some sort of acknowledgement from the
    *server that will transition our state.
    */
+
+  bool gateway_connected_;
   bool gateway_response_wait_;
   bool gateway_ready_;
   bool middleware_registered_;
-  bool publish_process_;  // for handling publish processing
 
   uint8_t protocal_response_wait_;
   uint16_t message_id_;

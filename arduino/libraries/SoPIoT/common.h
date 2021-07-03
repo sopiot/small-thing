@@ -80,8 +80,6 @@ enum message_type {
   WILLTOPICRESP,
   WILLMSGUPD,
   WILLMSGRESP,
-  DEVREG,    // added for DevReg Protocol
-  DEVREGACK  // added for DevReg Protocol
 };
 
 //----------------------------------------
@@ -206,28 +204,6 @@ struct msg_willmsgresp : public message_header {
   uint8_t return_code;
 };
 
-//----------------------------------------
-// DevReg Protocol (Added Protocol)
-//
-// To send SoPIoT register packet.
-// MQTT-SN packet only supported max 60 bytes so
-// split packet and send one by one.
-// The packets are gathered at Gateway.
-//----------------------------------------
-
-struct msg_devreg : public message_header {
-  uint16_t pub_id;
-  uint16_t message_id;
-  uint8_t status;  // status -> 0 : continue 1 : last
-  char data[0];
-};
-
-struct msg_devregack : public message_header {
-  uint8_t flags;
-  uint16_t message_id;
-  uint8_t return_code;
-};
-
 #pragma pack(pop)
 
 //----------------------------------------
@@ -267,12 +243,17 @@ struct msg_devregack : public message_header {
 #define DOUBLE_EPSILON (0.0000001)
 #define DOUBLE_IS_APPROX_EQUAL(a, b) (fabs((a) - (b)) <= DOUBLE_EPSILON)
 
+// QoS 1
+// #define QOS 1
+// #define USE_QOS1
 // QoS 2
 // #define QOS 2
 // #define USE_QOS2
 
 #ifdef USE_QOS2
 #define QOS_FLAG FLAG_QOS_2
+#elif defined(USE_QOS1)
+#define QOS_FLAG FLAG_QOS_1
 #else
 #define QOS_FLAG FLAG_QOS_0
 #endif
@@ -281,8 +262,6 @@ struct msg_devregack : public message_header {
 // Depending arduino board,
 // Serial variable is different.
 // Some are Serial, the others are Serial1
-
-// (thsvkd)
 // TODO: fix it with the best practice
 #if (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || \
     (defined(ARDUINO_ARCH_SAM) && !defined(ARDUINO_SAM_DUE)) ||    \
@@ -298,13 +277,13 @@ struct msg_devregack : public message_header {
 #endif
 
 typedef enum _soptype {
-  UNDEFINED = -1, /** < represents UNDEFINED */
-  INTEGER,        /** < represents IntegerFunction or IntegerValue */
-  DOUBLE,         /** < represents DoubleFunction or DoubleValue */
-  BOOL,           /** < represents BoolFunction or BoolValue */
-  STRING,         /** < represents Character array Value > */
-  BINARY,         /** <represents Binary Value> */
-  VOID,           /** < represents VoidFunction */
+  UNDEFINED = 0, /** < represents UNDEFINED */
+  INTEGER,       /** < represents IntegerFunction or IntegerValue */
+  DOUBLE,        /** < represents DoubleFunction or DoubleValue */
+  BOOL,          /** < represents BoolFunction or BoolValue */
+  STRING,        /** < represents Character array Value > */
+  BINARY,        /** <represents Binary Value> */
+  VOID,          /** < represents VoidFunction */
 } SoPType;
 
 typedef enum _sopdevreg {

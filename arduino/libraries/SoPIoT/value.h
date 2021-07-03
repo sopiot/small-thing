@@ -19,58 +19,59 @@ class Value {
   void AddTag(Tag& value_tag);
 
   char* GetName();
-  void* value();
-  bool value_changed(void* cur);
+  void* GetCallbackFunction();
+  bool GetValueIfChanged(void* cur);
 
-  void set_sleep_interval(const int sleep_ms_interval);
-  int get_sleep_ms_interval();
+  void SetPublishCycle(const int sleep_ms_interval);
+  int GetPublishCycle();
 
-  void set_last_sent_time();
-  unsigned long get_last_sent_time();
+  void SetLastSentTime();
+  unsigned long GetLastSentTime();
 
-  Tag* getTag(int idx) { return ValueTags_[idx]; }
-  int getTagNum() { return num_tag_; }
+  Tag* GetTag(int idx) { return value_tags_[idx]; }
+  int GetTagNum() { return num_tag_; }
 
   void GetInformation(char* buffer);
 
   bool GetPublishJson(char* buffer);
 
-  SoPType value_classifier(void);
+  SoPType GetValueType(void);
 
-  uint16_t set_publish_id(uint16_t publish_id);
-  uint16_t publish_id();
+  uint16_t SetPublishID(uint16_t publish_id);
+  uint16_t GetPublishID();
 
  private:
   void SetName(const char* name);
 
-  void set_value(IntegerValue value);
-  void set_value(StringValue value);
-  void set_value(DoubleValue value);
-  void set_value(BoolValue value);
+  void SetValue(IntegerValue value);
+  void SetValue(StringValue value);
+  void SetValue(DoubleValue value);
+  void SetValue(BoolValue value);
 
-  void set_min(const int min);
-  void set_min(const double min);
+  void SetMin(const int min);
+  void SetMin(const double min);
 
-  void set_max(const int max);
-  void set_max(const double max);
+  void SetMax(const int max);
+  void SetMax(const double max);
 
   void Initialize();
 
   uint16_t publish_id_;
+
   char* name_;
-  void* value_;
+  void* callback_function_;
   void* min_;
   void* max_;
   void* prev_;
 
-  Tag** ValueTags_;
+  Tag** value_tags_;
   int num_tag_;
 
   char* user_string_buffer_;
-  int sleep_ms_interval_;
+  int publish_cycle;
   unsigned long last_sent_time_;
 
-  SoPType value_classifier_;
+  SoPType value_type_;
 };
 
 #endif  // SMALL_THING_VALUE_H_
