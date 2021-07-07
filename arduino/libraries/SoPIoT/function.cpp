@@ -192,7 +192,7 @@ uint16_t Function::GetID2004() { return id_2004_; }
 
 SoPType Function::GetReturnType() { return return_type_; }
 
-void Function::GetPublishData(char* buffer) {
+void Function::GetRegisterPublishData(char* buffer) {
   int i, len;
   switch (return_type_) {
     case INTEGER:

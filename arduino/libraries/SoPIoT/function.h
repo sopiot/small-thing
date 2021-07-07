@@ -33,7 +33,7 @@ class Function {
   Tag* GetTag(int idx) { return function_tags_[idx]; }
   int GetTagNum() { return num_tag_; }
 
-  void GetPublishData(char* buffer);
+  void GetRegisterPublishData(char* buffer);
 
   int GetArgumentOrderAndTypeByName(const char* name, int* order, int* type);
   void Execute(char* args, int* success) const;

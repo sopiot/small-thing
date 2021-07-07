@@ -50,7 +50,6 @@ class Value {
 
   void SetMin(const int min);
   void SetMin(const double min);
-
   void SetMax(const int max);
   void SetMax(const double max);
 
@@ -62,13 +61,14 @@ class Value {
   void* callback_function_;
   void* min_;
   void* max_;
-  void* prev_;
+  void* prev_value_;
+  void* new_value_;
 
   Tag** value_tags_;
   int num_tag_;
 
   char* user_string_buffer_;
-  int publish_cycle;
+  int publish_cycle_;
   unsigned long last_sent_time_;
 
   SoPType value_type_;

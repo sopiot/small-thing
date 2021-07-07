@@ -6,9 +6,10 @@ void Value::Initialize() {
   callback_function_ = NULL;
   min_ = NULL;
   max_ = NULL;
-  prev_ = NULL;
+  prev_value_ = NULL;
   user_string_buffer_ = NULL;
-  publish_cycle = 0;
+
+  publish_cycle_ = 0;
   last_sent_time_ = 0;
   value_type_ = UNDEFINED;
 }
@@ -57,7 +58,7 @@ Value::~Value() {
   if (callback_function_) free(callback_function_);
   if (min_) free(min_);
   if (max_) free(max_);
-  if (prev_) free(prev_);
+  if (prev_value_) free(prev_value_);
   if (user_string_buffer_) free(user_string_buffer_);
 }
 
@@ -90,13 +91,13 @@ void Value::SetValue(StringValue value) {
 void Value::SetValue(IntegerValue value) {
   callback_function_ = (void*)value;
 
-  if (prev_ != NULL) {
-    free(prev_);
+  if (prev_value_ != NULL) {
+    free(prev_value_);
   }
-  prev_ = malloc(sizeof(int));
-  MEM_ALLOC_CHECK(prev_);
+  prev_value_ = malloc(sizeof(int));
+  MEM_ALLOC_CHECK(prev_value_);
 
-  *(int*)prev_ = 0;
+  *(int*)prev_value_ = 0;
 
   value_type_ = INTEGER;
 }
@@ -104,13 +105,13 @@ void Value::SetValue(IntegerValue value) {
 void Value::SetValue(DoubleValue value) {
   callback_function_ = (void*)value;
 
-  if (prev_ != NULL) {
-    free(prev_);
+  if (prev_value_ != NULL) {
+    free(prev_value_);
   }
-  prev_ = malloc(sizeof(double));
-  MEM_ALLOC_CHECK(prev_);
+  prev_value_ = malloc(sizeof(double));
+  MEM_ALLOC_CHECK(prev_value_);
 
-  *(double*)prev_ = 0;
+  *(double*)prev_value_ = 0;
 
   value_type_ = DOUBLE;
 }
@@ -118,13 +119,13 @@ void Value::SetValue(DoubleValue value) {
 void Value::SetValue(BoolValue value) {
   callback_function_ = (void*)value;
 
-  if (prev_ != NULL) {
-    free(prev_);
+  if (prev_value_ != NULL) {
+    free(prev_value_);
   }
-  prev_ = malloc(sizeof(int));
-  MEM_ALLOC_CHECK(prev_);
+  prev_value_ = malloc(sizeof(int));
+  MEM_ALLOC_CHECK(prev_value_);
 
-  *(int*)prev_ = -1;
+  *(int*)prev_value_ = -1;
 
   value_type_ = BOOL;
 }
@@ -144,34 +145,31 @@ void _printf(const char* s, ...) {
 }
 //--------------------------------------------
 
-bool Value::GetValueIfChanged(void* cur) {
+bool Value::GetValueIfChanged(void* new_value) {
   bool changed = false;
-  // SOPLOGLN(F("[INT DEBUG] value_changed"));
+
   switch (value_type_) {
     case STRING:
-      if (strncmp((char*)cur, (char*)prev_, *(int*)max_) != 0) {
+      if (strncmp((char*)new_value, (char*)prev_value_, *(int*)max_) != 0) {
         changed = true;
       }
-      memcpy(prev_, cur, *(int*)max_);
+      memcpy(prev_value_, new_value, *(int*)max_);
       break;
     case INTEGER:
-      // SOPLOGLN(F("[INT DEBUG] INT CHANGED CHECK"));
     case BOOL:
-      if (*(int*)prev_ != *(int*)cur) {
+      if (*(int*)prev_value_ != *(int*)new_value) {
         changed = true;
       }
-      // memcpy(prev_, cur, sizeof(int));
-      *(int*)prev_ = *(int*)cur;
+      *(int*)prev_value_ = *(int*)new_value;
       break;
     case DOUBLE:
-      if (!DOUBLE_IS_APPROX_EQUAL(*(double*)prev_, *(double*)cur)) {
+      if (!DOUBLE_IS_APPROX_EQUAL(*(double*)prev_value_, *(double*)new_value)) {
         changed = true;
       }
-      // memcpy(prev_, cur, sizeof(double));
-      *(double*)prev_ = *(double*)cur;
+      *(double*)prev_value_ = *(double*)new_value;
       break;
     default:
-      // error!
+      SOPLOGLN(F("Value type error! type : %d"), value_type_);
       break;
   }
   return changed;
@@ -194,8 +192,8 @@ void Value::SetMax(const int max) {
   if (value_type_ == STRING) {
     user_string_buffer_ = (char*)malloc((max + 1) * sizeof(char));
     MEM_ALLOC_CHECK(user_string_buffer_);
-    prev_ = malloc((max + 1) * sizeof(char));
-    MEM_ALLOC_CHECK(prev_);
+    prev_value_ = malloc((max + 1) * sizeof(char));
+    MEM_ALLOC_CHECK(prev_value_);
   }
 }
 
@@ -205,10 +203,10 @@ void Value::SetMax(const double max) {
 }
 
 void Value::SetPublishCycle(const int sleep_ms_interval) {
-  publish_cycle = sleep_ms_interval;
+  publish_cycle_ = sleep_ms_interval;
 }
 
-int Value::GetPublishCycle() { return publish_cycle; }
+int Value::GetPublishCycle() { return publish_cycle_; }
 void Value::SetLastSentTime() { last_sent_time_ = millis(); }
 
 SoPType Value::GetValueType() { return value_type_; }
@@ -249,55 +247,54 @@ bool Value::GetPublishJson(char* buffer) {
   int nval;
   char dval;
   char* ptsval;
-  int len = 0;
+  int buffer_size = 0;
   switch (value_type_) {
     case INTEGER: {
-      nval = ((IntegerValue)callback_function_)();
-      len = snprintf(buffer, MAX_BUFFER_SIZE,
-                     "{\"type\" : \"int\" , \"value\" : %d}\n", nval);
-      val = &nval;
+      *(int*)new_value_ = ((IntegerValue)callback_function_)();
+      buffer_size = snprintf(buffer, MAX_BUFFER_SIZE,
+                             "{\"type\" : \"int\" , \"value\" : %d}\n",
+                             *(int*)new_value_);
       break;
     }
     case DOUBLE: {
-      char val_temp[10];
-      dval = ((DoubleValue)callback_function_)();
-      Safe_dtostrf(dval, 8, 2, val_temp);
-      len = snprintf(buffer, MAX_BUFFER_SIZE,
-                     "{\"type\" : \"double\" , \"value\" : %s}\n", val_temp);
-      val = &dval;
+      *(double*)new_value_ = ((DoubleValue)callback_function_)();
+      buffer_size = snprintf(buffer, MAX_BUFFER_SIZE,
+                             "{\"type\" : \"double\" , \"value\" : %fl}\n",
+                             *(double*)new_value_);
       break;
     }
     case BOOL: {
-      nval = ((BoolValue)callback_function_)();
-      len = snprintf(buffer, MAX_BUFFER_SIZE,
-                     "{\"type\" : \"bool\" , \"value\" : %d}\n", nval);
-      val = &nval;
+      *(bool*)new_value_ = ((BoolValue)callback_function_)();
+      buffer_size = snprintf(buffer, MAX_BUFFER_SIZE,
+                             "{\"type\" : \"bool\" , \"value\" : %d}\n",
+                             *(bool*)new_value_);
       break;
     }
     case STRING: {
-      ptsval =
+      *(char**)new_value_ =
           ((StringValue)callback_function_)(user_string_buffer_, *(int*)max_);
-      if (ptsval == NULL) {
+      if (new_value_ == NULL) {
         SOPLOGLN(F("Fatal Error is occured on GetPublishJson!!\n"));
         return false;
       }
-      len = snprintf(buffer, MAX_BUFFER_SIZE,
-                     "{\"type\" : \"string\" , \"value\" : \"%s\"}\n", ptsval);
-      val = ptsval;
+      buffer_size = snprintf(buffer, MAX_BUFFER_SIZE,
+                             "{\"type\" : \"string\" , \"value\" : \"%s\"}\n",
+                             *(char**)new_value_);
       break;
     }
     case VOID:
     case UNDEFINED:
-      SOPLOGLN(F("CriticalError - not allowed value type"));
+      SOPLOGLN(F("[ERROR] not allowed value type"));
       break;
   }
 
-  if (len < 0) {
-    SOPLOGLN(F("Fatal Error is occured on GetPublishJson!!\n"));
+  if (buffer_size < 0) {
+    SOPLOGLN(
+        F("[ERROR] Fatal Error is occured on GetPublishJson!! "
+          "buffer_size == "
+          "0\n"));
     return false;
   }
-
-  return GetValueIfChanged(val);
 }
 
 uint16_t Value::SetPublishID(uint16_t publish_id) {

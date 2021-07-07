@@ -21,6 +21,6 @@ void Tag::SetName(const char* name) {
   MEM_ALLOC_CHECK(name_);
 }
 
-void Tag::GetPublishData(char* buffer) {
+void Tag::GetRegisterPublishData(char* buffer) {
   snprintf(buffer, MAX_BUFFER_SIZE, "%s", name_);
 }

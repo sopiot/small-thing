@@ -168,7 +168,7 @@ bool Argument::SetArgumentIfValid(char* val) {
   return flag;
 }
 
-void Argument::GetPublishData(char* buffer) {
+void Argument::GetRegisterPublishData(char* buffer) {
   switch (argument_type_) {
     case BOOL:
       snprintf(buffer, MAX_BUFFER_SIZE, "%s#bool#%d#%d", name_, *(int*)min_,

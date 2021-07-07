@@ -22,7 +22,7 @@ class Argument {
   void SetOrder(const int order);
 
   SoPType GetArgumentType(void);
-  void GetPublishData(char* buf);
+  void GetRegisterPublishData(char* buf);
 
   bool SetArgumentIfValid(char* val);
 
