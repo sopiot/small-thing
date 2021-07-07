@@ -339,7 +339,7 @@ void Thing::Loop(int pub_period) {
   for (uint8_t i = 0; i < num_values_; i++) {
     time_passed = CompareTimeStamp(values_[i]);
     if (time_passed) {
-      changed = values_[i]->GetPublishJson(publish_buffer);
+      changed = values_[i]->GetValuePublishJson(publish_buffer);
       if (changed) {
         SOPLOGLN(F("pub_id: %d, buffer: %s"), values_[i]->GetPublishID(),
                  publish_buffer);

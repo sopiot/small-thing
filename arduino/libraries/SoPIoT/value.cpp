@@ -211,7 +211,7 @@ void Value::SetLastSentTime() { last_sent_time_ = millis(); }
 
 SoPType Value::GetValueType() { return value_type_; }
 
-void Value::GetInformation(char* buffer) {
+void Value::GetRegisterPublishData(char* buffer) {
   switch (value_type_) {
     case INTEGER:
       snprintf(buffer, MAX_BUFFER_SIZE, "%s#int#%d#%d", name_, *(int*)min_,
@@ -242,7 +242,7 @@ void Value::GetInformation(char* buffer) {
 
 unsigned long Value::GetLastSentTime() { return last_sent_time_; }
 
-bool Value::GetPublishJson(char* buffer) {
+bool Value::GetValuePublishJson(char* buffer) {
   void* val;
   int nval;
   char dval;
@@ -274,7 +274,7 @@ bool Value::GetPublishJson(char* buffer) {
       *(char**)new_value_ =
           ((StringValue)callback_function_)(user_string_buffer_, *(int*)max_);
       if (new_value_ == NULL) {
-        SOPLOGLN(F("Fatal Error is occured on GetPublishJson!!\n"));
+        SOPLOGLN(F("Fatal Error is occured on GetValuePublishJson!!\n"));
         return false;
       }
       buffer_size = snprintf(buffer, MAX_BUFFER_SIZE,
@@ -290,7 +290,7 @@ bool Value::GetPublishJson(char* buffer) {
 
   if (buffer_size < 0) {
     SOPLOGLN(
-        F("[ERROR] Fatal Error is occured on GetPublishJson!! "
+        F("[ERROR] Fatal Error is occured on GetValuePublishJson!! "
           "buffer_size == "
           "0\n"));
     return false;

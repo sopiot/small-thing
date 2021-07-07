@@ -31,9 +31,8 @@ class Value {
   Tag* GetTag(int idx) { return value_tags_[idx]; }
   int GetTagNum() { return num_tag_; }
 
-  void GetInformation(char* buffer);
-
-  bool GetPublishJson(char* buffer);
+  void GetRegisterPublishData(char* buffer);
+  bool GetValuePublishJson(char* buffer);
 
   SoPType GetValueType(void);
 
