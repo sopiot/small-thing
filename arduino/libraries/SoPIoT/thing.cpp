@@ -357,26 +357,26 @@ void Thing::Loop(int pub_period) {
 
 void Thing::RegisterToMIddleware() {
   for (int i = 0; i < num_values_; i++) {
-    values_[i]->GetInformation(publish_buffer);
+    values_[i]->GetRegisterPublishData(publish_buffer);
     Publish(QOS_FLAG, id_2010_, publish_buffer, strlen(publish_buffer));
 
     for (int j = 0; j < values_[i]->GetTagNum(); j++) {
-      values_[i]->GetTag(j)->GetPublishData(publish_buffer);
+      values_[i]->GetTag(j)->GetRegisterPublishData(publish_buffer);
       Publish(QOS_FLAG, id_2011_, publish_buffer, strlen(publish_buffer));
     }
   }
 
   for (int i = 0; i < num_functions_; i++) {
-    functions_[i]->GetPublishData(publish_buffer);
+    functions_[i]->GetRegisterPublishData(publish_buffer);
     Publish(QOS_FLAG, id_2012_, publish_buffer, strlen(publish_buffer));
 
     for (int j = 0; j < functions_[i]->GetTagNum(); j++) {
-      functions_[i]->GetTag(j)->GetPublishData(publish_buffer);
+      functions_[i]->GetTag(j)->GetRegisterPublishData(publish_buffer);
       Publish(QOS_FLAG, id_2013_, publish_buffer, strlen(publish_buffer));
     }
 
     for (int j = 0; j < functions_[i]->GetArgumentNum(); j++) {
-      functions_[i]->GetArgument(j)->GetPublishData(publish_buffer);
+      functions_[i]->GetArgument(j)->GetRegisterPublishData(publish_buffer);
       Publish(QOS_FLAG, id_2014_, publish_buffer, strlen(publish_buffer));
     }
   }
@@ -530,7 +530,7 @@ void Thing::SendAliveMessageNoCond() {
 void Thing::SendInitialValueNoCond() {
   for (uint8_t i = 0; i < num_values_; i++) {
     // Value to Json String
-    values_[i]->GetPublishJson(publish_buffer);
+    values_[i]->GetValuePublishJson(publish_buffer);
     // Publish values
     Publish(QOS_FLAG, values_[i]->GetPublishID(), publish_buffer,
             strlen(publish_buffer));
