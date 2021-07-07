@@ -60,6 +60,8 @@ class Function {
   void Initialize();
 
   char* name_;
+  char name2_[256];
+
   void* function_;
   void* return_value_;
 

@@ -150,6 +150,7 @@ char* Function::GetName() { return (char*)name_; }
 
 void Function::SetName(const char* name) {
   name_ = strdup(name);
+  strcpy(name2_, name);
   MEM_ALLOC_CHECK(name_);
 }
 
@@ -215,7 +216,10 @@ void Function::GetInformation(char* buffer) {
     case DOUBLE:
     case BOOL:
     case VOID:
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s#%s#%d", name_, "void",
+
+      // snprintf(buffer, MAX_BUFFER_SIZE, "%s%s#%s#%d", name_, name2_, "void",
+      //          num_argument_);
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s#%s#%d", name2_, "void",
                num_argument_);
       break;
     default:
