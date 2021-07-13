@@ -142,6 +142,7 @@ class Thing {
 
   void PrintTags();
   void PrintTopicID();
+  void PrintXbeePacket(char* buf);
   void TestPublish();
 
   void (*connect_handler_)();

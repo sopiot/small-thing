@@ -250,6 +250,7 @@ bool Value::GetValuePublishJson(char* buffer) {
   int buffer_size = 0;
   switch (value_type_) {
     case INTEGER: {
+      new_value_ = new int;
       *(int*)new_value_ = ((IntegerValue)callback_function_)();
       buffer_size = snprintf(buffer, MAX_BUFFER_SIZE,
                              "{\"type\" : \"int\" , \"value\" : %d}\n",
@@ -257,6 +258,7 @@ bool Value::GetValuePublishJson(char* buffer) {
       break;
     }
     case DOUBLE: {
+      new_value_ = new double;
       *(double*)new_value_ = ((DoubleValue)callback_function_)();
       buffer_size = snprintf(buffer, MAX_BUFFER_SIZE,
                              "{\"type\" : \"double\" , \"value\" : %fl}\n",
@@ -264,6 +266,7 @@ bool Value::GetValuePublishJson(char* buffer) {
       break;
     }
     case BOOL: {
+      new_value_ = new bool;
       *(bool*)new_value_ = ((BoolValue)callback_function_)();
       buffer_size = snprintf(buffer, MAX_BUFFER_SIZE,
                              "{\"type\" : \"bool\" , \"value\" : %d}\n",
@@ -271,6 +274,7 @@ bool Value::GetValuePublishJson(char* buffer) {
       break;
     }
     case STRING: {
+      new_value_ = new char*;
       *(char**)new_value_ =
           ((StringValue)callback_function_)(user_string_buffer_, *(int*)max_);
       if (new_value_ == NULL) {
@@ -293,8 +297,11 @@ bool Value::GetValuePublishJson(char* buffer) {
         F("[ERROR] Fatal Error is occured on GetValuePublishJson!! "
           "buffer_size == "
           "0\n"));
+    delete new_value_;
     return false;
   }
+
+  delete new_value_;
 }
 
 uint16_t Value::SetPublishID(uint16_t publish_id) {

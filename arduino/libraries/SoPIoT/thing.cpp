@@ -299,6 +299,14 @@ void Thing::PrintTopicID() {
   }
 }
 
+void Thing::PrintXbeePacket(char* buf) {
+  SOPLOG(F("Xbee packet : "));
+  for (int i = 0; i < MAX_BUFFER_SIZE; i++) {
+    SOPLOG(F("%02X"), buf[i]);
+  }
+  SOPLOGLN(F(""));
+}
+
 void Thing::TestPublish() {
   while (1) {
     Publish(QOS_FLAG, id_1001_, "id_1001_ test", strlen("id_1001_ test"));
@@ -552,7 +560,7 @@ void Thing::ReadZbeeTimeout(int timeout) {
     } else if (zbee_.getResponse().getApiId() == ZB_RX_RESPONSE) {
       zbee_.getResponse().getZBRxResponse(zbee_rx_);
       // SOPLOGLN(F("[SUCCESS] Zigbee receive success... parse stream"));
-
+      memset(message_buffer_, 0, MAX_BUFFER_SIZE);
       ParseMQTTSNStream((char*)zbee_rx_.getData(), zbee_rx_.getDataLength());
       timeout = ESCAPE_ZBEE_TIMEOUT;  // exit instantly after receiving a packet
                                       // from gateway
@@ -580,6 +588,7 @@ void Thing::ReadZbeeIfAvailable() {
       } else if (zbee_.getResponse().getApiId() == ZB_RX_RESPONSE) {
         zbee_.getResponse().getZBRxResponse(zbee_rx_);
         SOPLOGLN(F("[DEBUG] Zigbee Receive Success"));
+        memset(message_buffer_, 0, MAX_BUFFER_SIZE);
         ParseMQTTSNStream((char*)zbee_rx_.getData(), zbee_rx_.getDataLength());
       } else if (zbee_.getResponse().isError()) {
         // SOPLOGLN(F("[ERROR] ZigBee Response Error."));
@@ -612,33 +621,32 @@ void Thing::ParseMQTTSNStream(char* buf, uint16_t len) {
 
   switch (response_message->type) {
     case ADVERTISE:
-      if (!gateway_response_wait_ || (protocal_response_wait_ != ADVERTISE))
-        return;
+      if (!gateway_response_wait_) return;
       AdvertiseHandler((msg_advertise*)message_buffer_);
       break;
 
     case GWINFO:
-      if (!gateway_response_wait_ || protocal_response_wait_ != GWINFO) return;
+      if (!gateway_response_wait_) return;
       GwinfoHandler((msg_gwinfo*)message_buffer_);
       break;
 
     case CONNACK:
-      if (!gateway_response_wait_ || protocal_response_wait_ != CONNACK) return;
+      if (!gateway_response_wait_) return;
       ConnackHandler((msg_connack*)message_buffer_);
       break;
 
     case REGACK:
-      if (!gateway_response_wait_ || protocal_response_wait_ != REGACK) return;
+      if (!gateway_response_wait_) return;
       RegackHandler((msg_regack*)message_buffer_);
       break;
 
     case PUBLISH:
-      if (!gateway_response_wait_ || protocal_response_wait_ != PUBLISH) return;
+      if (!gateway_response_wait_) return;
       PublishHandler((msg_publish*)message_buffer_);
       break;
 
     case SUBACK:
-      if (!gateway_response_wait_ || protocal_response_wait_ != SUBACK) return;
+      if (!gateway_response_wait_) return;
       SubackHandler((msg_suback*)message_buffer_);
       break;
 
@@ -647,8 +655,7 @@ void Thing::ParseMQTTSNStream(char* buf, uint16_t len) {
       break;
 
     case PINGRESP:
-      if (!gateway_response_wait_ || protocal_response_wait_ != PINGRESP)
-        return;
+      if (!gateway_response_wait_) return;
       PingrespHandler();
       break;
 
@@ -818,6 +825,7 @@ void Thing::SubackHandler(const msg_suback* msg) {}
 
 void Thing::Searchgw(const uint8_t radius) {
   msg_searchgw* msg = reinterpret_cast<msg_searchgw*>(message_buffer_);
+  memset(message_buffer_, 0, MAX_BUFFER_SIZE);
 
   msg->length = sizeof(msg_searchgw);
   msg->type = SEARCHGW;
@@ -825,12 +833,12 @@ void Thing::Searchgw(const uint8_t radius) {
 
   Broadcast();
   gateway_response_wait_ = true;
-  protocal_response_wait_ = GWINFO;
 }
 
 void Thing::Connect(const uint8_t flags, const uint16_t duration,
                     const char* client_id_) {
   msg_connect* msg = reinterpret_cast<msg_connect*>(message_buffer_);
+  memset(message_buffer_, 0, MAX_BUFFER_SIZE);
 
   msg->length = sizeof(msg_connect) + strlen(client_id_);
   msg->type = CONNECT;
@@ -842,11 +850,11 @@ void Thing::Connect(const uint8_t flags, const uint16_t duration,
   Unicast();
   gateway_connected_ = false;
   gateway_response_wait_ = true;
-  protocal_response_wait_ = CONNACK;
 }
 
 void Thing::Disconnect(const uint16_t duration) {
   msg_disconnect* msg = reinterpret_cast<msg_disconnect*>(message_buffer_);
+  memset(message_buffer_, 0, MAX_BUFFER_SIZE);
 
   msg->length = sizeof(message_header);
   msg->type = DISCONNECT;
@@ -866,6 +874,7 @@ bool Thing::RegisterTopic(const char* name) {
 
     registered_id_ = -1;
     msg_register* msg = reinterpret_cast<msg_register*>(message_buffer_);
+    memset(message_buffer_, 0, MAX_BUFFER_SIZE);
 
     msg->length = sizeof(msg_register) + strlen(name);
     msg->type = REGISTER;
@@ -875,7 +884,6 @@ bool Thing::RegisterTopic(const char* name) {
 
     Unicast();
     gateway_response_wait_ = true;
-    protocal_response_wait_ = REGACK;
     return true;
   } else {
     SOPLOGLN(F("gateway_response_wait_ is false error!"));
@@ -891,6 +899,7 @@ void Thing::Publish(const uint8_t flags, const uint16_t topicId,
   message_id_ = 0;
 
   msg_publish* msg = reinterpret_cast<msg_publish*>(message_buffer_);
+  memset(message_buffer_, 0, MAX_BUFFER_SIZE);
 
   msg->length = sizeof(msg_publish) + data_len;
   msg->type = PUBLISH;
@@ -919,12 +928,14 @@ void Thing::Publish(const uint8_t flags, const uint16_t topicId,
         break;
     }
   }
+  gateway_response_wait_ = true;
 }
 
 void Thing::Subscribe(const uint8_t flags, const uint16_t topicId) {
   message_id_++;
 
   msg_subscribe* msg = reinterpret_cast<msg_subscribe*>(message_buffer_);
+  memset(message_buffer_, 0, MAX_BUFFER_SIZE);
 
   msg->length = sizeof(msg_subscribe);
   msg->type = SUBSCRIBE;
@@ -945,6 +956,7 @@ void Thing::Subscribe(const uint8_t flags, const char* name) {
   message_id_++;
 
   msg_subscribe* msg = reinterpret_cast<msg_subscribe*>(message_buffer_);
+  memset(message_buffer_, 0, MAX_BUFFER_SIZE);
 
   msg->length = sizeof(msg_subscribe) + strlen(name) - sizeof(uint16_t);
   msg->type = SUBSCRIBE;
