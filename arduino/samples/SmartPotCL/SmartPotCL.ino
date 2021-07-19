@@ -84,7 +84,7 @@ void ActuateLedOff() {
   led_status_ = 0;
 }
 
-Thing thing((const char *)"SmartPotCL", 60, SafeSerial);
+Thing thing((const char *)"SmartPotCL1", 60, SafeSerial);
 
 Value led_status((const char *)"led_status", SenseLedStatus, 0, 3, 3000);
 Value brightness((const char *)"brightness", SenseBrightness, 0, 1024, 3000);

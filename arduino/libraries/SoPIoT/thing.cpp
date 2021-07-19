@@ -75,6 +75,7 @@ void Thing::Setup() {
   SOPLOGLN(F("ClientID : %s"), client_id_);
 
   SOPLOGLN(F("==== Setup SEARCHGW ===="));
+
   while (!GatewayReady()) {
     Searchgw(SEARCH_RADIUS);
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
@@ -154,6 +155,7 @@ void Thing::Setup() {
     RegisterTopic(publish_buffer);
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     id_2011_ = registered_id_;
+    SOPLOGLN(F("id_2011_ : %d"), id_2011_);
   }
   SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
 
@@ -210,7 +212,6 @@ void Thing::Setup() {
       snprintf(publish_buffer, MAX_BUFFER_SIZE, COMMON0000, client_id_,
                values_[i]->GetName());
       RegisterTopic(publish_buffer);
-
       SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
       ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     }
@@ -225,7 +226,6 @@ void Thing::Setup() {
       snprintf(publish_buffer, MAX_BUFFER_SIZE, MT1003,
                functions_[i]->GetName(), client_id_);
       RegisterTopic(publish_buffer);
-
       SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
       ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     }
@@ -239,7 +239,6 @@ void Thing::Setup() {
       snprintf(publish_buffer, MAX_BUFFER_SIZE, TM2004,
                functions_[i]->GetName(), client_id_);
       RegisterTopic(publish_buffer);
-
       SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
       ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     }
@@ -302,7 +301,7 @@ void Thing::PrintTopicID() {
 void Thing::PrintXbeePacket(char* buf) {
   SOPLOG(F("Xbee packet : "));
   for (int i = 0; i < MAX_BUFFER_SIZE; i++) {
-    SOPLOG(F("%02X"), buf[i]);
+    SOPLOG(F("%02X "), buf[i]);
   }
   SOPLOGLN(F(""));
 }
@@ -452,7 +451,17 @@ void Thing::GetMacAddress() {
 
 void Thing::GenerateClientId() {
   // generate mac address and put it on mac_address_
-  GetMacAddress();
+  char pre_fix[5] = {0x00, 0x13, 0xA2, 0x00, '\0'};
+  char mac_address_low[5] = "";
+
+  do {
+    SOPLOGLN(F("Get Mac address..."));
+    GetMacAddress();
+
+    strncpy(mac_address_low, (char*)mac_address_ + 4, 4);
+    mac_address_low[4] = '\0';
+    delay(200);
+  } while (!strcmp(mac_address_low, pre_fix));
 
   int len = 0;
   char temp_mac_address[MAC_ADDRESS_SIZE + 1] = "";
@@ -532,6 +541,7 @@ void Thing::SendAliveMessage() {
 void Thing::SendAliveMessageNoCond() {
   char* pszDummy = (char*)"AliveNoCond";
 
+  SOPLOGLN(F("init alive"));
   Publish(QOS_FLAG, id_2003_, pszDummy, strlen(pszDummy));
 }
 
@@ -540,6 +550,8 @@ void Thing::SendInitialValueNoCond() {
     // Value to Json String
     values_[i]->GetValuePublishJson(publish_buffer);
     // Publish values
+    SOPLOGLN(F("init Value --> pub_id: %d, buffer: %s"),
+             values_[i]->GetPublishID(), publish_buffer);
     Publish(QOS_FLAG, values_[i]->GetPublishID(), publish_buffer,
             strlen(publish_buffer));
   }
@@ -552,22 +564,19 @@ void Thing::ReadZbeeTimeout(int timeout) {
     if (zbee_.getResponse().getApiId() == ZB_TX_STATUS_RESPONSE) {
       ZBTxStatusResponse txStatus;
       zbee_.getResponse().getZBTxStatusResponse(txStatus);
-      if (txStatus.isSuccess()) {
-        // SOPLOGLN(F("[SUCCESS] Zigbee send success... wait response"));
-      } else {
-        // SOPLOGLN(F("[ERROR] Zigbee send fail."));
+      if (!txStatus.isSuccess()) {
+        SOPLOGLN(F("[ERROR] Zigbee Send Fail."));
       }
     } else if (zbee_.getResponse().getApiId() == ZB_RX_RESPONSE) {
+      SOPLOGLN(F("Zigbee receive success!"));
       zbee_.getResponse().getZBRxResponse(zbee_rx_);
-      // SOPLOGLN(F("[SUCCESS] Zigbee receive success... parse stream"));
-      memset(message_buffer_, 0, MAX_BUFFER_SIZE);
+      PrintXbeePacket((char*)zbee_rx_.getData());
       ParseMQTTSNStream((char*)zbee_rx_.getData(), zbee_rx_.getDataLength());
-      timeout = ESCAPE_ZBEE_TIMEOUT;  // exit instantly after receiving a packet
-                                      // from gateway
+      break;
     } else if (zbee_.getResponse().isError()) {
-      // SOPLOGLN(F("[ERROR] ZigBee response error."));
+      SOPLOGLN(F("[ERROR] ZigBee response error."));
     } else {
-      // SOPLOGLN(F("[ERROR] Unexpected response."));
+      SOPLOGLN(F("[ERROR] Unexpected response."));
     }
   }
 }
@@ -588,7 +597,6 @@ void Thing::ReadZbeeIfAvailable() {
       } else if (zbee_.getResponse().getApiId() == ZB_RX_RESPONSE) {
         zbee_.getResponse().getZBRxResponse(zbee_rx_);
         SOPLOGLN(F("[DEBUG] Zigbee Receive Success"));
-        memset(message_buffer_, 0, MAX_BUFFER_SIZE);
         ParseMQTTSNStream((char*)zbee_rx_.getData(), zbee_rx_.getDataLength());
       } else if (zbee_.getResponse().isError()) {
         // SOPLOGLN(F("[ERROR] ZigBee Response Error."));
@@ -615,9 +623,10 @@ void Thing::ParseMQTTSNStream(char* buf, uint16_t len) {
     // return;
   }
 
-  SOPLOGLN(F("xbee recv : "));
-  SOPLOGLN(F(message_buffer_));
-  memcpy(message_buffer_, (const void*)buf, len);
+  memset(message_buffer_, 0, MAX_BUFFER_SIZE);
+  memcpy(message_buffer_, (const void*)buf, MAX_BUFFER_SIZE);
+  SOPLOGLN(F("response_message->type : %d"), response_message->type);
+  SOPLOGLN(F("gateway_response_wait_ : %d"), gateway_response_wait_);
 
   switch (response_message->type) {
     case ADVERTISE:
@@ -683,8 +692,6 @@ void Thing::ParseMQTTSNStream(char* buf, uint16_t len) {
                response_message->type);
       return;
   }
-
-  gateway_response_wait_ = false;
 }
 
 void Thing::Broadcast() {
@@ -702,7 +709,8 @@ void Thing::Broadcast() {
 }
 
 void Thing::SendPacket() {
-  // SOPLOGLN(F("Send packet!"));
+  SOPLOGLN(F("Send packet!"));
+  PrintXbeePacket((char*)message_buffer_);
   zbee_.send(zbee_tx_);
 }
 
@@ -716,16 +724,13 @@ void Thing::Unicast() {
 
   zbee_tx_ = ZBTxRequest(gateway_address_64_, message_buffer_, hdr->length);
   SendPacket();
-
-  if (!gateway_response_wait_) {
-    SOPLOG(F("[DEBUG] No gateway response\n"));
-  }
 }
 
 void Thing::AdvertiseHandler(const msg_advertise* msg) {
   if (!gateway_ready_) {
     gateway_id_ = msg->gw_id;
     gateway_ready_ = true;
+    gateway_response_wait_ = false;
   }
 }
 
@@ -735,17 +740,23 @@ void Thing::GwinfoHandler(const msg_gwinfo* msg) {
     gateway_address_16_ = zbee_rx_.getRemoteAddress16();
     gateway_id_ = msg->gw_id;
     gateway_ready_ = true;
+    gateway_response_wait_ = false;
   }
 }
 
 void Thing::ConnackHandler(const msg_connack* msg) {
   gateway_connected_ = true;
+  gateway_response_wait_ = false;
   if (connect_handler_ != NULL) connect_handler_();
 }
 
 void Thing::RegackHandler(const msg_regack* msg) {
   if (msg->return_code == 0 && bswap(msg->message_id) == message_id_) {
     registered_id_ = bswap(msg->topic_id);
+    gateway_response_wait_ = false;
+  } else {
+    SOPLOGLN(F("Message_id was not matched"));
+    gateway_response_wait_ = true;
   }
 }
 
@@ -754,6 +765,7 @@ void Thing::DisconnectHandler(const msg_disconnect* msg) {
   gateway_connected_ = false;
   gateway_ready_ = false;
   middleware_registered_ = false;
+  gateway_response_wait_ = false;
 }
 
 void Thing::PublishHandler(const msg_publish* msg) {
@@ -770,6 +782,7 @@ void Thing::PublishHandler(const msg_publish* msg) {
   return_code_t ret = REJECTED_INVALID_TOPIC_ID;
   uint16_t topic_id = bswap(msg->topic_id);
 
+  // when RAGACK
   if (topic_id == id_1001_) {
     SOPLOGLN("topic_id == id_1001_");
     snprintf(receive_buffer, MAX_BUFFER_SIZE, "%s", msg->data);
@@ -789,36 +802,35 @@ void Thing::PublishHandler(const msg_publish* msg) {
       SOPLOGLN(F("Duplicated Thing error message from middleware."));
       middleware_registered_ = true;
     }
-
-    return;
   }
+  // when Function execute packet
+  else {
+    for (int i = 0; i < num_functions_; i++) {
+      if (topic_id == functions_[i]->GetID1003()) {
+        strncpy(receive_buffer, msg->data, MAX_BUFFER_SIZE);
+        t_name = strtok_r(receive_buffer, ":", &pTokPtr);
+        t_args = strtok_r(NULL, "#", &pTokPtr);
 
-  for (int i = 0; i < num_functions_; i++) {
-    if (topic_id == functions_[i]->GetID1003()) {
-      strncpy(receive_buffer, msg->data, MAX_BUFFER_SIZE);
-      t_name = strtok_r(receive_buffer, ":", &pTokPtr);
-      t_args = strtok_r(NULL, "#", &pTokPtr);
+        switch (functions_[i]->GetReturnType()) {
+          case VOID:
+          case INTEGER:
+          case DOUBLE:
+          case BOOL:
+            functions_[i]->Execute(t_args, &success);
+            break;
+          default:
+            success = -7;
+            break;  // cannot be occured
+        }
 
-      switch (functions_[i]->GetReturnType()) {
-        case VOID:
-        case INTEGER:
-        case DOUBLE:
-        case BOOL:
-          functions_[i]->Execute(t_args, &success);
-          break;
-        default:
-          success = -7;
-          break;  // cannot be occured
+        snprintf(publish_buffer, MAX_BUFFER_SIZE,
+                 "{\"scenario\" : \"%s\" , \"error\" : %d}", t_name, success);
+        Publish(QOS_FLAG, functions_[i]->GetID2004(), publish_buffer,
+                strlen(publish_buffer));
       }
-
-      snprintf(publish_buffer, MAX_BUFFER_SIZE,
-               "{\"scenario\" : \"%s\" , \"error\" : %d}", t_name, success);
-      Publish(QOS_FLAG, functions_[i]->GetID2004(), publish_buffer,
-              strlen(publish_buffer));
-
-      return;
     }
   }
+  gateway_response_wait_ = true;
 }
 
 void Thing::SubackHandler(const msg_suback* msg) {}
@@ -868,13 +880,13 @@ void Thing::Disconnect(const uint16_t duration) {
   gateway_response_wait_ = true;
 }
 
-bool Thing::RegisterTopic(const char* name) {
+void Thing::RegisterTopic(const char* name) {
+  // pass the function if message_id was not matched
   if (!gateway_response_wait_) {
     message_id_++;
 
-    registered_id_ = -1;
     msg_register* msg = reinterpret_cast<msg_register*>(message_buffer_);
-    memset(message_buffer_, 0, MAX_BUFFER_SIZE);
+    memset(message_buffer_, 0, MAX_BUFFER_SIZE * sizeof(uint8_t));
 
     msg->length = sizeof(msg_register) + strlen(name);
     msg->type = REGISTER;
@@ -884,12 +896,10 @@ bool Thing::RegisterTopic(const char* name) {
 
     Unicast();
     gateway_response_wait_ = true;
-    return true;
+    SOPLOGLN(F("wait for message_id_ : %d"), message_id_);
   } else {
-    SOPLOGLN(F("gateway_response_wait_ is false error!"));
+    SOPLOGLN(F("wait for message_id_ : %d"), message_id_);
   }
-
-  return false;
 }
 
 void Thing::Publish(const uint8_t flags, const uint16_t topicId,

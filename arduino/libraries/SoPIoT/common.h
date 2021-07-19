@@ -211,8 +211,8 @@ struct msg_willmsgresp : public message_header {
 //----------------------------------------
 
 // Config
-#define MAX_VALUE_NUM 10
-#define MAX_FUNCTION_NUM 5
+#define MAX_VALUE_NUM 20
+#define MAX_FUNCTION_NUM 20
 #define MAX_NAME_LENGTH 20
 #define MAX_BUFFER_SIZE 60
 

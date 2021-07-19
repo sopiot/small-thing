@@ -29,19 +29,19 @@ int SenseWaterLevel() {
 
 void ActuatePumpOnOff(void *pData) {
   SOPLOGLN("PUMP ON : ");
-  digitalWrite(kPumpPin, HIGH);
+  digitalWrite(kPumpPin, LOW);
   delay(1000);
   SOPLOGLN("PUMP OFF");
-  digitalWrite(kPumpPin, LOW);
+  digitalWrite(kPumpPin, HIGH);
   pump_status_ = 0;
 }
 
-Thing thing((const char *)"SmartPotBP", 60, SafeSerial);
+Thing thing((const char *)"SPBP1", 60, SafeSerial);
 
 Value pump_status((const char *)"pump_status", SensePumpStatus, 0, 3, 3000);
-Value water_level((const char *)"water_level", SenseWaterLevel, 0, 100, 3000);
+Value water_level((const char *)"water_level", SenseWaterLevel, 0, 100, 30000);
 Value soil_moisture_level((const char *)"soil_moisture_level",
-                          SenseSoilMoisture, 0, 1024, 3000);
+                          SenseSoilMoisture, 0, 1024, 30000);
 
 Function pump_on_off((const char *)"pump", ActuatePumpOnOff, 1);
 Argument argTime((const char *)"time", 0, 100, INTEGER);
@@ -53,6 +53,7 @@ void SetupSerial() { SafeSerial.begin(9600); }
 void SetupModules() {
   // Setup Pin mode
   pinMode(kPumpPin, OUTPUT);
+  digitalWrite(kPumpPin, HIGH);
 }
 
 void SetupThing() {

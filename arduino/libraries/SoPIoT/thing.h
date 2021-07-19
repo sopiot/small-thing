@@ -7,7 +7,7 @@
 #include "value.h"
 
 #define MAC_ADDRESS_SIZE 16
-#define READ_ZBEE_TIMEOUT 1000
+#define READ_ZBEE_TIMEOUT 5000
 #define ESCAPE_ZBEE_TIMEOUT 50
 #define SEARCH_RADIUS 100
 
@@ -119,7 +119,7 @@ class Thing {
   void Searchgw(const uint8_t radius);
   void Connect(const uint8_t flags, const uint16_t duration,
                const char* client_id_);
-  bool RegisterTopic(const char* name);
+  void RegisterTopic(const char* name);
   void Publish(const uint8_t flags, const uint16_t topicId, const void* data,
                const uint8_t data_len);
   void RegisterToMIddleware();

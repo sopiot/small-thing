@@ -5,7 +5,7 @@
 const int kPumpPin = 2;
 const int kWaterLevelPin[WATER_LEVEL_SENSOR_NUM] = {3, 4};
 
-Thing thing((const char *)"SmartPotCP", 60, SafeSerial);
+Thing thing((const char *)"SmartPotCP1", 60, SafeSerial);
 
 Tag tag_SmartPot("SmartPot");
 Tag tag_SmartPotCP("SmartPotCP");
@@ -15,7 +15,7 @@ int pump_status_ = 0;
 int water_level_[2];
 double water_percentage_ = 0.0;
 double unit = 100.0 / WATER_LEVEL_SENSOR_NUM;
-  
+
 int SensePumpStatus() { return pump_status_; }
 
 int SenseWaterLevel() {
@@ -31,7 +31,7 @@ int SenseWaterLevel() {
 // Value declarations
 // Value(name, sense_function, min, max, period(ms));
 Value pump_status((const char *)"pump_status", SensePumpStatus, 0, 3, 3000);
-Value water_level((const char *)"water_level", SenseWaterLevel, 0, 100, 3000);
+Value water_level((const char *)"water_level", SenseWaterLevel, 0, 100, 30000);
 
 //----------------------------------------
 // Functions
@@ -39,15 +39,15 @@ Value water_level((const char *)"water_level", SenseWaterLevel, 0, 100, 3000);
 //----------------------------------------
 
 void ActuatePumpOnoff() {
-  digitalWrite(kPumpPin, HIGH);
-  delay(1000);
   digitalWrite(kPumpPin, LOW);
+  delay(1000);
+  digitalWrite(kPumpPin, HIGH);
   pump_status_ = 0;
 }
 
 // Function declarations
 // Function(name, actuate_function, arguments_num, function_tags_num);
-Function pump_onoff((const char *)"pump_onoff", ActuatePumpOnoff);
+Function pump_onoff((const char *)"p_on", ActuatePumpOnoff);
 
 //----------------------------------------
 // Setup
@@ -59,6 +59,7 @@ void SetupModules() {
   // Setup Pin mode
   pinMode(kPumpPin, OUTPUT);
   digitalWrite(kPumpPin, HIGH);
+
   for (int i = 0; i < WATER_LEVEL_SENSOR_NUM; i++) {
     pinMode(kWaterLevelPin[i], INPUT);
   }

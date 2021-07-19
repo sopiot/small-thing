@@ -1,14 +1,71 @@
+// #include <ArduinoOTA.h>
+// #include <SPI.h>
+// #include <WiFiNINA.h>
 #include <thing.h>
+
+// char ssid[] = "SuperSmartSonMesh_2G";  // your network SSID (name)
+// char pass[] = "22872287228722872";     // your network password
+// int status = WL_IDLE_STATUS;
+
+// void printWifiStatus() {
+//   // print the SSID of the network you're attached to:
+//   Serial.print("SSID: ");
+//   Serial.println(WiFi.SSID());
+
+//   // print your WiFi shield's IP address:
+//   IPAddress ip = WiFi.localIP();
+//   Serial.print("IP Address: ");
+//   Serial.println(ip);
+
+//   // print the received signal strength:
+//   long rssi = WiFi.RSSI();
+//   Serial.print("signal strength (RSSI):");
+//   Serial.print(rssi);
+//   Serial.println(" dBm");
+// }
+
+// void wifi_setup() {
+//   if (WiFi.status() == WL_NO_SHIELD) {
+//     Serial.println("WiFi shield not present");
+//     // don't continue:
+//     while (true)
+//       ;
+//   }
+
+//   // attempt to connect to Wifi network:
+//   while (status != WL_CONNECTED) {
+//     Serial.print("Attempting to connect to SSID: ");
+//     Serial.println(ssid);
+//     // Connect to WPA/WPA2 network. Change this line if using open or WEP
+//     // network:
+//     status = WiFi.begin(ssid, pass);
+//   }
+
+//   // start the WiFi OTA library with internal (flash) based storage
+//   ArduinoOTA.begin(WiFi.localIP(), "Arduino", "password", InternalStorage);
+
+//   // you're connected now, so print out the status:
+//   printWifiStatus();
+// }
 
 int SenseIntValue() { return 23; }
 double SenseDoubleValue() { return 12.3; }
 bool SenseBoolValue() { return true; }
-char* SenseStringValue() { return "string"; }
 
+void ActuateVoidFunction() { SOPLOGLN(F("ActuateVoidFunction execute")); }
 int ActuateIntFunction() { return 23; }
 double ActuateDoubleFunction() { return 12.3; }
 bool ActuateBoolFunction() { return true; }
-char* ActuateStringFunction() { return "string"; }
+
+void ActuateVoidArgumentFunction(void* data) {
+  int int_tmp;
+  double double_tmp;
+
+  GetIntArgumentByName(data, "int_argument", &int_tmp);
+  GetDoubleArgumentByName(data, "double_argument", &double_tmp);
+
+  SOPLOGLN(F("ActuateVoidFunction execute"));
+}
 
 int ActuateIntArgumentFunction(void* data) {
   int int_tmp;
@@ -19,6 +76,7 @@ int ActuateIntArgumentFunction(void* data) {
 
   return 23;
 }
+
 double ActuateDoubleArgumentFunction(void* data) {
   int int_tmp;
   double double_tmp;
@@ -28,6 +86,7 @@ double ActuateDoubleArgumentFunction(void* data) {
 
   return double_tmp + int_tmp;
 }
+
 bool ActuateBoolArgumentFunction(void* data) {
   int int_tmp;
   double double_tmp;
@@ -37,42 +96,29 @@ bool ActuateBoolArgumentFunction(void* data) {
 
   return true;
 }
-char* ActuateStringArgumentFunction(void* data) {
-  int int_tmp;
-  double double_tmp;
-  char string_tmp[256];
-
-  GetIntArgumentByName(data, "int_argument", &int_tmp);
-  GetDoubleArgumentByName(data, "double_argument", &double_tmp);
-
-  sprintf(string_tmp, "int_tmp : %d, double_tmp : %fl", int_tmp, double_tmp);
-
-  return string_tmp;
-}
 
 Thing thing("Template", 60, SafeSerial);
 
-Value int_value("int_value", SenseValveStatus, 0, 3, 3000);
-Value double_value("double_value", SenseValveStatus, 0, 3, 3000);
-Value bool_value("bool_value", SenseValveStatus, 0, 3, 3000);
-Value string_value("string_value", SenseValveStatus, 0, 3, 3000);
+Value int_value("int_value", SenseIntValue, 0, 3, 3000);
+Value double_value("double_value", SenseDoubleValue, 0, 3, 3000);
+Value bool_value("bool_value", SenseBoolValue, 3000);
 
+Function void_function("void_function", ActuateVoidFunction);
 Function int_function("int_function", ActuateIntFunction);
 Function double_function("double_function", ActuateDoubleFunction);
 Function bool_function("bool_function", ActuateBoolFunction);
-Function string_function("string_function", ActuateStringFunction);
 
+Function void_argument_function("void_argument_function",
+                                ActuateVoidArgumentFunction, 1);
 Function int_argument_function("int_argument_function",
                                ActuateIntArgumentFunction, 1);
 Function double_argument_function("double_argument_function",
                                   ActuateDoubleArgumentFunction, 1);
 Function bool_argument_function("bool_argument_function",
                                 ActuateBoolArgumentFunction, 1);
-Function string_argument_function("string_argument_function",
-                                  ActuateStringArgumentFunction, 1);
 
 Argument int_argument("int_argument", 0, 100, INTEGER);
-Argument double_argument("double_argument", 0, 100.0, DOUBLE);
+Argument double_argument("double_argument", 0.0, 100.0, DOUBLE);
 
 Tag tag1("tag1");
 Tag tag2("tag2");
@@ -88,47 +134,44 @@ void SetupThing() {
   double_value.AddTag(tag2);
   bool_value.AddTag(tag1);
   bool_value.AddTag(tag2);
-  string_value.AddTag(tag1);
-  string_value.AddTag(tag2);
   thing.Add(int_value);
   thing.Add(double_value);
   thing.Add(bool_value);
-  thing.Add(string_value);
 
+  void_function.AddTag(tag1);
+  void_function.AddTag(tag2);
   int_function.AddTag(tag1);
   int_function.AddTag(tag2);
   double_function.AddTag(tag1);
   double_function.AddTag(tag2);
   bool_function.AddTag(tag1);
   bool_function.AddTag(tag2);
-  string_function.AddTag(tag1);
-  string_function.AddTag(tag2);
+  thing.Add(void_function);
   thing.Add(int_function);
   thing.Add(double_function);
   thing.Add(bool_function);
-  thing.Add(string_function);
 
+  void_argument_function.AddArgument(int_argument);
+  void_argument_function.AddArgument(double_argument);
   int_argument_function.AddArgument(int_argument);
   int_argument_function.AddArgument(double_argument);
   double_argument_function.AddArgument(int_argument);
   double_argument_function.AddArgument(double_argument);
   bool_argument_function.AddArgument(int_argument);
   bool_argument_function.AddArgument(double_argument);
-  string_argument_function.AddArgument(int_argument);
-  string_argument_function.AddArgument(double_argument);
 
+  void_argument_function.AddTag(tag1);
+  void_argument_function.AddTag(tag2);
   int_argument_function.AddTag(tag1);
   int_argument_function.AddTag(tag2);
   double_argument_function.AddTag(tag1);
   double_argument_function.AddTag(tag2);
   bool_argument_function.AddTag(tag1);
   bool_argument_function.AddTag(tag2);
-  string_argument_function.AddTag(tag1);
-  string_argument_function.AddTag(tag2);
+  thing.Add(void_argument_function);
   thing.Add(int_argument_function);
   thing.Add(double_argument_function);
   thing.Add(bool_argument_function);
-  thing.Add(string_argument_function);
 
   thing.Setup();
 }
@@ -139,4 +182,7 @@ void setup() {
   SetupThing();
 }
 
-void loop() { thing.Loop(); }
+void loop() {
+  // ArduinoOTA.poll();
+  thing.Loop();
+}

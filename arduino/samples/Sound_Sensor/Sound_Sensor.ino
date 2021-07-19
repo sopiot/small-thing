@@ -25,7 +25,7 @@ int loudness_ = 0;
 //----------------------------------------
 // Thing
 //----------------------------------------
-Thing thing((const char *)"SoundSensor", 60, SafeSerial);
+Thing thing((const char *)"SoundSensor1", 60, SafeSerial);
 
 //----------------------------------------
 // Value callback functions
@@ -54,7 +54,7 @@ int SenseLoudness() {
   return peakToPeak;
 }
 
-Value sound_value((const char *)"sound_value", SenseLoudness, 0, 2048, 1000);
+Value sound_value((const char *)"sound_value", SenseLoudness, 0, 2048, 5000);
 
 //----------------------------------------
 // Functions callback functions
