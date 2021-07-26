@@ -1,9 +1,10 @@
 #include <thing.h>
 
 #define WATER_LEVEL_SENSOR_NUM 2
+#define PUMP_PIN_NUM 4
 
-const int kPumpPin = 2;
-const int kSoilMoisturePin = A1;
+const int kPumpPin[PUMP_PIN_NUM] = {2, 5, 6, 7};
+const int kSoilMoisturePin = A0;
 const int kWaterLevelPin[WATER_LEVEL_SENSOR_NUM] = {3, 4};
 
 int pump_status_ = 0;
@@ -29,10 +30,16 @@ int SenseWaterLevel() {
 
 void ActuatePumpOnOff(void *pData) {
   SOPLOGLN("PUMP ON : ");
-  digitalWrite(kPumpPin, LOW);
+  for (int i = 0; i < PUMP_PIN_NUM; i++) {
+    digitalWrite(kPumpPin[i], HIGH);
+  }
+
   delay(1000);
   SOPLOGLN("PUMP OFF");
-  digitalWrite(kPumpPin, HIGH);
+
+  for (int i = 0; i < PUMP_PIN_NUM; i++) {
+    digitalWrite(kPumpPin[i], LOW);
+  }
   pump_status_ = 0;
 }
 
@@ -52,8 +59,10 @@ void SetupSerial() { SafeSerial.begin(9600); }
 
 void SetupModules() {
   // Setup Pin mode
-  pinMode(kPumpPin, OUTPUT);
-  digitalWrite(kPumpPin, HIGH);
+  for (int i = 0; i < PUMP_PIN_NUM; i++) {
+    pinMode(kPumpPin[i], OUTPUT);
+    digitalWrite(kPumpPin[i], LOW);
+  }
 }
 
 void SetupThing() {

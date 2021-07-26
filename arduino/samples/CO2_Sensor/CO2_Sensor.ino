@@ -1,47 +1,18 @@
-//----------------------------------------
-// Libraries
-//----------------------------------------
-
-// SoPIoT Thing library
 #include <thing.h>
 
 #include "wiring_private.h"
 
+#define CO2_CYCLE
+
 Uart mySerial(&sercom0, 5, 6, SERCOM_RX_PAD_1, UART_TX_PAD_0);
 
-void SERCOM0_Handler() { mySerial.IrqHandler(); }
+const int kPWNPin = 2;
+const int kAnalogOutputPin = A0;
 
-// Module libraries
-
-// Pins
-static const int kPWNPin = 2;
-static const int kAnalogOutputPin = A0;
-
-//----------------------------------------
-// Modules
-//----------------------------------------
-
-// Modules
-
-//----------------------------------------
-// Thing
-//----------------------------------------
-
-// Thing declaration
-// Thing(class_name, alive_cycle, serial);
-// Thing(class_name, serial);
-Thing CO2Sensor_thing((const char *)"CO2Sensor-3", 60, SafeSerial);
-
-//----------------------------------------
-// Values
-// an SenseXXX overwrites a Value XXX
-//----------------------------------------
-
-// Value variables
 int analog_ppm_;
 int pwm_ppm_;
 
-// Getter functions of each Value variable
+void SERCOM0_Handler() { mySerial.IrqHandler(); }
 
 int SenseAnalogOutputPPM() {
   double result = analogRead(kAnalogOutputPin) / 1024.0;
@@ -49,36 +20,32 @@ int SenseAnalogOutputPPM() {
 }
 
 int SensePWMOutputPPM() { return analog_ppm_; }
+
 int SenseUartOutputPPM() {
   String inString;
 
   if (mySerial.available()) {
     inString = mySerial.readStringUntil('\n');
-    SOPLOGLN((char*)inString.c_str());
+    SOPLOGLN((char *)inString.c_str());
   }
 
   inString.trim();
-  inString = inString.substring(0, inString.indexOf(' '));
+  inString = inString.substring(0, inString.indexOf('ppm') - 3);
+  inString.trim();
+  SOPLOGLN((char *)inString.c_str());
+  if (inString.indexOf(' ') != -1) {
+    inString = inString.substring(inString.indexOf(' '), inString.length());
+    inString.trim();
+    SOPLOGLN((char *)inString.c_str());
+  }
 
-  return atoi((char*)inString.c_str());
+  return atoi((char *)inString.c_str());
 }
 
-// Value declarations
-// Value(name, sense_function, min, max, period(ms));
-Value analogPPM((const char *)"co2_level", SenseUartOutputPPM, 0, 10000, 30000);
+Thing thing((const char *)"CO2Sensor1", 60, SafeSerial);
+Value analogPPM((const char *)"co2_level", SenseUartOutputPPM, 0, 10000,
+                CO2_CYCLE);  // CO2 Sensor output cycle is 2 SEC
 // Value pwmPPM((const char *)"pwmPPM", SensePWMOutputPPM, 0, 2, 5000);
-
-//----------------------------------------
-// Functions
-// an ActuateXXX actuates a Function XXX
-//----------------------------------------
-
-// Function declarations
-// Function(name, actuate_function, arguments_num, function_attributes_num);
-
-//----------------------------------------
-// Setup
-//----------------------------------------
 
 void SetupSerial() { SafeSerial.begin(9600); }
 
@@ -94,16 +61,12 @@ void SetupThing() {
   // Setup Functions
 
   // Setup Values
-  CO2Sensor_thing.Add(analogPPM);
-  // CO2Sensor_thing.Add(pwmPPM);
+  thing.Add(analogPPM);
+  // thing.Add(pwmPPM);
 
   // Setup Thing
-  CO2Sensor_thing.Setup();
+  thing.Setup();
 }
-
-//----------------------------------------
-// Main
-//----------------------------------------
 
 void setup() {
   pinPeripheral(5, PIO_SERCOM_ALT);
@@ -116,4 +79,4 @@ void setup() {
   SetupThing();
 }
 
-void loop() { CO2Sensor_thing.Loop(); }
+void loop() { thing.Loop(); }

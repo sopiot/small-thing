@@ -1,11 +1,12 @@
 #include <thing.h>
 
 #define WATER_LEVEL_SENSOR_NUM 2
+#define PUMP_PIN_NUM 4
 
-const int kPumpPin = 2;
+const int kPumpPin[PUMP_PIN_NUM] = {2, 5, 6, 7};
 const int kWaterLevelPin[WATER_LEVEL_SENSOR_NUM] = {3, 4};
 
-Thing thing((const char *)"SmartPotCP1", 60, SafeSerial);
+Thing thing((const char *)"SPCP1", 60, SafeSerial);
 
 Tag tag_SmartPot("SmartPot");
 Tag tag_SmartPotCP("SmartPotCP");
@@ -39,15 +40,21 @@ Value water_level((const char *)"water_level", SenseWaterLevel, 0, 100, 30000);
 //----------------------------------------
 
 void ActuatePumpOnoff() {
-  digitalWrite(kPumpPin, LOW);
+  for (int i = 0; i < PUMP_PIN_NUM; i++) {
+    digitalWrite(kPumpPin[i], HIGH);
+  }
+
   delay(1000);
-  digitalWrite(kPumpPin, HIGH);
+
+  for (int i = 0; i < PUMP_PIN_NUM; i++) {
+    digitalWrite(kPumpPin[i], LOW);
+  }
   pump_status_ = 0;
 }
 
 // Function declarations
 // Function(name, actuate_function, arguments_num, function_tags_num);
-Function pump_onoff((const char *)"p_on", ActuatePumpOnoff);
+Function pump_onoff((const char *)"pump_on", ActuatePumpOnoff);
 
 //----------------------------------------
 // Setup
@@ -57,8 +64,10 @@ void SetupSerial() { SafeSerial.begin(9600); }
 
 void SetupModules() {
   // Setup Pin mode
-  pinMode(kPumpPin, OUTPUT);
-  digitalWrite(kPumpPin, HIGH);
+  for (int i = 0; i < PUMP_PIN_NUM; i++) {
+    pinMode(kPumpPin[i], OUTPUT);
+    digitalWrite(kPumpPin[i], LOW);
+  }
 
   for (int i = 0; i < WATER_LEVEL_SENSOR_NUM; i++) {
     pinMode(kWaterLevelPin[i], INPUT);

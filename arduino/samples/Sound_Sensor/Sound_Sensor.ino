@@ -9,6 +9,7 @@
 
 // Pins
 static const int kSoundPin = A0;
+static const int kLightPin = A1;
 
 //----------------------------------------
 // Modules
@@ -17,7 +18,7 @@ static const int kSoundPin = A0;
 // Modules
 
 // Global variables
-const int kSampleWindow = 50;  // Sample window width in mS (50 mS = 20Hz)
+const int kSampleWindow = 100;  // Sample window width in mS (50 mS = 20Hz)
 
 unsigned int sample_ = 0;
 int loudness_ = 0;
@@ -25,7 +26,7 @@ int loudness_ = 0;
 //----------------------------------------
 // Thing
 //----------------------------------------
-Thing thing((const char *)"SoundSensor1", 60, SafeSerial);
+Thing thing((const char *)"Sound1", 60, SafeSerial);
 
 //----------------------------------------
 // Value callback functions
@@ -39,7 +40,7 @@ int SenseLoudness() {
   // collect data for 50 mS
 
   while (millis() - startMillis < kSampleWindow) {
-    sample_ = analogRead(0);
+    sample_ = analogRead(kSoundPin);
     if (sample_ < 1024)  // toss out spurious readings
     {
       if (sample_ > signalMax)
@@ -54,7 +55,10 @@ int SenseLoudness() {
   return peakToPeak;
 }
 
+int SenseBrightness() { return analogRead(kLightPin); }
+
 Value sound_value((const char *)"sound_value", SenseLoudness, 0, 2048, 5000);
+Value brightness((const char *)"brightness", SenseBrightness, 0, 1024, 5000);
 
 //----------------------------------------
 // Functions callback functions
@@ -68,6 +72,7 @@ void SetupSerial() { SafeSerial.begin(9600); }
 void SetupModules() {
   // Setup Pin mode
   pinMode(kSoundPin, INPUT);
+  pinMode(kLightPin, INPUT);
 
   // Attach modules
 }
@@ -77,6 +82,7 @@ void SetupThing() {
 
   // Setup Values
   thing.Add(sound_value);
+  thing.Add(brightness);
 
   // Setup Thing
   thing.Setup();
