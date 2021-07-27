@@ -1,12 +1,14 @@
-#include <thing.h>
+#include "ota.h"
+#include "thing.h"
 
 #define WATER_LEVEL_SENSOR_NUM 2
 #define PUMP_PIN_NUM 4
+#define DEVICE_NAME "argSPCP2"
 
 const int kPumpPin[PUMP_PIN_NUM] = {2, 5, 6, 7};
 const int kWaterLevelPin[WATER_LEVEL_SENSOR_NUM] = {3, 4};
 
-Thing thing((const char *)"SPCP1", 60, SafeSerial);
+Thing thing((const char *)DEVICE_NAME, 60, SafeSerial);
 
 Tag tag_SmartPot("SmartPot");
 Tag tag_SmartPotCP("SmartPotCP");
@@ -39,22 +41,41 @@ Value water_level((const char *)"water_level", SenseWaterLevel, 0, 100, 30000);
 // an ActuateXXX actuates a Function XXX
 //----------------------------------------
 
-void ActuatePumpOnoff() {
-  for (int i = 0; i < PUMP_PIN_NUM; i++) {
-    digitalWrite(kPumpPin[i], HIGH);
-  }
+void ActuatePumpOnoff(void *pData) {
+  int pump_time = 0;
+  GetIntArgumentByName(pData, "time", &pump_time);
 
-  delay(1000);
+  for (int i = 0; i < PUMP_PIN_NUM; i++) digitalWrite(kPumpPin[i], HIGH);
+  // for (int i = 0; i < PUMP_PIN_NUM; i++) digitalWrite(kPumpPin[i], LOW);
 
-  for (int i = 0; i < PUMP_PIN_NUM; i++) {
-    digitalWrite(kPumpPin[i], LOW);
-  }
+  delay(pump_time * 1000);
+
+  for (int i = 0; i < PUMP_PIN_NUM; i++) digitalWrite(kPumpPin[i], LOW);
+  // for (int i = 0; i < PUMP_PIN_NUM; i++) digitalWrite(kPumpPin[i], HIGH);
+
+  pump_status_ = 0;
+}
+
+void ActuatePumpOn() {
+  for (int i = 0; i < PUMP_PIN_NUM; i++) digitalWrite(kPumpPin[i], HIGH);
+  // for (int i = 0; i < PUMP_PIN_NUM; i++) digitalWrite(kPumpPin[i], LOW);
+
+  pump_status_ = 1;
+}
+
+void ActuatePumpoff() {
+  for (int i = 0; i < PUMP_PIN_NUM; i++) digitalWrite(kPumpPin[i], LOW);
+  // for (int i = 0; i < PUMP_PIN_NUM; i++) digitalWrite(kPumpPin[i], HIGH);
+
   pump_status_ = 0;
 }
 
 // Function declarations
 // Function(name, actuate_function, arguments_num, function_tags_num);
-Function pump_onoff((const char *)"pump_on", ActuatePumpOnoff);
+Function pump_onoff((const char *)"pump_onoff", ActuatePumpOnoff, 1);
+Function pump_on((const char *)"pump_on", ActuatePumpOn);
+Function pump_off((const char *)"pump_off", ActuatePumpoff);
+Argument argTime((const char *)"time", 0, 100, INTEGER);
 
 //----------------------------------------
 // Setup
@@ -66,7 +87,9 @@ void SetupModules() {
   // Setup Pin mode
   for (int i = 0; i < PUMP_PIN_NUM; i++) {
     pinMode(kPumpPin[i], OUTPUT);
+    // at lab CP LOW is pump on and high is off
     digitalWrite(kPumpPin[i], LOW);
+    // digitalWrite(kPumpPin[i], HIGH);
   }
 
   for (int i = 0; i < WATER_LEVEL_SENSOR_NUM; i++) {
@@ -79,7 +102,10 @@ void SetupThing() {
   // Setup Functions
   pump_onoff.AddTag(tag_SmartPot);
   pump_onoff.AddTag(tag_SmartPotCP);
+  pump_onoff.AddArgument(argTime);
   thing.Add(pump_onoff);  // pin 2
+  thing.Add(pump_on);     // pin 2
+  thing.Add(pump_off);    // pin 2
 
   // Setup Values
   pump_status.AddTag(tag_SmartPot);
@@ -100,7 +126,11 @@ void SetupThing() {
 void setup() {
   SetupSerial();
   SetupModules();
+  WiFi_Setup("SoPIoT_2.4G", "/PeaCE/#1", DEVICE_NAME, "0000");
   SetupThing();
 }
 
-void loop() { thing.Loop(); }
+void loop() {
+  SOPOTA();
+  thing.Loop();
+}

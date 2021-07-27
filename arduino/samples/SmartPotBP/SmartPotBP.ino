@@ -1,7 +1,9 @@
-#include <thing.h>
+#include "ota.h"
+#include "thing.h"
 
 #define WATER_LEVEL_SENSOR_NUM 2
 #define PUMP_PIN_NUM 4
+#define DEVICE_NAME "argSPBP1"
 
 const int kPumpPin[PUMP_PIN_NUM] = {2, 5, 6, 7};
 const int kSoilMoisturePin = A0;
@@ -29,13 +31,14 @@ int SenseWaterLevel() {
 }
 
 void ActuatePumpOnOff(void *pData) {
-  SOPLOGLN("PUMP ON : ");
+  int pump_time = 0;
+  GetIntArgumentByName(pData, "time", &pump_time);
+
   for (int i = 0; i < PUMP_PIN_NUM; i++) {
     digitalWrite(kPumpPin[i], HIGH);
   }
 
-  delay(1000);
-  SOPLOGLN("PUMP OFF");
+  delay(pump_time * 1000);
 
   for (int i = 0; i < PUMP_PIN_NUM; i++) {
     digitalWrite(kPumpPin[i], LOW);
@@ -43,14 +46,32 @@ void ActuatePumpOnOff(void *pData) {
   pump_status_ = 0;
 }
 
-Thing thing((const char *)"SPBP1", 60, SafeSerial);
+void ActuatePumpOn() {
+  for (int i = 0; i < PUMP_PIN_NUM; i++) {
+    digitalWrite(kPumpPin[i], HIGH);
+  }
+
+  pump_status_ = 1;
+}
+
+void ActuatePumpOff() {
+  for (int i = 0; i < PUMP_PIN_NUM; i++) {
+    digitalWrite(kPumpPin[i], LOW);
+  }
+
+  pump_status_ = 0;
+}
+
+Thing thing((const char *)DEVICE_NAME, 60, SafeSerial);
 
 Value pump_status((const char *)"pump_status", SensePumpStatus, 0, 3, 3000);
 Value water_level((const char *)"water_level", SenseWaterLevel, 0, 100, 30000);
 Value soil_moisture_level((const char *)"soil_moisture_level",
                           SenseSoilMoisture, 0, 1024, 30000);
 
-Function pump_on_off((const char *)"pump", ActuatePumpOnOff, 1);
+Function pump_on_off((const char *)"pump_onoff", ActuatePumpOnOff, 1);
+Function pump_on((const char *)"pump_on", ActuatePumpOn);
+Function pump_off((const char *)"pump_off", ActuatePumpOff);
 Argument argTime((const char *)"time", 0, 100, INTEGER);
 Tag tag_SmartPot("SmartPot");
 Tag tag_SmartPotBP("SmartPotBP");
@@ -71,6 +92,8 @@ void SetupThing() {
   pump_on_off.AddTag(tag_SmartPot);
   pump_on_off.AddTag(tag_SmartPotBP);
   thing.Add(pump_on_off);
+  thing.Add(pump_on);
+  thing.Add(pump_off);
 
   // Setup Values
   pump_status.AddTag(tag_SmartPot);
@@ -90,7 +113,11 @@ void SetupThing() {
 void setup() {
   SetupSerial();
   SetupModules();
+  WiFi_Setup("SoPIoT_2.4G", "/PeaCE/#1", DEVICE_NAME, "0000");
   SetupThing();
 }
 
-void loop() { thing.Loop(); }
+void loop() {
+  SOPOTA();
+  thing.Loop();
+}

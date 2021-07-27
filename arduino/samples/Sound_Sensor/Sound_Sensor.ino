@@ -1,43 +1,19 @@
-//----------------------------------------
-// Libraries
-//----------------------------------------
-
-// SoPIoT Thing library
+#include "ota.h"
 #include "thing.h"
 
-// Module libraries
+#define DEVICE_NAME "Sound3"
 
-// Pins
-static const int kSoundPin = A0;
-static const int kLightPin = A1;
-
-//----------------------------------------
-// Modules
-//----------------------------------------
-
-// Modules
-
-// Global variables
+const int kSoundPin = A0;
+const int kLightPin = A1;
 const int kSampleWindow = 100;  // Sample window width in mS (50 mS = 20Hz)
-
 unsigned int sample_ = 0;
 int loudness_ = 0;
 
-//----------------------------------------
-// Thing
-//----------------------------------------
-Thing thing((const char *)"Sound1", 60, SafeSerial);
-
-//----------------------------------------
-// Value callback functions
-//----------------------------------------
 int SenseLoudness() {
   unsigned long startMillis = millis();  // Start of sample window
   unsigned int peakToPeak = 0;           // peak-to-peak level
   unsigned int signalMax = 0;
   unsigned int signalMin = 1024;
-
-  // collect data for 50 mS
 
   while (millis() - startMillis < kSampleWindow) {
     sample_ = analogRead(kSoundPin);
@@ -57,16 +33,11 @@ int SenseLoudness() {
 
 int SenseBrightness() { return analogRead(kLightPin); }
 
+Thing thing((const char *)DEVICE_NAME, 60, SafeSerial);
+
 Value sound_value((const char *)"sound_value", SenseLoudness, 0, 2048, 5000);
 Value brightness((const char *)"brightness", SenseBrightness, 0, 1024, 5000);
 
-//----------------------------------------
-// Functions callback functions
-//----------------------------------------
-
-//----------------------------------------
-// Setup
-//----------------------------------------
 void SetupSerial() { SafeSerial.begin(9600); }
 
 void SetupModules() {
@@ -91,11 +62,11 @@ void SetupThing() {
 void setup() {
   SetupSerial();
   SetupModules();
-
+  WiFi_Setup("SoPIoT_2.4G", "/PeaCE/#1", DEVICE_NAME, "0000");
   SetupThing();
 }
 
-//----------------------------------------
-// Main
-//----------------------------------------
-void loop() { thing.Loop(); }
+void loop() {
+  SOPOTA();
+  thing.Loop();
+}
