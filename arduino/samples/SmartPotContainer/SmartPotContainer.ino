@@ -5,7 +5,7 @@
 //----------------------------------------
 
 // SoPIoT Thing library
-#include <thing.h>
+#include "thing.h"
 #define WATER_LEVEL_SENSOR_NUM 2
 
 //----------------------------------------
@@ -174,8 +174,7 @@ int SenseWaterLevel() {
   water_percentage_ = (int)sum;
   if (water_percentage_ == 0) {
     digitalWrite(kMiniRedPin, HIGH);
-  }
-  else {
+  } else {
     digitalWrite(kMiniRedPin, LOW);
   }
 

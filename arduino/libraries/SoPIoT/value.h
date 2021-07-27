@@ -1,7 +1,6 @@
 #ifndef SMALL_THING_VALUE_H_
 #define SMALL_THING_VALUE_H_
 
-#include "common.h"
 #include "tag.h"
 
 class Value {

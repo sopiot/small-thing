@@ -1,3 +1,6 @@
+#ifndef SMALL_THING_UTILS_H_
+#define SMALL_THING_UTILS_H_
+
 #include "common.h"
 
 // get argument from data by name
@@ -19,3 +22,5 @@ int GetDoubleArgumentByName(void* pData, const char* name, double* pdbOut);
 // dtostrf works differently on ARM board.
 char* Safe_dtostrf(double val, signed char width, unsigned char prec,
                    char* sout);
+
+#endif

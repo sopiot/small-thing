@@ -2,7 +2,6 @@
 #define SMALL_THING_FUNCTION_H_
 
 #include "argument.h"
-#include "common.h"
 #include "tag.h"
 
 class Function {

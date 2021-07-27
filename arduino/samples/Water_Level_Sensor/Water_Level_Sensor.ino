@@ -3,7 +3,7 @@
 //----------------------------------------
 
 // SoPIoT Thing library
-#include <thing.h>
+#include "thing.h"
 #define WATER_LEVEL_SENSOR_NUM 2
 
 // Module libraries
@@ -33,13 +33,13 @@ double water_percentage_ = 0.0;
 double unit = 100.0 / WATER_LEVEL_SENSOR_NUM;
 
 // Getter functions of each Value variable
-int SenseWaterLevel() { 
-    double sum = 0;
-    for (int i=0; i < WATER_LEVEL_SENSOR_NUM; i++) {
-      water_level_[i] = digitalRead(kWaterLevelPin[i]);
-      sum += (water_level_[i] == 0) ? unit : 0.0;
-    }
-    return (int)sum;  
+int SenseWaterLevel() {
+  double sum = 0;
+  for (int i = 0; i < WATER_LEVEL_SENSOR_NUM; i++) {
+    water_level_[i] = digitalRead(kWaterLevelPin[i]);
+    sum += (water_level_[i] == 0) ? unit : 0.0;
+  }
+  return (int)sum;
 }
 
 // Value declarations
@@ -52,7 +52,6 @@ Value water_level((const char *)"water_level", SenseWaterLevel, 0, 100, 1000);
 //----------------------------------------
 // Function declarations
 // Function(name, actuate_function, arguments_num, function_attributes_num);
-
 
 //----------------------------------------
 // Setup

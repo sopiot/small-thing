@@ -318,8 +318,6 @@ typedef char *(*StringValue)(char *, int);
 
 #define SOP_DEBUG
 #ifdef SOP_DEBUG
-// #define SOPLOG(fmt, ...) SoP_printf(fmt, __VA_ARGS__)
-// #define SOPLOGLN(fmt, ...) SoP_printlnf(fmt, __VA_ARGS__)
 
 static void SOPLOG(char *fmt, ...) {
   char buf[SOPLOG_LIMIT];

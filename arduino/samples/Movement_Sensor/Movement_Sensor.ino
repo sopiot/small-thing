@@ -3,7 +3,7 @@
 //----------------------------------------
 
 // SoPIoT Thing library
-#include <thing.h>
+#include "thing.h"
 
 // Module libraries
 
@@ -37,8 +37,8 @@ int SenseMovementStatus() { return (int)digitalRead(kmovement1Pin); }
 
 // Value declarations
 // Value(name, sense_function, min, max, period(ms));
-Value movement_value((const char *)"movement_value", SenseMovementStatus, 0,
-                     2, 1000);
+Value movement_value((const char *)"movement_value", SenseMovementStatus, 0, 2,
+                     1000);
 Tag movement_tag("Move");
 
 //----------------------------------------

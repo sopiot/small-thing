@@ -1,4 +1,4 @@
-#include <thing.h>
+#include "thing.h"
 
 const int kIRPin = 7;
 const int kLightPin = A0;
