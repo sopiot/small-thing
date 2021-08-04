@@ -3,7 +3,7 @@
 //----------------------------------------
 
 // SoPIoT Thing library
-#include <thing.h>
+#include "thing.h"
 
 // Module libraries
 #include <DHT.h>

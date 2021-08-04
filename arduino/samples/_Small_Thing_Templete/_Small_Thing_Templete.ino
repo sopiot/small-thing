@@ -1,52 +1,5 @@
-// #include <ArduinoOTA.h>
-// #include <SPI.h>
-// #include <WiFiNINA.h>
-#include <thing.h>
-
-// char ssid[] = "SuperSmartSonMesh_2G";  // your network SSID (name)
-// char pass[] = "22872287228722872";     // your network password
-// int status = WL_IDLE_STATUS;
-
-// void printWifiStatus() {
-//   // print the SSID of the network you're attached to:
-//   Serial.print("SSID: ");
-//   Serial.println(WiFi.SSID());
-
-//   // print your WiFi shield's IP address:
-//   IPAddress ip = WiFi.localIP();
-//   Serial.print("IP Address: ");
-//   Serial.println(ip);
-
-//   // print the received signal strength:
-//   long rssi = WiFi.RSSI();
-//   Serial.print("signal strength (RSSI):");
-//   Serial.print(rssi);
-//   Serial.println(" dBm");
-// }
-
-// void wifi_setup() {
-//   if (WiFi.status() == WL_NO_SHIELD) {
-//     Serial.println("WiFi shield not present");
-//     // don't continue:
-//     while (true)
-//       ;
-//   }
-
-//   // attempt to connect to Wifi network:
-//   while (status != WL_CONNECTED) {
-//     Serial.print("Attempting to connect to SSID: ");
-//     Serial.println(ssid);
-//     // Connect to WPA/WPA2 network. Change this line if using open or WEP
-//     // network:
-//     status = WiFi.begin(ssid, pass);
-//   }
-
-//   // start the WiFi OTA library with internal (flash) based storage
-//   ArduinoOTA.begin(WiFi.localIP(), "Arduino", "password", InternalStorage);
-
-//   // you're connected now, so print out the status:
-//   printWifiStatus();
-// }
+#include "ota.h"
+#include "thing.h"
 
 int SenseIntValue() { return 23; }
 double SenseDoubleValue() { return 12.3; }
@@ -179,10 +132,11 @@ void SetupThing() {
 void setup() {
   SetupSerial();
   SetupModules();
+  WiFi_Setup();
   SetupThing();
 }
 
 void loop() {
-  // ArduinoOTA.poll();
+  SOPOTA();
   thing.Loop();
 }

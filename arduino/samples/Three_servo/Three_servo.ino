@@ -3,7 +3,7 @@
 //----------------------------------------
 
 // SoPIoT thing library
-#include <thing.h>
+#include "thing.h"
 
 // Module libraries
 #include <Servo.h>

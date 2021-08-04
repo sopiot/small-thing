@@ -2,7 +2,7 @@
 // Libraries
 //----------------------------------------
 // SoPIoT Thing library
-#include <thing.h>
+#include "thing.h"
 // Module libraries
 // Pins
 static const int kLight1Pin = A0;
@@ -26,13 +26,13 @@ Thing light_sensor((const char *)"Light", 60, SafeSerial);
 int brightness_;
 // Getter functions of each Value variable
 int SenseBrightness() { return analogRead(kLight1Pin); }
-int Actuatefunction(void* args) { 
+int Actuatefunction(void *args) {
   int int_arg;
   SOPLOGLN("in Actuatefunction");
   GetIntArgumentByName(args, "args_test", &int_arg);
   SOPLOGLN("int_arg: %d", int_arg);
   return int_arg;
- }
+}
 // Value declarations
 // Value(name, sense_function, min, max, period(ms));
 Value brightness((const char *)"brightness", SenseBrightness, 0, 2048, 1000);
@@ -65,8 +65,6 @@ void SetupThing() {
   func.AddArgument(arg);
   light_sensor.Add(func);
   // Setup Thing
-
- 
 
   light_sensor.Setup();
 }

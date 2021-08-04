@@ -3,7 +3,7 @@
 //----------------------------------------
 
 // SoPIoT thing library
-#include <thing.h>
+#include "thing.h"
 
 // Pins
 static const int kMoisture1Pin = A1;

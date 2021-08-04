@@ -3,7 +3,7 @@
 //----------------------------------------
 
 // SoPIoT Thing library
-#include <thing.h>
+#include "thing.h"
 
 // IR signal
 unsigned int TV_ONOFF[] = {

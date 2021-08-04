@@ -1,7 +1,6 @@
 #ifndef SMALL_THING_THING_H_
 #define SMALL_THING_THING_H_
 
-#include "common.h"
 #include "function.h"
 #include "utils.h"
 #include "value.h"
