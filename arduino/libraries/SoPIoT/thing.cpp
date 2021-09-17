@@ -68,6 +68,24 @@ void Thing::Add(Function& f) {
   }
 }
 
+void Thing::XbeeSetup() {
+  XbeeAtCommand((uint8_t*)"ID");
+  SOPLOGLN(F("ID : "));
+  PrintXbeePacket((char*)zbee_atcommand_result_);
+  delay(500);
+
+  XbeeAtCommand((uint8_t*)"OP");
+  SOPLOGLN(F("OP : "));
+  PrintXbeePacket((char*)zbee_atcommand_result_);
+  delay(500);
+
+  uint8_t id = 0x01;
+  XbeeAtCommand((uint8_t*)"ID", &id, sizeof(id));
+  SOPLOGLN(F("ID : "));
+  PrintXbeePacket((char*)zbee_atcommand_result_);
+  delay(500);
+}
+
 void Thing::Setup() {
   SOPLOGLN(F("==== Small Thing start ===="));
   SOPLOGLN(F("Start to get clientID"));
@@ -99,7 +117,7 @@ void Thing::Setup() {
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     id_1001_ = registered_id_;
   }
-  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+  SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_1001_);
 
   Subscribe(QOS_FLAG, publish_buffer);
   ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
@@ -115,7 +133,7 @@ void Thing::Setup() {
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     id_2001_ = registered_id_;
   }
-  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+  SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2001_);
 
   registered_id_ = UINT16_MAX;
   while (registered_id_ == UINT16_MAX) {
@@ -124,7 +142,7 @@ void Thing::Setup() {
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     id_2002_ = registered_id_;
   }
-  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+  SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2002_);
 
   // Publish(QOS_FLAG, registered_id_, "{}", 3);
   // SOPLOGLN(F("Send UNREGISTER for clean start"));
@@ -136,7 +154,7 @@ void Thing::Setup() {
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     id_2003_ = registered_id_;
   }
-  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+  SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2003_);
 
   SOPLOGLN(F("==== Setup REGISTER *New* Topics for Small Thing ===="));
 
@@ -147,7 +165,7 @@ void Thing::Setup() {
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     id_2010_ = registered_id_;
   }
-  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+  SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2010_);
 
   registered_id_ = UINT16_MAX;
   while (registered_id_ == UINT16_MAX) {
@@ -157,7 +175,7 @@ void Thing::Setup() {
     id_2011_ = registered_id_;
     SOPLOGLN(F("id_2011_ : %d"), id_2011_);
   }
-  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+  SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2011_);
 
   registered_id_ = UINT16_MAX;
   while (registered_id_ == UINT16_MAX) {
@@ -166,7 +184,7 @@ void Thing::Setup() {
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     id_2012_ = registered_id_;
   }
-  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+  SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2012_);
 
   registered_id_ = UINT16_MAX;
   while (registered_id_ == UINT16_MAX) {
@@ -175,7 +193,7 @@ void Thing::Setup() {
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     id_2013_ = registered_id_;
   }
-  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+  SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2013_);
 
   registered_id_ = UINT16_MAX;
   while (registered_id_ == UINT16_MAX) {
@@ -184,7 +202,7 @@ void Thing::Setup() {
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     id_2014_ = registered_id_;
   }
-  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+  SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2014_);
 
   registered_id_ = UINT16_MAX;
   while (registered_id_ == UINT16_MAX) {
@@ -193,7 +211,7 @@ void Thing::Setup() {
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     id_2015_ = registered_id_;
   }
-  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+  SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2015_);
 
   registered_id_ = UINT16_MAX;
   while (registered_id_ == UINT16_MAX) {
@@ -202,7 +220,7 @@ void Thing::Setup() {
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     id_2016_ = registered_id_;
   }
-  SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
+  SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2016_);
 
   // Start Value
   SOPLOGLN(F("==== Setup REGISTER Value Topics ===="));
@@ -212,9 +230,10 @@ void Thing::Setup() {
       snprintf(publish_buffer, MAX_BUFFER_SIZE, COMMON0000, client_id_,
                values_[i]->GetName());
       RegisterTopic(publish_buffer);
-      SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
       ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     }
+    SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer,
+             values_[i]->GetPublishID());
     values_[i]->AddTag(client_id_);
   }
 
@@ -226,9 +245,10 @@ void Thing::Setup() {
       snprintf(publish_buffer, MAX_BUFFER_SIZE, MT1003,
                functions_[i]->GetName(), client_id_);
       RegisterTopic(publish_buffer);
-      SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
       ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     }
+    SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer,
+             functions_[i]->GetID1003());
 
     Subscribe(QOS_FLAG, publish_buffer);
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
@@ -239,9 +259,10 @@ void Thing::Setup() {
       snprintf(publish_buffer, MAX_BUFFER_SIZE, TM2004,
                functions_[i]->GetName(), client_id_);
       RegisterTopic(publish_buffer);
-      SOPLOGLN(F("REGISTER Topic %s"), publish_buffer);
       ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
     }
+    SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer,
+             functions_[i]->GetID2004());
     functions_[i]->AddTag(client_id_);
   }
 
@@ -274,33 +295,44 @@ void Thing::PrintTags() {
 }
 
 void Thing::PrintTopicID() {
-  SOPLOGLN(F("id_1001_: %d"), id_1001_);
-  SOPLOGLN(F("id_2001_: %d"), id_2001_);
-  SOPLOGLN(F("id_2002_: %d"), id_2002_);
-  SOPLOGLN(F("id_2003_: %d"), id_2003_);
-  SOPLOGLN(F("id_2010_: %d"), id_2010_);
-  SOPLOGLN(F("id_2011_: %d"), id_2011_);
-  SOPLOGLN(F("id_2012_: %d"), id_2012_);
-  SOPLOGLN(F("id_2013_: %d"), id_2013_);
-  SOPLOGLN(F("id_2014_: %d"), id_2014_);
-  SOPLOGLN(F("id_2015_: %d"), id_2015_);
-  SOPLOGLN(F("id_2016_: %d"), id_2016_);
+  SOPLOGLN(F("Topic \"MT/REGACK/%s\": %d"), client_id_, id_1001_);
+  SOPLOGLN(F("Topic \"TM/REGISTER/%s\": %d"), client_id_, id_2001_);
+  SOPLOGLN(F("Topic \"TM/UNREGISTER/%s\": %d"), client_id_, id_2002_);
+  SOPLOGLN(F("Topic \"TM/ALIVE/%s\": %d"), client_id_, id_2003_);
+  SOPLOGLN(F("Topic \"TM/SN/REGISTER/VALUE/%s\": %d"), client_id_, id_2010_);
+  SOPLOGLN(F("Topic \"TM/SN/REGISTER/VALUETAG/%s\": %d"), client_id_, id_2011_);
+  SOPLOGLN(F("Topic \"TM/SN/REGISTER/FUNCTION/%s\": %d"), client_id_, id_2012_);
+  SOPLOGLN(F("Topic \"TM/SN/REGISTER/FUNCTIONTAG/%s\": %d"), client_id_,
+           id_2013_);
+  SOPLOGLN(F("Topic \"TM/SN/REGISTER/ARGUMENT/%s\": %d"), client_id_, id_2014_);
+  SOPLOGLN(F("Topic \"TM/SN/REGISTER/ALIVECYCLE/%s\": %d"), client_id_,
+           id_2015_);
+  SOPLOGLN(F("Topic \"TM/SN/REGISTER/FINISH/%s\": %d"), client_id_, id_2016_);
 
   for (int i = 0; i < num_values_; i++) {
-    SOPLOGLN(F("values_[%d] pub id: %d"), i, values_[i]->GetPublishID());
+    SOPLOGLN(F("Topic \"%s/%s\" %d"), client_id_, values_[i]->GetName(),
+             values_[i]->GetPublishID());
   }
 
   for (int i = 0; i < num_functions_; i++) {
-    SOPLOGLN(F("callback_function_[%d] id_1003: %d"), i,
-             functions_[i]->GetID1003());
-    SOPLOGLN(F("callback_function_[%d] id_2004: %d"), i,
-             functions_[i]->GetID2004());
+    SOPLOGLN(F("Topic \"MT/SN/%s/%s\": %d"), functions_[i]->GetName(),
+             client_id_, functions_[i]->GetID1003());
+    SOPLOGLN(F("Topic \"TM/RESULT/FUNCTION/%s/%s\": %d"),
+             functions_[i]->GetName(), client_id_, functions_[i]->GetID2004());
   }
 }
 
 void Thing::PrintXbeePacket(char* buf) {
   SOPLOG(F("Xbee packet : "));
   for (int i = 0; i < MAX_BUFFER_SIZE; i++) {
+    SOPLOG(F("%02X "), buf[i]);
+  }
+  SOPLOGLN(F(""));
+}
+
+void Thing::PrintXbeePacket(char* buf, int length) {
+  SOPLOG(F("Xbee packet : "));
+  for (int i = 0; i < length; i++) {
     SOPLOG(F("%02X "), buf[i]);
   }
   SOPLOGLN(F(""));
@@ -366,60 +398,74 @@ void Thing::RegisterToMIddleware() {
   for (int i = 0; i < num_values_; i++) {
     values_[i]->GetRegisterPublishData(publish_buffer);
     Publish(QOS_FLAG, id_2010_, publish_buffer, strlen(publish_buffer));
+    SOPLOGLN(F("Send Value %s : %s"), values_[i]->GetName(), publish_buffer);
+    delay(50);
 
     for (int j = 0; j < values_[i]->GetTagNum(); j++) {
       values_[i]->GetTag(j)->GetRegisterPublishData(publish_buffer);
       Publish(QOS_FLAG, id_2011_, publish_buffer, strlen(publish_buffer));
+      SOPLOGLN(F("Send ValueTag %s : %s"), values_[i]->GetTag(j)->GetName(),
+               publish_buffer);
+      delay(50);
     }
   }
 
+  SOPLOGLN(F("num_functions_ : %d"), num_functions_);
   for (int i = 0; i < num_functions_; i++) {
     functions_[i]->GetRegisterPublishData(publish_buffer);
     Publish(QOS_FLAG, id_2012_, publish_buffer, strlen(publish_buffer));
+    SOPLOGLN(F("Send Function %s : %s"), functions_[i]->GetName(),
+             publish_buffer);
+    delay(50);
 
     for (int j = 0; j < functions_[i]->GetTagNum(); j++) {
       functions_[i]->GetTag(j)->GetRegisterPublishData(publish_buffer);
       Publish(QOS_FLAG, id_2013_, publish_buffer, strlen(publish_buffer));
+      SOPLOGLN(F("Send FunctionTag %s : %s"),
+               functions_[i]->GetTag(j)->GetName(), publish_buffer);
+      delay(50);
     }
 
     for (int j = 0; j < functions_[i]->GetArgumentNum(); j++) {
       functions_[i]->GetArgument(j)->GetRegisterPublishData(publish_buffer);
       Publish(QOS_FLAG, id_2014_, publish_buffer, strlen(publish_buffer));
+      SOPLOGLN(F("Send Argument %s : %s"),
+               functions_[i]->GetArgument(j)->GetName(), publish_buffer);
+      delay(50);
     }
   }
 
+  delay(500);
   snprintf(publish_buffer, MAX_BUFFER_SIZE, "%d", alive_cycle_);
   Publish(QOS_FLAG, id_2015_, publish_buffer, strlen(publish_buffer));
+  SOPLOGLN(F("Send AliveCycle : %s"), publish_buffer);
+  delay(50);
 
   while (!middleware_registered_) {
     Publish(QOS_FLAG, id_2016_, "{}", strlen("{}"));
+    SOPLOGLN(F("Send Finish : %s"), publish_buffer);
+    delay(50);
     ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
   }
 }
 
 void Thing::SetSerial(Stream& serial) { zbee_.setSerial(serial); }
 
-void Thing::GetMacAddress() {
-  // Serial High
-  uint8_t shCmd[] = {'S', 'H'};
-  // Serial Low
-  uint8_t slCmd[] = {'S', 'L'};
-  AtCommandRequest atRequestSH = AtCommandRequest(shCmd);
-  AtCommandRequest atRequestSL = AtCommandRequest(slCmd);
-  AtCommandResponse atResponseSH = AtCommandResponse();
-  AtCommandResponse atResponseSL = AtCommandResponse();
+uint8_t* Thing::XbeeAtCommand(uint8_t* cmd) {
+  AtCommandRequest atRequest = AtCommandRequest(cmd);
+  AtCommandResponse atResponse = AtCommandResponse();
 
   while (1) {
-    zbee_.send(atRequestSH);
+    zbee_.send(atRequest);
 
-    if (zbee_.readPacket(5000)) {
+    if (zbee_.readPacket(READ_ZBEE_TIMEOUT)) {
       if (zbee_.getResponse().getApiId() == AT_COMMAND_RESPONSE) {
-        zbee_.getResponse().getAtCommandResponse(atResponseSH);
-        if (atResponseSH.isOk()) {
-          for (int i = 0; i < atResponseSH.getValueLength(); i++) {
-            mac_address_[i] = atResponseSH.getValue()[i];
-          }
-          break;
+        zbee_.getResponse().getAtCommandResponse(atResponse);
+        if (atResponse.isOk()) {
+          memcpy(zbee_atcommand_result_, atResponse.getValue(),
+                 atResponse.getValueLength());
+          zbee_atcommand_result_[atResponse.getValueLength()] = '\0';
+          return zbee_atcommand_result_;
         }
       }
     } else {
@@ -427,41 +473,65 @@ void Thing::GetMacAddress() {
       delay(1000);
     }
   }
+}
 
-  delay(1000);
+uint8_t* Thing::XbeeAtCommand(uint8_t* cmd, uint8_t* cmdValue,
+                              uint8_t cmdValueLength) {
+  AtCommandRequest atRequest = AtCommandRequest(cmd, cmdValue, cmdValueLength);
+  AtCommandResponse atResponse = AtCommandResponse();
+
   while (1) {
-    zbee_.send(atRequestSL);
+    zbee_.send(atRequest);
 
-    if (zbee_.readPacket(5000)) {
+    if (zbee_.readPacket(READ_ZBEE_TIMEOUT)) {
       if (zbee_.getResponse().getApiId() == AT_COMMAND_RESPONSE) {
-        zbee_.getResponse().getAtCommandResponse(atResponseSL);
-        if (atResponseSL.isOk()) {
-          for (int i = 0; i < atResponseSL.getValueLength(); i++) {
-            mac_address_[i + 4] = atResponseSL.getValue()[i];
-          }
-          break;
+        zbee_.getResponse().getAtCommandResponse(atResponse);
+        if (atResponse.isOk()) {
+          memcpy(zbee_atcommand_result_, atResponse.getValue(),
+                 atResponse.getValueLength());
+          zbee_atcommand_result_[atResponse.getValueLength()] = '\0';
+          return zbee_atcommand_result_;
         }
       }
     } else {
-      SOPLOGLN(F("Serial Low READ ERROR!!"));
+      SOPLOGLN(F("Serial High READ ERROR!!"));
       delay(1000);
     }
   }
 }
 
+void Thing::GetMacAddress() {
+  while (1) {
+    memcpy(mac_address_ + 4, XbeeAtCommand((uint8_t*)"SL"), 4);
+    delay(500);
+    memcpy(mac_address_, XbeeAtCommand((uint8_t*)"SH"), 4);
+    delay(500);
+
+    if (memcmp(mac_address_ + 4, xbee_low_address, 4) != 0 &&
+        memcmp(mac_address_, mac_address_ + 4, 4) != 0)
+      break;
+  }
+}
+
+uint8_t* Thing::GetPanID() {
+  XbeeAtCommand((uint8_t*)"OP");
+  return zbee_atcommand_result_;
+}
+
+void Thing::SetPanID(uint8_t* id) {
+  XbeeAtCommand((uint8_t*)"ID", id, sizeof(id));
+
+  while (memcmp(GetPanID(), id, sizeof(id)) != 0) {
+    SOPLOGLN(F("GetPanID : "));
+    PrintXbeePacket((char*)zbee_atcommand_result_);
+    delay(500);
+  }
+
+  SOPLOGLN(F("SetPanID success!"));
+}
+
 void Thing::GenerateClientId() {
-  // generate mac address and put it on mac_address_
-  char pre_fix[5] = {0x00, 0x13, 0xA2, 0x00, '\0'};
-  char mac_address_low[5] = "";
-
-  do {
-    SOPLOGLN(F("Get Mac address..."));
-    GetMacAddress();
-
-    strncpy(mac_address_low, (char*)mac_address_ + 4, 4);
-    mac_address_low[4] = '\0';
-    delay(200);
-  } while (!strcmp(mac_address_low, pre_fix));
+  GetMacAddress();
 
   int len = 0;
   char temp_mac_address[MAC_ADDRESS_SIZE + 1] = "";
@@ -568,9 +638,9 @@ void Thing::ReadZbeeTimeout(int timeout) {
         SOPLOGLN(F("[ERROR] Zigbee Send Fail."));
       }
     } else if (zbee_.getResponse().getApiId() == ZB_RX_RESPONSE) {
-      SOPLOGLN(F("Zigbee receive success!"));
+      // SOPLOGLN(F("Zigbee receive success!"));
       zbee_.getResponse().getZBRxResponse(zbee_rx_);
-      PrintXbeePacket((char*)zbee_rx_.getData());
+      // PrintXbeePacket((char*)zbee_rx_.getData());
       ParseMQTTSNStream((char*)zbee_rx_.getData(), zbee_rx_.getDataLength());
       break;
     } else if (zbee_.getResponse().isError()) {
@@ -709,8 +779,8 @@ void Thing::Broadcast() {
 }
 
 void Thing::SendPacket() {
-  SOPLOGLN(F("Send packet!"));
-  PrintXbeePacket((char*)message_buffer_);
+  // SOPLOGLN(F("Send packet!"));
+  // PrintXbeePacket((char*)message_buffer_);
   zbee_.send(zbee_tx_);
 }
 
@@ -896,9 +966,9 @@ void Thing::RegisterTopic(const char* name) {
 
     Unicast();
     gateway_response_wait_ = true;
-    SOPLOGLN(F("wait for message_id_ : %d"), message_id_);
+    // SOPLOGLN(F("wait for message_id_ : %d"), message_id_);
   } else {
-    SOPLOGLN(F("wait for message_id_ : %d"), message_id_);
+    // SOPLOGLN(F("wait for message_id_ : %d"), message_id_);
   }
 }
 

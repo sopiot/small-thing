@@ -32,6 +32,7 @@ class Thing {
   // Call it after setting up Serial, client config, Functions, Values
   // Do not forget call this function after (zigbee) (ex. Serial.begin(9600))
   // This should be called in the setup() on Arduino
+  void XbeeSetup();
   void Setup();
 
   // Loop
@@ -90,11 +91,19 @@ class Thing {
   // Set serial that connected to the zigbee output and input
   void SetSerial(Stream& serial);
 
-  // Initialize client id with class name and mac address
-  void GenerateClientId();
+  // Send Xbee API Command
+  uint8_t* XbeeAtCommand(uint8_t* cmd);
+  uint8_t* XbeeAtCommand(uint8_t* cmd, uint8_t* cmdValue,
+                         uint8_t cmdValueLength);
 
   // Get mac address of zigbee for client id
   void GetMacAddress();
+
+  uint8_t* GetPanID();
+  void SetPanID(uint8_t* id);
+
+  // // Initialize client id with class name and mac address
+  void GenerateClientId();
 
   // Set class name of client
   void SetClassName(char* class_name);
@@ -142,6 +151,7 @@ class Thing {
   void PrintTags();
   void PrintTopicID();
   void PrintXbeePacket(char* buf);
+  void PrintXbeePacket(char* buf, int length);
   void TestPublish();
 
   void (*connect_handler_)();
@@ -170,6 +180,20 @@ class Thing {
   char publish_buffer[MAX_BUFFER_SIZE];
   char receive_buffer[MAX_BUFFER_SIZE];
   uint8_t mac_address_[8];
+  uint8_t xbee_low_address[4] = {0x00, 0x13, 0xA2, 0x00};
+  uint8_t pan_id_[8];
+  uint8_t coordinator_mode_ = 0;
+  uint16_t scan_channel_ = 0xffff;
+  uint8_t baud_rate_;
+  // 0 : 1200,
+  // 1 : 2400,
+  // 2 : 4800,
+  // 3 : 9600,
+  // 4 : 19200,
+  // 5 : 38400,
+  // 6 : 57600,
+  // 7 : 115200,
+  // 8 : 230400
 
   char* client_id_;
   char* class_name_;
@@ -181,6 +205,7 @@ class Thing {
   uint8_t gateway_id_;
   ZBTxRequest zbee_tx_;
   ZBRxResponse zbee_rx_;
+  uint8_t zbee_atcommand_result_[MAX_BUFFER_SIZE];
 
   /** Set to true when we're waiting for some sort of acknowledgement from the
    *server that will transition our state.
@@ -192,10 +217,10 @@ class Thing {
   bool middleware_registered_;
 
   uint8_t protocal_response_wait_;
-  uint16_t message_id_;
-  uint8_t message_buffer_[MAX_BUFFER_SIZE];
   uint16_t registered_id_;
   uint16_t last_ping_;
+  uint8_t message_buffer_[MAX_BUFFER_SIZE];
+  uint16_t message_id_;
 };
 
 #endif  // SMALL_THING_THING_H_

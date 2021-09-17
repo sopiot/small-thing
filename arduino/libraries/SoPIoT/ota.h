@@ -1,6 +1,8 @@
 #ifndef SMALL_THING_OTA_H_
 #define SMALL_THING_OTA_H_
 
+#define CONNECT_TRY_COUNT 2
+
 #include <SPI.h>
 #include <WiFiNINA.h>
 ////////////////////
@@ -38,12 +40,14 @@ void WiFi_Setup() {
   }
 
   // attempt to connect to Wifi network:
-  while (status != WL_CONNECTED) {
+  int connect_try = 0;
+  while (status != WL_CONNECTED || connect_try > CONNECT_TRY_COUNT) {
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
     // Connect to WPA/WPA2 network. Change this line if using open or WEP
     // network:
     status = WiFi.begin(ssid, pass);
+    connect_try++;
   }
 
   // start the WiFi OTA library with internal (flash) based storage
