@@ -35,7 +35,7 @@ int SenseBrightness() { return analogRead(kLightPin); }
 
 Thing thing((const char *)DEVICE_NAME, 60, SafeSerial);
 
-Value sound_value((const char *)"sound_value", SenseLoudness, 0, 2048, 5000);
+Value sound_value((const char *)"sound", SenseLoudness, 0, 2048, 5000);
 Value brightness((const char *)"brightness", SenseBrightness, 0, 1024, 5000);
 
 void SetupSerial() { SafeSerial.begin(9600); }

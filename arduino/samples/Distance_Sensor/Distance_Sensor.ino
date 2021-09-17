@@ -23,8 +23,8 @@ int SenseDistanceStatus() {
 }
 
 Thing thing((const char *)DEVICE_NAME, 60, SafeSerial);
-Value distance_status((const char *)"distance_status", SenseDistanceStatus, 0,
-                      10000, 1000);
+Value distance_status((const char *)"distance", SenseDistanceStatus, 0, 10000,
+                      1000);
 
 void SetupSerial() { SafeSerial.begin(9600); }
 

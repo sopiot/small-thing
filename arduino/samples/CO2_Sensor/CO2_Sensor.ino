@@ -44,7 +44,7 @@ int SenseUartOutputPPM() {
 }
 
 Thing thing((const char *)DEVICE_NAME, 60, SafeSerial);
-Value analogPPM((const char *)"co2_level", SenseUartOutputPPM, 0, 10000,
+Value analogPPM((const char *)"CO2", SenseUartOutputPPM, 0, 10000,
                 CO2_CYCLE);  // CO2 Sensor output cycle is 2 SEC
 // Value pwmPPM((const char *)"pwmPPM", SensePWMOutputPPM, 0, 2, 5000);
 

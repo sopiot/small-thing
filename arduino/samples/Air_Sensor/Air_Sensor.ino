@@ -45,13 +45,11 @@ int SenseGP2YDustStatus() {
   return (int)value;
 }
 
-Value humid_status((const char *)"humid_status", SenseHumidStatus, 0, 100,
-                   30000);
-Value temp_status((const char *)"temp_status", SenseTempStatus, 0, 100, 30000);
-// Value dust_status((const char *)"dust_status", SenseGP2YDustStatus, 0, 500,
+Value humid_status((const char *)"humid", SenseHumidStatus, 0, 100, 30000);
+Value temp_status((const char *)"temp", SenseTempStatus, 0, 100, 30000);
+// Value dust_status((const char *)"dust", SenseGP2YDustStatus, 0, 500,
 //                   30000);
-Value dust_status((const char *)"dust_status", SensePM2008DustStatus, 0, 600,
-                  30000);
+Value dust_status((const char *)"dust", SensePM2008DustStatus, 0, 600, 30000);
 
 void SetupSerial() { SafeSerial.begin(9600); }
 

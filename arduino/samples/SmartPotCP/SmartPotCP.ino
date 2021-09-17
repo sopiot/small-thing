@@ -34,7 +34,7 @@ int SenseWaterLevel() {
 // Value declarations
 // Value(name, sense_function, min, max, period(ms));
 Value pump_status((const char *)"pump_status", SensePumpStatus, 0, 3, 3000);
-Value water_level((const char *)"water_level", SenseWaterLevel, 0, 100, 30000);
+Value water_level((const char *)"water", SenseWaterLevel, 0, 100, 30000);
 
 //----------------------------------------
 // Functions

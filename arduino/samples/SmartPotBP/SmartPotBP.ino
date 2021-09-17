@@ -73,13 +73,13 @@ void ActuatePumpOff() {
 Thing thing((const char *)DEVICE_NAME, 60, SafeSerial);
 
 Value pump_status((const char *)"pump_status", SensePumpStatus, 0, 3, 3000);
-Value water_level((const char *)"water_level", SenseWaterLevel, 0, 100, 30000);
-Value soil_moisture_level((const char *)"soil_moisture_level",
-                          SenseSoilMoisture, 0, 1024, 30000);
+Value water_level((const char *)"water", SenseWaterLevel, 0, 100, 30000);
+Value soil_moisture_level((const char *)"soil_moisture", SenseSoilMoisture, 0,
+                          1024, 30000);
 
-Function pump_on_off((const char *)"pump_onoff", ActuatePumpOnOff, 1);
-Function pump_on((const char *)"pump_on", ActuatePumpOn);
-Function pump_off((const char *)"pump_off", ActuatePumpOff);
+Function pump_on_off((const char *)"on_while", ActuatePumpOnOff, 1);
+Function pump_on((const char *)"on", ActuatePumpOn);
+Function pump_off((const char *)"off", ActuatePumpOff);
 Argument argTime((const char *)"time", 0, 100, INTEGER);
 Tag tag_SmartPot("SmartPot");
 Tag tag_SmartPotBP("SmartPotBP");

@@ -47,13 +47,12 @@ void ActuateValveClose() {
 Thing thing((const char *)DEVICE_NAME, 60, SafeSerial);
 
 Value valve_status((const char *)"valve_status", SenseValveStatus, 0, 3, 3000);
-Value soil_moisture_level((const char *)"soil_moisture_level",
-                          SenseSoilMoistureLevel, 0, 1000, 30000);
-Function valve_open_close((const char *)"valve_onoff", ActuateValveOpenClose,
-                          1);
+Value soil_moisture_level((const char *)"soil_moisture", SenseSoilMoistureLevel,
+                          0, 1000, 30000);
+Function valve_open_close((const char *)"on_while", ActuateValveOpenClose, 1);
 Argument argTime((const char *)"time", 0, 100, INTEGER);
-Function valve_open((const char *)"valve_on", ActuateValveOpen);
-Function valve_close((const char *)"valve_off", ActuateValveClose);
+Function valve_open((const char *)"on", ActuateValveOpen);
+Function valve_close((const char *)"off", ActuateValveClose);
 Tag tag_SmartPot("SmartPot");
 Tag tag_SmartPotCV("SmartPotCV");
 
