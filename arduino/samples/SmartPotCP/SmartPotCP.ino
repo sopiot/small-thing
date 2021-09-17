@@ -3,7 +3,7 @@
 
 #define WATER_LEVEL_SENSOR_NUM 2
 #define PUMP_PIN_NUM 4
-#define DEVICE_NAME "argSPCP2"
+#define DEVICE_NAME "SPCP2"
 
 const int kPumpPin[PUMP_PIN_NUM] = {2, 5, 6, 7};
 const int kWaterLevelPin[WATER_LEVEL_SENSOR_NUM] = {3, 4};
@@ -126,11 +126,11 @@ void SetupThing() {
 void setup() {
   SetupSerial();
   SetupModules();
-  WiFi_Setup("SoPIoT_2.4G", "/PeaCE/#1", DEVICE_NAME, "0000");
+  // WiFi_Setup("SoPIoT_2.4G", "/PeaCE/#1", DEVICE_NAME, "0000");
   SetupThing();
 }
 
 void loop() {
-  SOPOTA();
+  // SOPOTA();
   thing.Loop();
 }

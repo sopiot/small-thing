@@ -1,7 +1,7 @@
 #include "ota.h"
 #include "thing.h"
 
-#define DEVICE_NAME "Air1"
+#define DEVICE_NAME "Air3"
 
 #include <DHT.h>
 #include <GP2YDustSensor.h>
@@ -18,47 +18,22 @@ PM2008_I2C pm2008_i2c;
 // GP2YDustSensor dustSensor(GP2YDustSensorType::GP2Y1010AU0F, kdustledPin,
 //                           kGY10AnalogdustPin);
 
-Thing thing((const char *)DEVICE_NAME, 60, SafeSerial);
+Thing thing((const char *)DEVICE_NAME, 10, SafeSerial);
 
 int SenseHumidStatus() { return (int)dht.readHumidity(); }
 
 int SenseTempStatus() { return (int)dht.readTemperature(); }
 
 int SensePM2008DustStatus() {
-  uint8_t ret = 2;
-  while (ret != 0) {
-    ret = pm2008_i2c.read();
-    if (ret == 0) {
-      // Serial.print("PM 1.0 (GRIMM) : ");
-      // Serial.println(pm2008_i2c.pm1p0_grimm);
-      // Serial.print("PM 2.5 (GRIMM) : : ");
-      // Serial.println(pm2008_i2c.pm2p5_grimm);
-      // Serial.print("PM 10 (GRIMM) : : ");
-      // Serial.println(pm2008_i2c.pm10_grimm);
-      // Serial.print("PM 1.0 (TSI) : ");
-      // Serial.println(pm2008_i2c.pm1p0_tsi);
-      // Serial.print("PM 2.5 (TSI) : : ");
-      // Serial.println(pm2008_i2c.pm2p5_tsi);
-      // Serial.print("PM 10 (TSI) : : ");
-      // Serial.println(pm2008_i2c.pm10_tsi);
-      // Serial.print("Number of 0.3 um : ");
-      // Serial.println(pm2008_i2c.number_of_0p3_um);
-      // Serial.print("Number of 0.5 um : ");
-      // Serial.println(pm2008_i2c.number_of_0p5_um);
-      // Serial.print("Number of 1 um : ");
-      // Serial.println(pm2008_i2c.number_of_1_um);
-      // Serial.print("Number of 2.5 um : ");
-      // Serial.println(pm2008_i2c.number_of_2p5_um);
-      // Serial.print("Number of 5 um : ");
-      // Serial.println(pm2008_i2c.number_of_5_um);
-      // Serial.print("Number of 10 um : ");
-      // Serial.println(pm2008_i2c.number_of_10_um);
+  uint8_t ret = pm2008_i2c.read();
+  static int dust_num_2p5;
+  if (ret == 0) {
+    // pm2008_i2c.pm + {1p0|2p5|p10} + {_grimm|_tsi}
+    // pm2008_i2c.number_of_ + {0p3|0p5|1|2p5|5|10} + _um
 
-      return (int)pm2008_i2c.number_of_2p5_um;
-    }
+    dust_num_2p5 = (int)pm2008_i2c.number_of_2p5_um;
   }
-
-  return -1;
+  return dust_num_2p5;
 }
 
 int SenseGP2YDustStatus() {
@@ -112,11 +87,11 @@ void SetupThing() {
 void setup() {
   SetupSerial();
   SetupModules();
-  WiFi_Setup("SoPIoT_2.4G", "/PeaCE/#1", DEVICE_NAME, "0000");
+  // WiFi_Setup("SoPIoT_2.4G", "/PeaCE/#1", DEVICE_NAME, "/PeaCE/");
   SetupThing();
 }
 
 void loop() {
-  SOPOTA();
+  // SOPOTA();
   thing.Loop();
 }

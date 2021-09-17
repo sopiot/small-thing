@@ -1,57 +1,35 @@
-//----------------------------------------
-// Libraries
-//----------------------------------------
-
-// SoPIoT Thing library
+// #include "ota.h"
 #include "thing.h"
 
-// Module libraries
+#define DEVICE_NAME "MoveProd"
+#define WINDOW_NUM 30
 
-// Pins
-static const int kmovement1Pin = 7;
+const int kmovement1Pin = 2;
+int window[WINDOW_NUM]= {0};
+int idx = 0;
 
-//----------------------------------------
-// Modules
-//----------------------------------------
+int SenseMovementStatus() {
+  int sum = 0;
+  window[idx] = (int)digitalRead(kmovement1Pin);
+  idx++;
 
-// Modules
+  if (idx == WINDOW_NUM)
+    idx = 0;
+  
+  for (int i=0;i<WINDOW_NUM;i++){
+    sum += window[i];
+  }
 
-//----------------------------------------
-// Thing
-//----------------------------------------
+  if(sum > 0)
+    return 1;
+  else
+    return 0;    
+}
 
-// Thing declaration
-// Thing(class_name, alive_cycle, serial);
-// Thing(class_name, serial);
-Thing movement_thing((const char *)"Move", 60, SafeSerial);
-
-//----------------------------------------
-// Values
-// an SenseXXX overwrites a Value XXX
-//----------------------------------------
-
-// Value variables
-
-// Getter functions of each Value variable
-int SenseMovementStatus() { return (int)digitalRead(kmovement1Pin); }
-
-// Value declarations
-// Value(name, sense_function, min, max, period(ms));
+Thing movement_thing((const char *)DEVICE_NAME, 60, SafeSerial);
 Value movement_value((const char *)"movement_value", SenseMovementStatus, 0, 2,
                      1000);
-Tag movement_tag("Move");
-
-//----------------------------------------
-// Functions
-// an ActuateXXX actuates a Function XXX
-//----------------------------------------
-
-// Function declarations
-// Function(name, actuate_function, arguments_num, function_attributes_num);
-
-//----------------------------------------
-// Setup
-//----------------------------------------
+Tag movement_tag("movement");
 
 void SetupSerial() { SafeSerial.begin(9600); }
 
@@ -73,14 +51,14 @@ void SetupThing() {
   movement_thing.Setup();
 }
 
-//----------------------------------------
-// Main
-//----------------------------------------
-
 void setup() {
   SetupSerial();
   SetupModules();
+  // WiFi_Setup("SoPIoT_2.4G", "/PeaCE/#1", DEVICE_NAME, "0000");
   SetupThing();
 }
 
-void loop() { movement_thing.Loop(); }
+void loop() {
+  // SOPOTA();
+  movement_thing.Loop();
+}

@@ -1,9 +1,11 @@
 #include "ota.h"
 #include "thing.h"
 
+#define SENSOR_WINDOW 10
+
 #define WATER_LEVEL_SENSOR_NUM 2
 #define PUMP_PIN_NUM 4
-#define DEVICE_NAME "argSPBP1"
+#define DEVICE_NAME "SPBP1"
 
 const int kPumpPin[PUMP_PIN_NUM] = {2, 5, 6, 7};
 const int kSoilMoisturePin = A0;
@@ -17,7 +19,13 @@ double unit = 100.0 / WATER_LEVEL_SENSOR_NUM;
 int SensePumpStatus() { return pump_status_; }
 
 int SenseSoilMoisture() {
-  return (double)analogRead(kSoilMoisturePin) / 1024.0 * 100;
+  double sum = 0.0;
+
+  for (int i = 0; i < SENSOR_WINDOW; i++) {
+    sum += (1024.0 - analogRead(kSoilMoisturePin)) / 1024.0 * 1000;
+    delay(1);
+  }
+  return (int)(sum / SENSOR_WINDOW);
 }
 
 int SenseWaterLevel() {
