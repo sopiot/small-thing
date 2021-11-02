@@ -4,6 +4,7 @@
 #include "argument.h"
 #include "tag.h"
 
+#pragma pack(push, 1)
 class Function {
  public:
   Function(const char* name, VoidFunction func);
@@ -58,27 +59,27 @@ class Function {
 
   void Initialize();
 
-  char* name_;
-  char name2_[256];
-
   void* callback_function_;
   void* return_value_;
 
-  int num_argument_;
-  Argument** arguments_;
+  SoPType return_type_;
 
+  int num_argument_;
   int num_tag_;
-  Tag** function_tags_;
 
   uint16_t id_1003_;
   uint16_t id_2004_;
 
-  SoPType return_type_;
+  Argument** arguments_;
+  Tag** function_tags_;
+
+  char name_[256] = {0};
 };
 
 typedef struct _SUserFunctionData {
   Function* pFunction;
   JsonObject* pJsonArgumentArray;
 } SUserFunctionData;
+#pragma pack(pop)
 
 #endif  // SMALL_THING_FUNCTION_H_

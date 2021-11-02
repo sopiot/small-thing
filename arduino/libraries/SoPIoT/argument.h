@@ -3,6 +3,7 @@
 
 #include "common.h"
 
+#pragma pack(push, 1)
 class Argument {
  public:
   Argument();
@@ -34,12 +35,13 @@ class Argument {
   void SetMax(const double max);
 
   void Initialize();
-  char* name_; /** < A name of the argument */
   void* value_;
   void* min_;
   void* max_;
   SoPType argument_type_; /** < represents type of the argument */
   int order_;             /** < represents order of argument */
+  char* name_;            /** < A name of the argument */
 };
+#pragma pack(pop)
 
 #endif  // SMALL_THING_ARGUMENT_H_

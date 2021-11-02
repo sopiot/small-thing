@@ -825,7 +825,9 @@ void Thing::RegackHandler(const msg_regack* msg) {
     registered_id_ = bswap(msg->topic_id);
     gateway_response_wait_ = false;
   } else {
-    SOPLOGLN(F("Message_id was not matched"));
+    SOPLOGLN(F("Message_id was not matched. msg->return_code: %d , "
+               "bswap(msg->message_id): %d, message_id_: %d"),
+             msg->return_code, bswap(msg->message_id), message_id_);
     gateway_response_wait_ = true;
   }
 }
@@ -976,6 +978,7 @@ void Thing::Publish(const uint8_t flags, const uint16_t topicId,
                     const void* data, const uint8_t data_len) {
   // Author: thsvkd
   // in QoS 0, message_id_ have to set to 0
+  SOPLOGLN(F("publish"));
   message_id_ = 0;
 
   msg_publish* msg = reinterpret_cast<msg_publish*>(message_buffer_);

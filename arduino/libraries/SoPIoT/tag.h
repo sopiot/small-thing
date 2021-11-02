@@ -3,6 +3,7 @@
 
 #include "common.h"
 
+#pragma pack(push, 1)
 class Tag {
  public:
   Tag();
@@ -22,5 +23,6 @@ class Tag {
   void Initialize();
   char* name_;
 };
+#pragma pack(pop)
 
 #endif  // SMALL_THING_TAG_H_

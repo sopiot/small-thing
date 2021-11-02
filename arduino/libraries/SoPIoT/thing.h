@@ -157,12 +157,34 @@ class Thing {
   void (*connect_handler_)();
   void (*disconnect_handler_)();
 
+  char* client_id_;
+  char* class_name_;
+
   // data members
+  bool gateway_connected_;
+  bool gateway_response_wait_;
+  bool gateway_ready_;
+  bool middleware_registered_;
+
   uint8_t num_values_;
   uint8_t num_functions_;
 
-  Value* values_[MAX_VALUE_NUM];
-  Function* functions_[MAX_FUNCTION_NUM];
+  uint8_t mac_address_[8];
+  uint8_t xbee_low_address[4] = {0x00, 0x13, 0xA2, 0x00};
+  uint8_t pan_id_[8];
+  uint8_t coordinator_mode_ = 0;
+  uint16_t scan_channel_ = 0xffff;
+  uint8_t baud_rate_;
+  uint8_t protocal_response_wait_;
+  // 0 : 1200,
+  // 1 : 2400,
+  // 2 : 4800,
+  // 3 : 9600,
+  // 4 : 19200,
+  // 5 : 38400,
+  // 6 : 57600,
+  // 7 : 115200,
+  // 8 : 230400
 
   uint16_t id_1001_;
   uint16_t id_1002_;
@@ -177,26 +199,13 @@ class Thing {
   uint16_t id_2015_;
   uint16_t id_2016_;
 
-  char publish_buffer[MAX_BUFFER_SIZE];
-  char receive_buffer[MAX_BUFFER_SIZE];
-  uint8_t mac_address_[8];
-  uint8_t xbee_low_address[4] = {0x00, 0x13, 0xA2, 0x00};
-  uint8_t pan_id_[8];
-  uint8_t coordinator_mode_ = 0;
-  uint16_t scan_channel_ = 0xffff;
-  uint8_t baud_rate_;
-  // 0 : 1200,
-  // 1 : 2400,
-  // 2 : 4800,
-  // 3 : 9600,
-  // 4 : 19200,
-  // 5 : 38400,
-  // 6 : 57600,
-  // 7 : 115200,
-  // 8 : 230400
+  /** Set to true when we're waiting for some sort of acknowledgement from the
+   *server that will transition our state.
+   */
+  uint16_t registered_id_;
+  uint16_t last_ping_;
+  uint16_t message_id_;
 
-  char* client_id_;
-  char* class_name_;
   unsigned long alive_cycle_;
 
   XBee zbee_;
@@ -207,20 +216,12 @@ class Thing {
   ZBRxResponse zbee_rx_;
   uint8_t zbee_atcommand_result_[MAX_BUFFER_SIZE];
 
-  /** Set to true when we're waiting for some sort of acknowledgement from the
-   *server that will transition our state.
-   */
+  Value* values_[MAX_VALUE_NUM];
+  Function* functions_[MAX_FUNCTION_NUM];
 
-  bool gateway_connected_;
-  bool gateway_response_wait_;
-  bool gateway_ready_;
-  bool middleware_registered_;
-
-  uint8_t protocal_response_wait_;
-  uint16_t registered_id_;
-  uint16_t last_ping_;
+  char publish_buffer[MAX_BUFFER_SIZE];
+  char receive_buffer[MAX_BUFFER_SIZE];
   uint8_t message_buffer_[MAX_BUFFER_SIZE];
-  uint16_t message_id_;
 };
 
 #endif  // SMALL_THING_THING_H_

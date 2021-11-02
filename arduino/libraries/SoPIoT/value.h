@@ -3,6 +3,7 @@
 
 #include "tag.h"
 
+#pragma pack(push, 1)
 class Value {
  public:
   Value(const char* name, IntegerValue value, int min, int max,
@@ -55,21 +56,22 @@ class Value {
 
   uint16_t publish_id_;
 
-  char* name_;
+  SoPType value_type_;
   void* callback_function_;
   void* min_;
   void* max_;
   void* prev_value_;
   void* new_value_;
 
-  Tag** value_tags_;
   int num_tag_;
-
-  char* user_string_buffer_;
   int publish_cycle_;
+
   unsigned long last_sent_time_;
 
-  SoPType value_type_;
+  Tag** value_tags_;
+  char* user_string_buffer_;
+  char* name_;
 };
+#pragma pack(pop)
 
 #endif  // SMALL_THING_VALUE_H_

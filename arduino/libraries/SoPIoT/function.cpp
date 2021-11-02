@@ -2,7 +2,6 @@
 #include "utils.h"
 
 void Function::Initialize() {
-  name_ = NULL;
   callback_function_ = NULL;
   num_argument_ = 0;
   num_tag_ = 0;
@@ -137,8 +136,7 @@ void Function::AddTag(Tag& function_tag) {
 char* Function::GetName() { return (char*)name_; }
 
 void Function::SetName(const char* name) {
-  name_ = strdup(name);
-  strcpy(name2_, name);
+  strcpy(name_, name);
   MEM_ALLOC_CHECK(name_);
 }
 
@@ -203,7 +201,7 @@ void Function::GetRegisterPublishData(char* buffer) {
 
       // snprintf(buffer, MAX_BUFFER_SIZE, "%s%s#%s#%d", name_, name2_, "void",
       //          num_argument_);
-      snprintf(buffer, MAX_BUFFER_SIZE, "%s#%s#%d", name2_, "void",
+      snprintf(buffer, MAX_BUFFER_SIZE, "%s#%s#%d", name_, "void",
                num_argument_);
       break;
     default:
