@@ -4,6 +4,14 @@
 #include "tag.h"
 
 #pragma pack(push, 1)
+
+union NewValuePool {
+  int int_value;
+  double double_value;
+  bool bool_value;
+  char* string_value;
+};
+
 class Value {
  public:
   Value(const char* name, IntegerValue value, int min, int max,
@@ -20,7 +28,7 @@ class Value {
 
   char* GetName();
   void* GetCallbackFunction();
-  bool GetValueIfChanged(void* cur);
+  bool ValueChanged(union NewValuePool new_value);
 
   void SetPublishCycle(const int sleep_ms_interval);
   int GetPublishCycle();
@@ -60,8 +68,8 @@ class Value {
   void* callback_function_;
   void* min_;
   void* max_;
-  void* prev_value_;
-  void* new_value_;
+  union NewValuePool prev_value_;
+  union NewValuePool new_value_;
 
   int num_tag_;
   int publish_cycle_;
