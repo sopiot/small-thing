@@ -15,10 +15,9 @@ limitations under the License.
 
 #include <TensorFlowLite.h>
 
-#include "main_functions.h"
-
 #include "detection_responder.h"
 #include "image_provider.h"
+#include "main_functions.h"
 #include "model_settings.h"
 #include "person_detect_model_data.h"
 #include "tensorflow/lite/micro/micro_error_reporter.h"
@@ -26,18 +25,15 @@ limitations under the License.
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tensorflow/lite/version.h"
-
 #include "thing.h"
 
 int8_t person_score = 0;
 int8_t no_person_score = 0;
 
-int SenseHumanDetect()
-{
+int SenseHumanDetect() {
   SOPLOGLN(F("SenseHumanDetect execute!!!"));
   SOPLOGLN(F("person_score: %d"), person_score);
-  if (person_score > 0)
-  {
+  if (person_score > 0) {
     SOPLOGLN(F("return 1"));
     return 1;
   } else {
@@ -46,10 +42,9 @@ int SenseHumanDetect()
   }
 }
 
-Thing thing("Human_Detector", 60, SafeSerial); 
-Tag tag("Human_Detector");
-Value human_detect_value("human_detect_value", SenseHumanDetect, 0,3,2000);
-
+Thing thing("HC", 60, SafeSerial);
+Tag tag("HC");
+Value human_detect_value("h_num", SenseHumanDetect, 0, 3, 2000);
 
 // Globals, used for compatibility with Arduino-style sketches.
 namespace {

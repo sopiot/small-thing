@@ -239,13 +239,13 @@ TfLiteStatus DecodeAndProcessImage(tflite::ErrorReporter* error_reporter,
 // Get an image from the camera module
 TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
                       int image_height, int channels, int8_t* image_data) {
-  static int g_is_camera_initialized = 0;
-  // Serial.print("g_is_camera_initialized: ");
-  // Serial.println(g_is_camera_initialized, BIN);
-  // Serial.print("true: ");
-  // Serial.println(true, BIN);
-  // Serial.print("false: ");
-  // Serial.println(false, BIN);
+  static bool g_is_camera_initialized = 0;
+  Serial.print("g_is_camera_initialized: ");
+  Serial.println(g_is_camera_initialized, BIN);
+  Serial.print("true: ");
+  Serial.println(true, BIN);
+  Serial.print("false: ");
+  Serial.println(false, BIN);
   if (g_is_camera_initialized == 1)
     Serial.println("true");
   else {

@@ -377,4 +377,14 @@ static void SOPLOGLN(const __FlashStringHelper *fmt, ...) {
     SOPLOGLN("[ERROR] malloc failed"); \
   }
 
+#define CHECK_STRING_LENGTH(file, line, total_length, data)              \
+  if (total_length - 1 > MAX_BUFFER_SIZE) {                              \
+    while (true) {                                                       \
+      SOPLOGLN(F("[%s]-%d: string was too long... -> %s: total length: " \
+                 "%d, string length: %d"),                               \
+               file, line, data, total_length, strlen(data));            \
+      delay(1000);                                                       \
+    }                                                                    \
+  }
+
 #endif  // SMALL_THING_COMMON_H_

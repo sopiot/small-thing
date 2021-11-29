@@ -929,7 +929,9 @@ void Thing::Connect(const uint8_t flags, const uint16_t duration,
   msg->flags = flags;
   msg->protocol_id = PROTOCOL_ID;
   msg->duration = bswap(duration);
-  strcpy(msg->client_id, client_id_);
+
+  CHECK_STRING_LENGTH(__FILE__, __LINE__, msg->length, client_id_);
+  strncpy(msg->client_id, client_id_, strlen(client_id_));
 
   Unicast();
   gateway_connected_ = false;
@@ -964,7 +966,9 @@ void Thing::RegisterTopic(const char* name) {
     msg->type = REGISTER;
     msg->topic_id = 0;
     msg->message_id = bswap(message_id_);
-    strcpy(msg->topic_name, name);
+
+    CHECK_STRING_LENGTH(__FILE__, __LINE__, msg->length, name);
+    strncpy(msg->topic_name, name, strlen(name));
 
     Unicast();
     gateway_response_wait_ = true;
@@ -1047,7 +1051,9 @@ void Thing::Subscribe(const uint8_t flags, const char* name) {
   msg->flags = (flags & QOS_MASK) | FLAG_TOPIC_NAME;
   msg->message_id = bswap(message_id_);
   msg->topic_id = 0;
-  strcpy(msg->topic_name, name);
+
+  CHECK_STRING_LENGTH(__FILE__, __LINE__, msg->length, name);
+  strncpy(msg->topic_name, name, strlen(name));
 
   Unicast();
 
@@ -1079,7 +1085,9 @@ void Thing::Unsubscribe(const uint8_t flags, const char* name) {
   msg->flags = (flags & QOS_MASK) | FLAG_TOPIC_NAME;
   msg->message_id = bswap(message_id_);
   msg->topic_id = 0;
-  strcpy(msg->topic_name, name);
+
+  CHECK_STRING_LENGTH(__FILE__, __LINE__, msg->length, name);
+  strncpy(msg->topic_name, name, strlen(name));
 
   Unicast();
 
@@ -1113,7 +1121,9 @@ void Thing::Pingreq() {
   msg_pingreq* msg = reinterpret_cast<msg_pingreq*>(message_buffer_);
   msg->length = sizeof(msg_pingreq) + strlen(client_id_);
   msg->type = PINGREQ;
-  strcpy(msg->client_id, client_id_);
+
+  CHECK_STRING_LENGTH(__FILE__, __LINE__, msg->length, client_id_);
+  strncpy(msg->client_id, client_id_, strlen(client_id_));
 
   Unicast();
   last_ping_ = gateway_response_wait_ = true;
