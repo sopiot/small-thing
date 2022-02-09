@@ -1,3 +1,12 @@
 [submodule "arduino/libraries/xbee-arduino"]
 	path = arduino/libraries/xbee-arduino
 	url = https://github.com/andrewrapp/xbee-arduino.git
+[submodule "arduino/libraries/ArduinoJson"]
+	path = arduino/libraries/ArduinoJson
+	url = https://github.com/bblanchon/ArduinoJson.git
+[submodule "arduino/libraries/DHT-sensor-library"]
+	path = arduino/libraries/DHT-sensor-library
+	url = https://github.com/adafruit/DHT-sensor-library.git
+[submodule "arduino/libraries/pm2008_i2c"]
+	path = arduino/libraries/pm2008_i2c
+	url = https://github.com/neosarchizo/pm2008_i2c.git
