@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <Printers.h>
 #include <Stream.h>
 #include <XBee.h>
 #include <stdarg.h>
@@ -223,6 +224,7 @@ struct msg_willmsgresp : public message_header {
 #define MT1001 "MT/REGACK/%s"
 #define MT1002 "MT/PINGREQ/%s"
 #define MT1003 "MT/SN/%s/%s"
+#define Alive_trig "ME/#"
 
 // Thing --> MW
 #define TM2001 "TM/REGISTER/%s"

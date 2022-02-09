@@ -1,0 +1,3 @@
+[submodule "arduino/libraries/xbee-arduino"]
+	path = arduino/libraries/xbee-arduino
+	url = https://github.com/andrewrapp/xbee-arduino.git

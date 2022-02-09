@@ -68,22 +68,48 @@ void Thing::Add(Function& f) {
   }
 }
 
-void Thing::XbeeSetup() {
-  XbeeAtCommand((uint8_t*)"ID");
-  SOPLOGLN(F("ID : "));
+void Thing::SetupXbee() {
+  delay(3000);
+  SOPLOGLN(F("Start Setup Xbee"));
+
+  XbeeAtCommand((uint8_t*)"SH");
+  SOPLOG(F("SH        : "));
   PrintXbeePacket((char*)zbee_atcommand_result_);
   delay(500);
 
-  XbeeAtCommand((uint8_t*)"OP");
-  SOPLOGLN(F("OP : "));
+  XbeeAtCommand((uint8_t*)"SL");
+  SOPLOG(F("SL        : "));
   PrintXbeePacket((char*)zbee_atcommand_result_);
   delay(500);
 
-  uint8_t id = 0x01;
-  XbeeAtCommand((uint8_t*)"ID", &id, sizeof(id));
-  SOPLOGLN(F("ID : "));
-  PrintXbeePacket((char*)zbee_atcommand_result_);
-  delay(500);
+  // XbeeAtCommand((uint8_t*)"NI");
+  // SOPLOG(F("NI        : "));
+  // PrintXbeePacket((char*)zbee_atcommand_result_);
+  // delay(500);
+
+  // uint8_t ni[] = {'t', 'h', 's', 'v', 'k', 'd'};
+
+  // XbeeAtCommand((uint8_t*)"NI", ni, sizeof(6));
+  // SOPLOG(F("NI        : "));
+  // PrintXbeePacket((char*)zbee_atcommand_result_);
+  // delay(500);
+
+  // XbeeAtCommand((uint8_t*)"NI");
+  // SOPLOG(F("NI        : "));
+  // PrintXbeePacket((char*)zbee_atcommand_result_);
+  // delay(500);
+
+  uint8_t xbee_name[] = {'t', 'h', 's'};
+  AtCommandRequest req((uint8_t*)"NI", xbee_name, sizeof(xbee_name));
+  req.setFrameId(zbee_.getNextFrameId());
+  // Send the command and wait up to 150ms for a response
+  uint8_t status = zbee_.sendAndWait(req, 150);
+  if (status == 0)
+    Serial.println(F("Set NI=thsvkd"));
+  else
+    Serial.println(F("Failed to set NI (this is expected on series1)"));
+
+  SOPLOGLN(F("Setup Xbee done"));
 }
 
 void Thing::Setup() {
@@ -222,6 +248,20 @@ void Thing::Setup() {
   }
   SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2016_);
 
+  // for auto alive
+  registered_id_ = UINT16_MAX;
+  while (registered_id_ == UINT16_MAX) {
+    snprintf(publish_buffer, MAX_BUFFER_SIZE, Alive_trig, client_id_);
+    RegisterTopic(publish_buffer);
+    ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+    id_alive_trig_ = registered_id_;
+  }
+  SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2016_);
+
+  Subscribe(QOS_FLAG, publish_buffer);
+  ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+  SOPLOGLN(F("SUBSCRIBE Topic %s"), publish_buffer);
+
   // Start Value
   SOPLOGLN(F("==== Setup REGISTER Value Topics ===="));
   for (int i = 0; i < num_values_; i++) {
@@ -323,7 +363,6 @@ void Thing::PrintTopicID() {
 }
 
 void Thing::PrintXbeePacket(char* buf) {
-  SOPLOG(F("Xbee packet : "));
   for (int i = 0; i < MAX_BUFFER_SIZE; i++) {
     SOPLOG(F("%02X "), buf[i]);
   }
@@ -331,7 +370,6 @@ void Thing::PrintXbeePacket(char* buf) {
 }
 
 void Thing::PrintXbeePacket(char* buf, int length) {
-  SOPLOG(F("Xbee packet : "));
   for (int i = 0; i < length; i++) {
     SOPLOG(F("%02X "), buf[i]);
   }
@@ -455,6 +493,8 @@ uint8_t* Thing::XbeeAtCommand(uint8_t* cmd) {
   AtCommandRequest atRequest = AtCommandRequest(cmd);
   AtCommandResponse atResponse = AtCommandResponse();
 
+  SOPLOG(F("AT command %s send : "), (char*)cmd);
+
   while (1) {
     zbee_.send(atRequest);
 
@@ -479,6 +519,8 @@ uint8_t* Thing::XbeeAtCommand(uint8_t* cmd, uint8_t* cmdValue,
                               uint8_t cmdValueLength) {
   AtCommandRequest atRequest = AtCommandRequest(cmd, cmdValue, cmdValueLength);
   AtCommandResponse atResponse = AtCommandResponse();
+
+  SOPLOG(F("AT command %s send with value %X: "), (char*)cmd, cmdValue);
 
   while (1) {
     zbee_.send(atRequest);
@@ -874,6 +916,10 @@ void Thing::PublishHandler(const msg_publish* msg) {
       SOPLOGLN(F("Duplicated Thing error message from middleware."));
       middleware_registered_ = true;
     }
+  }
+  // when detect middleware
+  else if (topic_id == id_alive_trig_) {
+    SendAliveMessageNoCond();
   }
   // when Function execute packet
   else {

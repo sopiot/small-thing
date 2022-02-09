@@ -17,6 +17,14 @@ static const int kReceivePin = 4;
 //----------------------------------------
 
 // Modules
+PM2008_I2C pm2008_i2c;
+/************************
+red    : 5V
+black  : GND0
+white  : A4 (SDA)
+green  : A5 (SCL)
+yellow : jumper (connect to GND -> i2c, connect to VCC or floating -> uart)
+************************/
 
 //----------------------------------------
 // Thing
@@ -25,7 +33,7 @@ static const int kReceivePin = 4;
 // Thing declaration
 // Thing(class_name, alive_cycle, serial);
 // Thing(class_name, serial);
-Thing dust_sensor_thing((const char*)"DustSensor", 60, SafeSerial);
+Thing dust_sensor_thing((const char*)"Dust2", 60, SafeSerial);
 
 //----------------------------------------
 // Values
@@ -64,7 +72,7 @@ int SenseDustStatus() {
     // Serial.print("Number of 10 um : ");
     // Serial.println(pm2008_i2c.number_of_10_um);
 
-    return (int)pm2008_i2c.pm2p5_grimm;
+    return (int)(pm2008_i2c.number_of_1_um);
   }
 
   return -1;
@@ -86,7 +94,7 @@ Value dust_status((const char*)"dust_status", SenseDustStatus, 0, 2, 3000);
 // Setup
 //----------------------------------------
 
-void SetupSerial() { SafeSerial.begin(9600); }
+void SetupSerial() { SafeSerial.begin(115200); }
 
 void SetupModules() {
   // Setup Pin mode

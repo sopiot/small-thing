@@ -1,10 +1,10 @@
-#include "ota.h"
+// #include "ota.h"
 #include "thing.h"
 
-#define DEVICE_NAME "Air3"
+#define DEVICE_NAME "Air2"
 
 #include <DHT.h>
-#include <GP2YDustSensor.h>
+// #include <GP2YDustSensor.h>
 #include <pm2008_i2c.h>
 
 const int kGY10AnalogdustPin = A0;
@@ -15,6 +15,15 @@ const int kGY10DigitaldustPin = 3;
 #define DHT_TYPE DHT22
 DHT dht(khumidPin, DHT_TYPE);
 PM2008_I2C pm2008_i2c;
+/************************
+red    : 5V
+black  : GND0
+white  : A4 (SDA)
+green  : A5 (SCL)
+yellow : jumper (connect to GND -> i2c, connect to VCC or floating -> uart)
+************************/
+
+
 // GP2YDustSensor dustSensor(GP2YDustSensorType::GP2Y1010AU0F, kdustledPin,
 //                           kGY10AnalogdustPin);
 
@@ -51,7 +60,7 @@ Value temp_status((const char *)"temp", SenseTempStatus, 0, 100, 30000);
 //                   30000);
 Value dust_status((const char *)"dust", SensePM2008DustStatus, 0, 600, 30000);
 
-void SetupSerial() { SafeSerial.begin(9600); }
+void SetupSerial() { SafeSerial.begin(115200); }
 
 void SetupModules() {
   // Setup Pin mode
