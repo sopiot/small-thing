@@ -3,7 +3,7 @@
 #include "wiring_private.h"
 
 #define CO2_CYCLE 2 * 1000
-#define DEVICE_NAME "CO2Sensor1"
+#define DEVICE_NAME "CO2Sensor3"
 
 Uart mySerial(&sercom0, 5, 6, SERCOM_RX_PAD_1, UART_TX_PAD_0);
 

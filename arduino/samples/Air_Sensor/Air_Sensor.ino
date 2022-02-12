@@ -1,7 +1,7 @@
 // #include "ota.h"
 #include "thing.h"
 
-#define DEVICE_NAME "Air2"
+#define DEVICE_NAME "Air3"
 
 #include <DHT.h>
 // #include <GP2YDustSensor.h>
@@ -23,15 +23,28 @@ green  : A5 (SCL)
 yellow : jumper (connect to GND -> i2c, connect to VCC or floating -> uart)
 ************************/
 
-
 // GP2YDustSensor dustSensor(GP2YDustSensorType::GP2Y1010AU0F, kdustledPin,
 //                           kGY10AnalogdustPin);
 
 Thing thing((const char *)DEVICE_NAME, 10, SafeSerial);
 
-int SenseHumidStatus() { return (int)dht.readHumidity(); }
+int SenseHumidStatus() {
+  int humid = dht.readHumidity();
+  if (humid > 100) {
+    return 100;
+  } else {
+    return humid;
+  }
+}
 
-int SenseTempStatus() { return (int)dht.readTemperature(); }
+int SenseTempStatus() {
+  int temp = dht.readTemperature();
+  if (temp > 100) {
+    return 100;
+  } else {
+    return temp;
+  }
+}
 
 int SensePM2008DustStatus() {
   uint8_t ret = pm2008_i2c.read();

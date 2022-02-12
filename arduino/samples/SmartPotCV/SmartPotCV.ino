@@ -1,10 +1,10 @@
-#include "ota.h"
+// #include "ota.h"
 #include "thing.h"
 
 #define SENSOR_WINDOW 10
 
 #define WATER_LEVEL_SENSOR_NUM 2
-#define DEVICE_NAME "SPCV1"
+#define DEVICE_NAME "SPCV10"
 
 const int kValvePin = 2;
 const int kSoilMoisturePin = A0;
@@ -56,7 +56,7 @@ Function valve_close((const char *)"off", ActuateValveClose);
 Tag tag_SmartPot("SmartPot");
 Tag tag_SmartPotCV("SmartPotCV");
 
-void SetupSerial() { SafeSerial.begin(9600); }
+void SetupSerial() { SafeSerial.begin(115200); }
 
 void SetupModules() { pinMode(kValvePin, OUTPUT); }
 
