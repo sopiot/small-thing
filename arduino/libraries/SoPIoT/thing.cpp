@@ -249,18 +249,18 @@ void Thing::Setup() {
   SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2016_);
 
   // for auto alive
-  registered_id_ = UINT16_MAX;
-  while (registered_id_ == UINT16_MAX) {
-    snprintf(publish_buffer, MAX_BUFFER_SIZE, Alive_trig, client_id_);
-    RegisterTopic(publish_buffer);
-    ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-    id_alive_trig_ = registered_id_;
-  }
-  SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2016_);
+  // registered_id_ = UINT16_MAX;
+  // while (registered_id_ == UINT16_MAX) {
+  //   snprintf(publish_buffer, MAX_BUFFER_SIZE, Alive_trig, client_id_);
+  //   RegisterTopic(publish_buffer);
+  //   ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+  //   id_alive_trig_ = registered_id_;
+  // }
+  // SOPLOGLN(F("REGISTER Topic %s, ID : %d"), publish_buffer, id_2016_);
 
-  Subscribe(QOS_FLAG, publish_buffer);
-  ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
-  SOPLOGLN(F("SUBSCRIBE Topic %s"), publish_buffer);
+  // Subscribe(QOS_FLAG, publish_buffer);
+  // ReadZbeeTimeout(READ_ZBEE_TIMEOUT);
+  // SOPLOGLN(F("SUBSCRIBE Topic %s"), publish_buffer);
 
   // Start Value
   SOPLOGLN(F("==== Setup REGISTER Value Topics ===="));
