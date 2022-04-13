@@ -215,7 +215,7 @@ struct msg_willmsgresp : public message_header {
 #define MAX_VALUE_NUM 20
 #define MAX_FUNCTION_NUM 20
 #define MAX_NAME_LENGTH 20
-#define MAX_BUFFER_SIZE 60
+#define MAX_BUFFER_SIZE 90
 
 // SoPIoT protocols (See specification documentation)
 #define COMMON0000 "%s/%s"

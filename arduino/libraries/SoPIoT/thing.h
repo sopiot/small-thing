@@ -91,6 +91,7 @@ class Thing {
   // Set serial that connected to the zigbee output and input
   void SetSerial(Stream& serial);
 
+  void XbeeSetup();
   // Send Xbee API Command
   uint8_t* XbeeAtCommand(uint8_t* cmd);
   uint8_t* XbeeAtCommand(uint8_t* cmd, uint8_t* cmdValue,
