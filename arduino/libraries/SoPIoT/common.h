@@ -219,8 +219,9 @@ struct msg_willmsgresp : public message_header {
 // SoPIoT protocols (See specification documentation)
 #define COMMON0000 "%s/%s"
 
+// TODO: Update protocol!!!
 // MW --> Thing
-#define MT1001 "MT/REGACK/%s"
+#define MT1001 "MT/RESULT/REGISTER/%s"
 #define MT1002 "MT/PINGREQ/%s"
 #define MT1003 "MT/SN/%s/%s"
 
@@ -237,7 +238,7 @@ struct msg_willmsgresp : public message_header {
 #define TM2015 "TM/SN/REGISTER/ALIVECYCLE/%s"
 #define TM2016 "TM/SN/REGISTER/FINISH/%s"
 
-#define TM2004 "TM/RESULT/FUNCTION/%s/%s"
+#define TM2004 "TM/RESULT/EXECUTE/%s/%s"
 
 // Double data type comparison
 #define DOUBLE_EPSILON (0.0000001)
