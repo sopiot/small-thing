@@ -32,7 +32,7 @@ class Thing {
   // Call it after setting up Serial, client config, Functions, Values
   // Do not forget call this function after (zigbee) (ex. Serial.begin(9600))
   // This should be called in the setup() on Arduino
-  void XbeeSetup();
+  void SetupXbee();
   void Setup();
 
   // Loop
@@ -198,6 +198,7 @@ class Thing {
   uint16_t id_2014_;
   uint16_t id_2015_;
   uint16_t id_2016_;
+  uint16_t id_alive_trig_;
 
   /** Set to true when we're waiting for some sort of acknowledgement from the
    *server that will transition our state.
@@ -208,7 +209,7 @@ class Thing {
 
   unsigned long alive_cycle_;
 
-  XBee zbee_;
+  XBeeWithCallbacks zbee_;
   XBeeAddress64 gateway_address_64_;
   uint16_t gateway_address_16_;
   uint8_t gateway_id_;

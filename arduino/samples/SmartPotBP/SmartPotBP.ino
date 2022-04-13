@@ -1,4 +1,4 @@
-#include "ota.h"
+// #include "ota.h"
 #include "thing.h"
 
 #define SENSOR_WINDOW 10
@@ -84,7 +84,7 @@ Argument argTime((const char *)"time", 0, 100, INTEGER);
 Tag tag_SmartPot("SmartPot");
 Tag tag_SmartPotBP("SmartPotBP");
 
-void SetupSerial() { SafeSerial.begin(9600); }
+void SetupSerial() { SafeSerial.begin(115200); }
 
 void SetupModules() {
   // Setup Pin mode
@@ -121,11 +121,11 @@ void SetupThing() {
 void setup() {
   SetupSerial();
   SetupModules();
-  WiFi_Setup("SoPIoT_2.4G", "/PeaCE/#1", DEVICE_NAME, "0000");
+  // WiFi_Setup("SoPIoT_2.4G", "/PeaCE/#1", DEVICE_NAME, "0000");
   SetupThing();
 }
 
 void loop() {
-  SOPOTA();
+  // SOPOTA();
   thing.Loop();
 }

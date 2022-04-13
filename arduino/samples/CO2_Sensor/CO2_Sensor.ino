@@ -1,9 +1,9 @@
-#include "ota.h"
+// #include "ota.h"
 #include "thing.h"
 #include "wiring_private.h"
 
 #define CO2_CYCLE 2 * 1000
-#define DEVICE_NAME "CO2Sensor1"
+#define DEVICE_NAME "CO2Sensor3"
 
 Uart mySerial(&sercom0, 5, 6, SERCOM_RX_PAD_1, UART_TX_PAD_0);
 
@@ -48,7 +48,7 @@ Value analogPPM((const char *)"CO2", SenseUartOutputPPM, 0, 10000,
                 CO2_CYCLE);  // CO2 Sensor output cycle is 2 SEC
 // Value pwmPPM((const char *)"pwmPPM", SensePWMOutputPPM, 0, 2, 5000);
 
-void SetupSerial() { SafeSerial.begin(9600); }
+void SetupSerial() { SafeSerial.begin(115200); }
 
 void SetupModules() {
   // Setup Pin mode
@@ -76,12 +76,13 @@ void setup() {
   mySerial.begin(38400);
 
   SetupSerial();
+  // thing.SetupXbee();
   SetupModules();
-  WiFi_Setup("SoPIoT_2.4G", "/PeaCE/#1", DEVICE_NAME, "0000");
+  // WiFi_Setup("SoPIoT_2.4G", "/PeaCE/#1", DEVICE_NAME, "0000");
   SetupThing();
 }
 
 void loop() {
-  SOPOTA();
+  // SOPOTA();
   thing.Loop();
 }

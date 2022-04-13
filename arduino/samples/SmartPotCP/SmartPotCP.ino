@@ -1,4 +1,4 @@
-#include "ota.h"
+// #include "ota.h"
 #include "thing.h"
 
 #define WATER_LEVEL_SENSOR_NUM 2
@@ -81,7 +81,7 @@ Argument argTime((const char *)"time", 0, 100, INTEGER);
 // Setup
 //----------------------------------------
 
-void SetupSerial() { SafeSerial.begin(9600); }
+void SetupSerial() { SafeSerial.begin(115200); }
 
 void SetupModules() {
   // Setup Pin mode
