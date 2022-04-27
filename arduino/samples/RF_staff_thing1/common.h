@@ -61,4 +61,21 @@ static void SOPLOGLN(const __FlashStringHelper *fmt, ...) {
 #define SOPLOGLN(fmt, ...)
 #endif
 
+// // dtostrf works differently on ARM board.
+// // TODO(thsvkd): fix it with the best practice
+// char *safe_dtostrf(double val, signed char width, unsigned char prec,
+//                    char *sout) {
+// #if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM) || \
+//     defined(ARDUINO_ARCH_MBED)
+//   asm(".global _printf_float");
+
+//   char fmt[20];
+//   sprintf(fmt, "%%%d.%df", width, prec);
+//   sprintf(sout, fmt, val);
+//   return sout;
+// #else
+//   return dtostrf(val, width, prec, sout);
+// #endif
+// }
+
 #endif  // COMMON_H_

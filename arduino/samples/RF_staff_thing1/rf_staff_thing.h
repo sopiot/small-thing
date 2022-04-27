@@ -1,6 +1,7 @@
 #ifndef RF_STAFF_THING_H_
 #define RF_STAFF_THING_H_
 
+#include <Adafruit_SleepyDog.h>
 #include <Arduino.h>
 #include <stdarg.h>
 
@@ -21,22 +22,23 @@
 //   char function_payload[SOPLOG_LIMIT / 2];
 // };
 
+enum sensor_mode {
+  SENSOR_ONLY,
+  SENSOR_WITH_EXECUTE,
+};
+
 class RFStaffThing {
  public:
   // pin 7 == CE pin
   // pin 8 == CSN pin
 
   bool registered = false;
-  char received_message[SOPLOG_LIMIT];
-  char send_message[SOPLOG_LIMIT];
-  char device_id[4];
+  sensor_mode mode = SENSOR_ONLY;
   uint64_t tx_address = 0xFFFFFFFFF1LL;
   uint64_t rx_address = 0xFFFFFFFFF0LL;
   int _ce_pin;
   int _csn_pin;
 
-  char value_name[8];
-  char value_payload[16];
   long long last_value_update_time = 0;
   int value_cycle = 10;
 
@@ -45,7 +47,11 @@ class RFStaffThing {
 
   RF24 _radio;
 
-  // RF24 _client;
+  char device_id[4];
+  char value_name[8];
+  char value_payload[16];
+  char received_message[SOPLOG_LIMIT];
+  char send_message[SOPLOG_LIMIT];
 
   RFStaffThing();
   RFStaffThing(int CE, int CSN);
@@ -54,7 +60,8 @@ class RFStaffThing {
 
   void SetupSensor();
   void SetupRFModule();
-  void SensorValueUpdate();
+  void A0SensorValueUpdate();
+  void D2SensorValueUpdate();
 
   void SendMessage(char *msg);
   void ReadRFPayload(int timeout = 1000);
@@ -71,6 +78,7 @@ class RFStaffThing {
   void Loop();
 
   void generate_random_device_id();
+  void DeviceSleep();
 };
 
 #endif  // RF_STAFF_THING_H_

@@ -24,6 +24,11 @@ void RFStaffThing::SetupSensor() {
   alive_cycle = 10;
   value_cycle = 10;
   generate_random_device_id();
+
+  // pinMode(LED_BUILTIN, OUTPUT);
+  // digitalWrite(LED_BUILTIN, HIGH);
+
+  // digitalWrite(LED_PWR, LOW);
 }
 
 void RFStaffThing::SetupRFModule() {
@@ -43,7 +48,7 @@ void RFStaffThing::SetupRFModule() {
   delay(1000);
   _radio.powerUp();
 
-  _radio.setPALevel(RF24_PA_MAX);
+  _radio.setPALevel(RF24_PA_LOW);
   _radio.setChannel(76);
   _radio.enableDynamicPayloads();
   _radio.enableAckPayload();
@@ -55,8 +60,13 @@ void RFStaffThing::SetupRFModule() {
   SOPLOGLN(F("SetupRFModule complete!!!"));
 }
 
-void RFStaffThing::SensorValueUpdate() {
+void RFStaffThing::A0SensorValueUpdate() {
   int sensor_value = analogRead(A0);
+  sprintf(value_payload, "%d", sensor_value);
+}
+
+void RFStaffThing::D2SensorValueUpdate() {
+  int sensor_value = digitalRead(2);
   sprintf(value_payload, "%d", sensor_value);
 }
 
@@ -73,7 +83,8 @@ void RFStaffThing::SendMessage(char *msg) {
   SOPLOGLN(F("..."));
 
   _radio.write(msg, strlen(msg));
-  _radio.printPrettyDetails();
+  // _radio.printPrettyDetails();
+  _radio.startListening();
 }
 
 void RFStaffThing::ReadRFPayload(int timeout) {
@@ -83,19 +94,20 @@ void RFStaffThing::ReadRFPayload(int timeout) {
   while (millis() - current_time < timeout) {
     if (_radio.available()) {
       int length = _radio.getDynamicPayloadSize();
-      memset(received_message, 0, SOPLOG_LIMIT);
+      char tmp_recv[SOPLOG_LIMIT] = {0};
+      // memset(tmp, 0, SOPLOG_LIMIT);
 
       if (length > 31) {
         Serial.print(F("too many byte"));
         break;
       }
 
-      _radio.read(&received_message, 32);
+      _radio.read(&tmp_recv, 32);
       // received_message[length] = '\0';
 
-      SOPLOGLN(F("Recieved %d bytes : %s"), length, received_message);
+      SOPLOGLN(F("Recieved %d bytes : %s"), length, tmp_recv);
 
-      Handle_recv_msg(received_message);
+      Handle_recv_msg(tmp_recv);
       return;
     }
   }
@@ -147,18 +159,28 @@ void RFStaffThing::Send_REG() {
   }
 }
 void RFStaffThing::Send_VAL() {
+  long long current_time = micros();
+  // char float_str[8] = {0};
   if (registered) {
-    long long current_time = millis();
     if (current_time - last_value_update_time > value_cycle) {
-      SOP_DEBUG(F("[Send_VAL] Send VAL..."));
-      SensorValueUpdate();
+      SOPLOGLN(F("[Send_VAL] Send VAL..."));
+      // A0SensorValueUpdate();
+      D2SensorValueUpdate();
       sprintf(send_message, "VAL %s", device_id);
       memcpy(send_message + 8, value_name, 8);
       memcpy(send_message + 16, value_payload, 16);
+      long long current_time_for_rf = micros();
       SendMessage(send_message);
+      int duration_for_rf = (micros() - current_time_for_rf);
+      // safe_dtostrf(duration_for_rf, 4, 2, float_str);
+      SOPLOGLN(F("[Send_VAL] duration_for_rf: %d"), duration_for_rf);
       last_value_update_time = current_time;
     }
   }
+  // memset(float_str, 0, 8);
+  int duration = (micros() - current_time);
+  // safe_dtostrf(duration, 4, 2, float_str);
+  SOPLOGLN(F("[Send_VAL] duration: %d"), duration);
 }
 
 void RFStaffThing::Send_EACK(char *function_name, char *result_payload) {
@@ -171,11 +193,23 @@ void RFStaffThing::Send_LIVE() {
     long long current_time = millis();
     if (current_time - last_alive_time > value_cycle) {
       SOP_DEBUG(F("[Send_LIVE] Send LIVE..."));
-      SensorValueUpdate();
+      // A0SensorValueUpdate();
       sprintf(send_message, "LIVE%s", device_id);
       SendMessage(send_message);
       last_alive_time = current_time;
     }
+  }
+}
+
+void RFStaffThing::Loop() {
+  Send_REG();
+  Send_VAL();
+  // Send_LIVE();
+
+  if (registered && mode == SENSOR_ONLY) {
+    DeviceSleep();
+  } else {
+    ReadRFPayload(5000);
   }
 }
 
@@ -188,9 +222,9 @@ void RFStaffThing::generate_random_device_id() {
   SOP_DEBUG(F("[generate_random_device_id] gen device_id: %s..."), device_id);
 }
 
-void RFStaffThing::Loop() {
-  Send_REG();
-  Send_VAL();
-  Send_LIVE();
-  ReadRFPayload(5000);
+void RFStaffThing::DeviceSleep() {
+  SOP_DEBUG(F("[DeviceSleep]"));
+  _radio.powerDown();
+  Watchdog.sleep(alive_cycle * 1000);  // sleep for 16 Sec...
+  _radio.powerUp();
 }
