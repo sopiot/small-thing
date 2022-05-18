@@ -14,12 +14,12 @@
 // };
 
 // struct ValueService : public Service {
-//   char value_payload[SOPLOG_LIMIT / 2];
+//   char value_payload[SOPRF_LIMIT / 2];
 // };
 
 // // TODO: implement this
 // struct FunctionService : public Service {
-//   char function_payload[SOPLOG_LIMIT / 2];
+//   char function_payload[SOPRF_LIMIT / 2];
 // };
 
 enum sensor_mode {
@@ -50,8 +50,8 @@ class RFStaffThing {
   char device_id[4];
   char value_name[8];
   char value_payload[16];
-  char received_message[SOPLOG_LIMIT];
-  char send_message[SOPLOG_LIMIT];
+  char received_message[SOPRF_LIMIT];
+  char send_message[SOPRF_LIMIT];
 
   RFStaffThing();
   RFStaffThing(int CE, int CSN);
@@ -63,14 +63,14 @@ class RFStaffThing {
   void A0SensorValueUpdate();
   void D2SensorValueUpdate();
 
-  void SendMessage(char *msg);
+  bool SendMessage(char *msg);
   void ReadRFPayload(int timeout = 1000);
 
   void Handle_RACK(char *msg);
   void Handle_EXEC(char *msg);
   void Handle_recv_msg(char *msg);
 
-  void Send_REG();
+  bool Send_REG();
   void Send_VAL();
   void Send_EACK(char *function_name, char *result_payload);
   void Send_LIVE();

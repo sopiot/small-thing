@@ -5,7 +5,7 @@ RFStaffThing::RFStaffThing() {}
 RFStaffThing::RFStaffThing(int CE, int CSN) {
   _ce_pin = CE;
   _csn_pin = CSN;
-  _radio = RF24(_ce_pin, _csn_pin);
+  _radio = RF24(_ce_pin, _csn_pin, 4000000);
 }
 
 RFStaffThing::RFStaffThing(int CE, int CSN, uint64_t rx_address,
@@ -21,6 +21,7 @@ RFStaffThing::~RFStaffThing() {}
 
 void RFStaffThing::SetupSensor() {
   strcpy(value_name, "TestVal");
+  SOPLOGLN(F("value_name: %s"), value_name);
   alive_cycle = 10;
   value_cycle = 10;
   generate_random_device_id();
@@ -32,26 +33,32 @@ void RFStaffThing::SetupSensor() {
 }
 
 void RFStaffThing::SetupRFModule() {
-  Serial.begin(115200);
+#ifdef SOP_DEBUG
+  Serial.begin(9600);
 
   // for wait user serial read...
   // while (!Serial) {
   // }
+#endif
 
   if (!_radio.begin()) {
     SOPLOGLN(F("radio hardware is not responding!!"));
     while (1) {
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(1000);
+      digitalWrite(LED_BUILTIN, LOW);
+      delay(1000);
     }
   }
 
-  _radio.powerDown();
-  delay(1000);
-  _radio.powerUp();
+  // _radio.powerDown();
+  // delay(1000);
+  // _radio.powerUp();
 
-  _radio.setPALevel(RF24_PA_LOW);
-  _radio.setChannel(76);
+  // _radio.setChannel(76);
   _radio.enableDynamicPayloads();
   _radio.enableAckPayload();
+  _radio.setPALevel(RF24_PA_MAX);
 
   _radio.openWritingPipe(tx_address);
   _radio.openReadingPipe(1, rx_address);
@@ -70,11 +77,11 @@ void RFStaffThing::D2SensorValueUpdate() {
   sprintf(value_payload, "%d", sensor_value);
 }
 
-void RFStaffThing::SendMessage(char *msg) {
+bool RFStaffThing::SendMessage(char *msg) {
   _radio.stopListening();
 
   SOPLOG(F("send "));
-  for (int i = 0; i < SOPLOG_LIMIT; i++) {
+  for (int i = 0; i < SOPRF_LIMIT; i++) {
     if (msg[i] < 32) {
       msg[i] = ' ';
     }
@@ -82,9 +89,13 @@ void RFStaffThing::SendMessage(char *msg) {
   }
   SOPLOGLN(F("..."));
 
-  _radio.write(msg, strlen(msg));
+  bool report = _radio.write(msg, strlen(msg));
+  // _radio.writeAckPayload(1, msg, strlen(msg));
   // _radio.printPrettyDetails();
+  // _radio.flush_rx();
+  // _radio.flush_tx();
   _radio.startListening();
+  return report;
 }
 
 void RFStaffThing::ReadRFPayload(int timeout) {
@@ -94,8 +105,8 @@ void RFStaffThing::ReadRFPayload(int timeout) {
   while (millis() - current_time < timeout) {
     if (_radio.available()) {
       int length = _radio.getDynamicPayloadSize();
-      char tmp_recv[SOPLOG_LIMIT] = {0};
-      // memset(tmp, 0, SOPLOG_LIMIT);
+      char tmp_recv[SOPRF_LIMIT] = {0};
+      // memset(tmp, 0, SOPRF_LIMIT);
 
       if (length > 31) {
         Serial.print(F("too many byte"));
@@ -135,7 +146,7 @@ void RFStaffThing::Handle_RACK(char *msg) {
   } else {
     strncpy(device_id, msg + 8, 4);
     registered = true;
-    SOP_DEBUG(F("Register success!!! assigned device_id: %s"), device_id);
+    SOPLOGLN(F("Register success!!! assigned device_id: %s"), device_id);
     Send_LIVE();
     Send_VAL();
   }
@@ -143,19 +154,24 @@ void RFStaffThing::Handle_RACK(char *msg) {
 
 void RFStaffThing::Handle_EXEC(char *msg) {}
 
-void RFStaffThing::Send_REG() {
+bool RFStaffThing::Send_REG() {
   if (!registered) {
-    memset(send_message, 0, SOPLOG_LIMIT);
+    memset(send_message, 0, SOPRF_LIMIT);
     char cycle_info[16];
 
     SOPLOGLN(F("[Send_REG] broadcasting REG..."));
 
     memcpy(send_message, "REG ", 4);
+    SOPLOGLN(F("send_message: %s"), send_message);
     memcpy(send_message + 4, device_id, 4);
-    memcpy(send_message + 8, value_name, 8);
+    SOPLOGLN(F("send_message: %s"), send_message);
+    memcpy(send_message + 8, send_message, 8);
+    SOPLOGLN(F("send_message: %s"), send_message);
     sprintf(cycle_info, "A%dV%d", alive_cycle, value_cycle);
+    SOPLOGLN(F("cycle_info: %s"), cycle_info);
     strcpy(send_message + 16, cycle_info);
-    SendMessage(send_message);
+    SOPLOGLN(F("send_message: %s"), send_message);
+    return SendMessage(send_message);
   }
 }
 void RFStaffThing::Send_VAL() {
@@ -192,7 +208,7 @@ void RFStaffThing::Send_LIVE() {
   if (registered) {
     long long current_time = millis();
     if (current_time - last_alive_time > value_cycle) {
-      SOP_DEBUG(F("[Send_LIVE] Send LIVE..."));
+      SOPLOGLN(F("[Send_LIVE] Send LIVE..."));
       // A0SensorValueUpdate();
       sprintf(send_message, "LIVE%s", device_id);
       SendMessage(send_message);
@@ -202,7 +218,11 @@ void RFStaffThing::Send_LIVE() {
 }
 
 void RFStaffThing::Loop() {
-  Send_REG();
+  bool result = Send_REG();
+  if(result)
+  {
+    registered = true;
+  }
   Send_VAL();
   // Send_LIVE();
 
@@ -219,12 +239,15 @@ void RFStaffThing::generate_random_device_id() {
     device_id[i] = "0123456789ABCDEF"[random(0, 16)];
     delay(10);
   }
-  SOP_DEBUG(F("[generate_random_device_id] gen device_id: %s..."), device_id);
+  SOPLOGLN(F("[generate_random_device_id] gen device_id: %s..."), device_id);
 }
 
 void RFStaffThing::DeviceSleep() {
-  SOP_DEBUG(F("[DeviceSleep]"));
+  SOPLOGLN(F("[DeviceSleep]"));
+  digitalWrite(LED_BUILTIN, LOW);
   _radio.powerDown();
   Watchdog.sleep(alive_cycle * 1000);  // sleep for 16 Sec...
+  // delay(alive_cycle * 1000);
   _radio.powerUp();
+  digitalWrite(LED_BUILTIN, HIGH);
 }

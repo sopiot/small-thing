@@ -3,10 +3,25 @@
 
 #include <Arduino.h>
 #include <stdarg.h>
+
+#define SOPRF_LIMIT 32
+#define SOPLOG_LIMIT 128
+
 #define SOP_DEBUG
 #ifdef SOP_DEBUG
 
-#define SOPLOG_LIMIT 32
+#if (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || \
+    (defined(ARDUINO_ARCH_SAM) && !defined(ARDUINO_SAM_DUE)) ||    \
+    defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) ||   \
+    defined(ARDUINO_AVR_PROMICRO)
+#define USE_SERIAL_ONE
+#endif
+
+#ifdef USE_SERIAL_ONE
+#define SafeSerial Serial1
+#else
+#define SafeSerial Serial
+#endif
 
 static void SOPLOG(char *fmt, ...) {
   char buf[SOPLOG_LIMIT];
