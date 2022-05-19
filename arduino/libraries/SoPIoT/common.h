@@ -269,7 +269,7 @@ struct msg_willmsgresp : public message_header {
 #if (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || \
     (defined(ARDUINO_ARCH_SAM) && !defined(ARDUINO_SAM_DUE)) ||    \
     defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) ||   \
-    defined(ARDUINO_AVR_PROMICRO)
+    defined(ARDUINO_AVR_PROMICRO) || defined(NANO_RP2040_CONNECT)
 #define USE_SERIAL_ONE
 #endif
 
