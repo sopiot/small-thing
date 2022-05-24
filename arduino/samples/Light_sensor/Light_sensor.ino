@@ -6,6 +6,7 @@
 // Module libraries
 // Pins
 static const int kLight1Pin = A0;
+static const int kXbeeSleepPin = 12;
 //----------------------------------------
 // Modules
 //----------------------------------------
@@ -36,8 +37,8 @@ int Actuatefunction(void *args) {
 // Value declarations
 // Value(name, sense_function, min, max, period(ms));
 Value brightness((const char *)"brightness", SenseBrightness, 0, 2048, 1000);
-Function func("dummy_function", Actuatefunction, 1);
-Argument arg("args_test", 0, 100, INTEGER);
+// Function func("dummy_function", Actuatefunction, 1);
+// Argument arg("args_test", 0, 100, INTEGER);
 
 //----------------------------------------
 // Functions
@@ -48,26 +49,29 @@ Argument arg("args_test", 0, 100, INTEGER);
 //----------------------------------------
 // Setup
 //----------------------------------------
-void SetupSerial() { SafeSerial.begin(9600); }
+void SetupSerial() { SafeSerial.begin(115200); }
 void SetupModules() {
   // Setup Pin mode
   // Attach modules
+  pinMode(12, OUTPUT);
+  digitalWrite(12, LOW);
 }
 void SetupThing() {
   // Setup Functions
   // Setup Values
-  delay(2000);
+  delay(500);
   brightness.AddTag("light");
   brightness.AddTag("livingroom");
-  func.AddTag("livingroom2");
-  func.AddTag("livingroom3");
+  // func.AddTag("livingroom2");
+  // func.AddTag("livingroom3");
   light_sensor.Add(brightness);
-  func.AddArgument(arg);
-  light_sensor.Add(func);
+  // func.AddArgument(arg);
+  // light_sensor.Add(func);
   // Setup Thing
 
   light_sensor.Setup();
 }
+
 //----------------------------------------
 // Main
 //----------------------------------------
@@ -76,4 +80,5 @@ void setup() {
   SetupModules();
   SetupThing();
 }
+
 void loop() { light_sensor.Loop(); }

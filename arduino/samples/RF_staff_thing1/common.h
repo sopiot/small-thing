@@ -23,6 +23,13 @@
 #define SafeSerial Serial
 #endif
 
+#if defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_NANO_RP2040_CONNECT)
+#define SoPSleep(timeout) delay(timeout);
+#else
+#include <Adafruit_SleepyDog.h>
+#define SoPSleep(timeout) Watchdog.sleep(timeout);
+#endif
+
 static void SOPLOG(char *fmt, ...) {
   char buf[SOPLOG_LIMIT];
   va_list args;

@@ -22,8 +22,8 @@ RFStaffThing::~RFStaffThing() {}
 void RFStaffThing::SetupSensor() {
   strcpy(value_name, "TestVal");
   SOPLOGLN(F("value_name: %s"), value_name);
-  alive_cycle = 10;
-  value_cycle = 10;
+  alive_cycle = 1;
+  value_cycle = 1;
   generate_random_device_id();
 
   // pinMode(LED_BUILTIN, OUTPUT);
@@ -222,6 +222,10 @@ void RFStaffThing::Loop() {
   if(result)
   {
     registered = true;
+    SOPLOGLN(F("Register Sucesss!!!"));
+  } else {
+    registered = true;
+    SOPLOGLN(F("Register Failed..."));    
   }
   Send_VAL();
   // Send_LIVE();
@@ -246,8 +250,7 @@ void RFStaffThing::DeviceSleep() {
   SOPLOGLN(F("[DeviceSleep]"));
   digitalWrite(LED_BUILTIN, LOW);
   _radio.powerDown();
-  Watchdog.sleep(alive_cycle * 1000);  // sleep for 16 Sec...
-  // delay(alive_cycle * 1000);
+  SoPSleep(alive_cycle * 1000);
   _radio.powerUp();
   digitalWrite(LED_BUILTIN, HIGH);
 }

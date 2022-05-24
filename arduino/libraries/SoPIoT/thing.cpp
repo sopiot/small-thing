@@ -72,18 +72,18 @@ void Thing::XbeeSetup() {
   XbeeAtCommand((uint8_t*)"ID");
   SOPLOGLN(F("ID : "));
   PrintXbeePacket((char*)zbee_atcommand_result_);
-  delay(500);
+  // delay(500);
 
   XbeeAtCommand((uint8_t*)"OP");
   SOPLOGLN(F("OP : "));
   PrintXbeePacket((char*)zbee_atcommand_result_);
-  delay(500);
+  // delay(500);
 
   uint8_t id = 0x01;
   XbeeAtCommand((uint8_t*)"ID", &id, sizeof(id));
   SOPLOGLN(F("ID : "));
   PrintXbeePacket((char*)zbee_atcommand_result_);
-  delay(500);
+  // delay(500);
 }
 
 void Thing::Setup() {
@@ -364,17 +364,32 @@ void Thing::TestPublish() {
                functions_[i]->GetID2004());
     }
 
-    delay(2000);
+    // delay(2000);
   }
 }
 
+void Thing::XbeeOff() {
+  // pinMode(12, OUTPUT);
+  digitalWrite(12, HIGH);
+  delay(10);
+}
+void Thing::XbeeOn() {
+  delay(10);
+  // pinMode(12, OUTPUT);
+  digitalWrite(12, LOW);
+}
+
+// TODO: pub_period is needed?
 void Thing::Loop(int pub_period) {
   bool time_passed = false;
   bool changed = false;
 
   // Wait for Response about Value
   SendAliveMessage();
-  ReadZbeeIfAvailable();
+  if (!(num_values_ < 2 && num_functions_ == 0)) {
+    ReadZbeeIfAvailable();
+  }
+
   for (uint8_t i = 0; i < num_values_; i++) {
     time_passed = CompareTimeStamp(values_[i]);
     if (time_passed) {
@@ -384,9 +399,24 @@ void Thing::Loop(int pub_period) {
                  publish_buffer);
         Publish(QOS_FLAG, values_[i]->GetPublishID(), publish_buffer,
                 strlen(publish_buffer));
+        if ((num_values_ < 2 && num_functions_ == 0)) {
+          int cycle = values_[0]->GetPublishCycle();
+          SOPLOGLN(F("sleep about %d ms"), cycle);
+          SOPLOGLN(F("1time: %d us"), (unsigned int)micros());
+          XbeeOff();
+          SOPLOGLN(F("2time: %d us"), (unsigned int)micros());
+#if !(defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_NANO_RP2040_CONNECT))
+          sleep_time_ms += SoPSleep(cycle);
+#endif
+          SOPLOGLN(F("3time: %d us"), (unsigned int)micros());
+          XbeeOn();
+          SOPLOGLN(F("4time: %d us"), (unsigned int)micros());
+        }
       }
     }
-    ReadZbeeIfAvailable();
+    if (!(num_values_ < 2 && num_functions_ == 0)) {
+      ReadZbeeIfAvailable();
+    }
   }
 }
 
@@ -470,7 +500,7 @@ uint8_t* Thing::XbeeAtCommand(uint8_t* cmd) {
       }
     } else {
       SOPLOGLN(F("Serial High READ ERROR!!"));
-      delay(1000);
+      delay(250);
     }
   }
 }
@@ -495,7 +525,7 @@ uint8_t* Thing::XbeeAtCommand(uint8_t* cmd, uint8_t* cmdValue,
       }
     } else {
       SOPLOGLN(F("Serial High READ ERROR!!"));
-      delay(1000);
+      delay(250);
     }
   }
 }
@@ -503,9 +533,9 @@ uint8_t* Thing::XbeeAtCommand(uint8_t* cmd, uint8_t* cmdValue,
 void Thing::GetMacAddress() {
   while (1) {
     memcpy(mac_address_ + 4, XbeeAtCommand((uint8_t*)"SL"), 4);
-    delay(500);
+    delay(50);
     memcpy(mac_address_, XbeeAtCommand((uint8_t*)"SH"), 4);
-    delay(500);
+    delay(50);
 
     if (memcmp(mac_address_ + 4, xbee_low_address, 4) != 0 &&
         memcmp(mac_address_, mac_address_ + 4, 4) != 0)
@@ -524,7 +554,7 @@ void Thing::SetPanID(uint8_t* id) {
   while (memcmp(GetPanID(), id, sizeof(id)) != 0) {
     SOPLOGLN(F("GetPanID : "));
     PrintXbeePacket((char*)zbee_atcommand_result_);
-    delay(500);
+    delay(50);
   }
 
   SOPLOGLN(F("SetPanID success!"));
@@ -555,7 +585,7 @@ bool Thing::CompareTimeStamp(Value* t) {
   unsigned long diff_time = 0;
   unsigned long last_sent_time = 0;
 
-  last_sent_time = t->GetLastSentTime();
+  last_sent_time = t->GetLastSentTime() + sleep_time_ms;
 
   // set true for the initial case
   if (last_sent_time == 0) {
@@ -585,7 +615,7 @@ void Thing::SendAliveMessage() {
   unsigned long diff_time = 0;
   char* pszDummy = (char*)"AliveCycleReached";
 
-  curr_time = millis();
+  curr_time = millis() + sleep_time_ms;
 
   // set true for the initial case
   if (last_sent_time == 0) {
@@ -647,6 +677,8 @@ void Thing::ReadZbeeTimeout(int timeout) {
       SOPLOGLN(F("[ERROR] ZigBee response error."));
     } else {
       SOPLOGLN(F("[ERROR] Unexpected response."));
+      char* response = (char*)zbee_.getResponse().getApiId();
+      PrintXbeePacket(response);
     }
   }
 }

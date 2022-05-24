@@ -154,6 +154,8 @@ class Thing {
   void PrintXbeePacket(char* buf);
   void PrintXbeePacket(char* buf, int length);
   void TestPublish();
+  void XbeeOff();
+  void XbeeOn();
 
   void (*connect_handler_)();
   void (*disconnect_handler_)();
@@ -209,6 +211,7 @@ class Thing {
   uint16_t message_id_;
 
   unsigned long alive_cycle_;
+  long long sleep_time_ms = 0;
 
   XBeeWithCallbacks zbee_;
   XBeeAddress64 gateway_address_64_;

@@ -250,6 +250,7 @@ struct msg_willmsgresp : public message_header {
 // #define QOS 1
 // #define USE_QOS1
 // QoS 2
+
 // #define QOS 2
 // #define USE_QOS2
 
@@ -269,7 +270,7 @@ struct msg_willmsgresp : public message_header {
 #if (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAMD_ZERO)) || \
     (defined(ARDUINO_ARCH_SAM) && !defined(ARDUINO_SAM_DUE)) ||    \
     defined(ARDUINO_ARCH_MBED) || defined(__AVR_ATmega32U4__) ||   \
-    defined(ARDUINO_AVR_PROMICRO) || defined(NANO_RP2040_CONNECT)
+    defined(ARDUINO_AVR_PROMICRO) || defined(ARDUINO_NANO_RP2040_CONNECT)
 #define USE_SERIAL_ONE
 #endif
 
@@ -277,6 +278,22 @@ struct msg_willmsgresp : public message_header {
 #define SafeSerial Serial1
 #else
 #define SafeSerial Serial
+#endif
+
+#define SLEEP_MODE
+#ifdef SLEEP_MODE
+
+#if defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_NANO_RP2040_CONNECT)
+static int SoPSleep(int timeout_ms) {
+  delay(timeout_ms);
+  return timeout_ms;
+}
+#else
+#include <Adafruit_SleepyDog.h>
+static int SoPSleep(int timeout_ms) { return Watchdog.sleep(timeout_ms); }
+#endif
+#else
+#define SoPSleep(timeout_ms)
 #endif
 
 typedef enum _soptype {
