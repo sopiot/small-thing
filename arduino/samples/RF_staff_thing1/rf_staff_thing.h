@@ -1,7 +1,6 @@
 #ifndef RF_STAFF_THING_H_
 #define RF_STAFF_THING_H_
 
-#include <Adafruit_SleepyDog.h>
 #include <Arduino.h>
 #include <stdarg.h>
 

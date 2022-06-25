@@ -23,11 +23,20 @@
 #define SafeSerial Serial
 #endif
 
+#define SLEEP_MODE
+#ifdef SLEEP_MODE
+
 #if defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_NANO_RP2040_CONNECT)
-#define SoPSleep(timeout) delay(timeout);
+static int SoPSleep(int timeout_ms) {
+  delay(timeout_ms);
+  return timeout_ms;
+}
 #else
 #include <Adafruit_SleepyDog.h>
-#define SoPSleep(timeout) Watchdog.sleep(timeout);
+static int SoPSleep(int timeout_ms) { return Watchdog.sleep(timeout_ms); }
+#endif
+#else
+#define SoPSleep(timeout_ms)
 #endif
 
 static void SOPLOG(char *fmt, ...) {

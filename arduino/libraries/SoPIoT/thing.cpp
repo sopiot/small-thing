@@ -402,15 +402,16 @@ void Thing::Loop(int pub_period) {
         if ((num_values_ < 2 && num_functions_ == 0)) {
           int cycle = values_[0]->GetPublishCycle();
           SOPLOGLN(F("sleep about %d ms"), cycle);
-          SOPLOGLN(F("1time: %d us"), (unsigned int)micros());
+          // SOPLOGLN(F("1time: %d us"), (unsigned int)micros());
           XbeeOff();
-          SOPLOGLN(F("2time: %d us"), (unsigned int)micros());
-#if !(defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_NANO_RP2040_CONNECT))
+          // SOPLOGLN(F("2time: %d us"), (unsigned int)micros());
+#if !(defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_NANO_RP2040_CONNECT) || \
+      defined(AVR_MEGA2560))
           sleep_time_ms += SoPSleep(cycle);
 #endif
-          SOPLOGLN(F("3time: %d us"), (unsigned int)micros());
+          // SOPLOGLN(F("3time: %d us"), (unsigned int)micros());
           XbeeOn();
-          SOPLOGLN(F("4time: %d us"), (unsigned int)micros());
+          // SOPLOGLN(F("4time: %d us"), (unsigned int)micros());
         }
       }
     }
