@@ -23,8 +23,8 @@ void RFStaffThing::SetupSensor() {
   strncpy(value_name, "TestVal", sizeof(value_name));
   SOPLOGLN(F("value_name: %s"), value_name);
 
-  alive_cycle = 10000;
-  value_cycle = 10000;
+  alive_cycle = 100;
+  value_cycle = 100;
   generate_random_device_id();
 
   pinMode(LED_BUILTIN, OUTPUT);
@@ -241,14 +241,21 @@ void RFStaffThing::Send_REG() {
 }
 void RFStaffThing::Send_VAL() {
   long long current_time = micros();
+  long long duration;
   // char float_str[8] = {0};
   if (registered) {
-    if (current_time - last_value_update_time > value_cycle) {
+    if (current_time - last_value_update_time < 0) {
+      SOPLOGLN(F("[Send_VAL] overflow occured!!!"));
+      duration = __UINT32_MAX__ - last_value_update_time + current_time;
+    } else {
+      duration = current_time - last_value_update_time;
+    }
+    if (duration > value_cycle) {
       SOPLOGLN(F("[Send_VAL] Send VAL..."));
 
       // A0SensorValueUpdate();
-      D2SensorValueUpdate();
-      // TestValueUpdate();
+      // D2SensorValueUpdate();
+      TestValueUpdate();
 
       snprintf(send_message, 8 + 1, "VAL %s", device_id);
       memmove(send_message + 8, value_name, 8);
