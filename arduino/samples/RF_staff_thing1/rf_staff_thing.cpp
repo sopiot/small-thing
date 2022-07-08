@@ -23,8 +23,8 @@ void RFStaffThing::SetupSensor() {
   strncpy(value_name, "TestVal", sizeof(value_name));
   SOPLOGLN(F("value_name: %s"), value_name);
 
-  alive_cycle = 100;
-  value_cycle = 100;
+  alive_cycle = 1000;
+  value_cycle = 1000;
   generate_random_device_id();
 
   pinMode(LED_BUILTIN, OUTPUT);
@@ -64,6 +64,11 @@ void RFStaffThing::SetupRFModule() {
 
 void RFStaffThing::A0SensorValueUpdate() {
   int sensor_value = analogRead(A0);
+
+  if (!memset(value_payload, 0, 16)) {
+    SOPLOGLN(F("memset failed!!!"));
+  }
+
   int ret = snprintf(value_payload, 16 + 1, "%d", sensor_value);
   if (ret < 0) {
     SOPLOGLN(F("snprintf error!!!"));
@@ -74,21 +79,25 @@ void RFStaffThing::A0SensorValueUpdate() {
 
 void RFStaffThing::D2SensorValueUpdate() {
   // window length == 120 * 1 sec = 120 sec
-#define WINDOW_SIZE 60 * 5
+#define WINDOW_SIZE 60 * 1
   static int window[WINDOW_SIZE] = {0};
   static int window_index = 0;
 
   int sensor_value = digitalRead(2);
+  int threshold = 1;
+  int move_stack = 0;
+  int move_detect = 0;
   window[window_index++] = sensor_value;
 
   for (int i = 0; i < WINDOW_SIZE; i++) {
     if (window[i] == 1) {
-      int ret = snprintf(value_payload, 16 + 1, "%d", 1);
-      if (ret < 0) {
-        SOPLOGLN(F("snprintf error!!!"));
-      } else {
-        return;
-      }
+      move_stack++;
+    }
+    if (move_stack > threshold) {
+      move_detect = 1;
+      break;
+    } else {
+      move_detect = 0;
     }
   }
 
@@ -96,10 +105,15 @@ void RFStaffThing::D2SensorValueUpdate() {
     window_index = 0;
   }
 
-  int ret = snprintf(value_payload, 16 + 1, "%d", 0);
+  if (!memset(value_payload, 0, 16)) {
+    SOPLOGLN(F("memset failed!!!"));
+  }
+
+  int ret = snprintf(value_payload, 16 + 1, "%d", move_detect);
   if (ret < 0) {
-    SOPLOGLN(F("snprintf error!!!"));
+    SOPLOGLN(F("snprintf error..."));
   } else {
+    SOPLOGLN(F("movement detected!!!"));
     return;
   }
 }
@@ -113,6 +127,10 @@ void RFStaffThing::TestValueUpdate() {
     sensor_value = 0;
   } else {
     sensor_value++;
+  }
+
+  if (!memset(value_payload, 0, 16)) {
+    SOPLOGLN(F("memset failed!!!"));
   }
 
   int ret = snprintf(value_payload, 16 + 1, "%u", sensor_value);
@@ -254,8 +272,8 @@ void RFStaffThing::Send_VAL() {
       SOPLOGLN(F("[Send_VAL] Send VAL..."));
 
       // A0SensorValueUpdate();
-      // D2SensorValueUpdate();
-      TestValueUpdate();
+      D2SensorValueUpdate();
+      // TestValueUpdate();
 
       snprintf(send_message, 8 + 1, "VAL %s", device_id);
       memmove(send_message + 8, value_name, 8);
