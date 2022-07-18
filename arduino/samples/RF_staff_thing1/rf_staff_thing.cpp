@@ -23,8 +23,8 @@ void RFStaffThing::SetupSensor() {
   strncpy(value_name, "TestVal", sizeof(value_name));
   SOPLOGLN(F("value_name: %s"), value_name);
 
-  alive_cycle = 1000;
-  value_cycle = 1000;
+  alive_cycle = 100;
+  value_cycle = 100;
   generate_random_device_id();
 
   pinMode(LED_BUILTIN, OUTPUT);
