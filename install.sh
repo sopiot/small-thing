@@ -9,6 +9,7 @@ function install_dependence_lib() {
     arduino-cli lib install ArduinoJson
     arduino-cli lib install "DHT sensor library"
     arduino-cli lib install "XBee-Arduino library"
+    arduino-cli lib install "Adafruit SleepyDog Library"
     arduino-cli lib install "PM2008 I2C"
     # cp -rf arduino/libraries/SoPIoT ~/Documents/Arduino/libraries
 }
