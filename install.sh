@@ -120,10 +120,10 @@ function ubuntu_install() {
         list_config
         install_board
         install_dependence_lib
-        cp -rf arduino/libraries/SoPIoT ~/Arduino/libraries
-    else
-        exit 1
     fi
+
+    cp -rf arduino/libraries/SoPIoT ~/Arduino/libraries
+    echo "install SoPIoT lib to ~/Arduino/libraries"
 }
 
 install

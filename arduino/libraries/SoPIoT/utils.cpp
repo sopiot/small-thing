@@ -34,7 +34,7 @@ int GetDoubleArgumentByName(void* pData, const char* name, double* out) {
   return 0;
 }
 
-int GetBoolArgumentByName(void* pData, const char* name, int* out) {
+int GetBoolArgumentByName(void* pData, const char* name, bool* out) {
   bool* data = (bool*)GetArgumentByName(pData, name);
   if (data == NULL) {
     return -1;
