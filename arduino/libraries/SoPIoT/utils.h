@@ -15,6 +15,9 @@ int GetIntArgumentByName(void* pData, const char* name, int* pnOut);
 // get double argument from data by name
 int GetDoubleArgumentByName(void* pData, const char* name, double* pdbOut);
 
+// get double argument from data by name
+int GetBoolArgumentByName(void* pData, const char* name, bool* pdbOut);
+
 // handle mqtt connlost mesage
 // TODO(ikess): check if it is needed.
 // void brokerConnLost(void *context, char *cause);
