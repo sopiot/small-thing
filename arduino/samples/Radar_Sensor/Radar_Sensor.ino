@@ -1,9 +1,11 @@
-include <thing.h>
+#include <thing.h>
+
+#define WINDOW_SIZE 10
 
 // Module libraries
 
 // Pins
-static const int kradarPin = 2;
+static const int kRadarPin = 2;
 
 //----------------------------------------
 // Modules
@@ -28,12 +30,35 @@ Thing radar_thing((const char *)"Radar", 60, SafeSerial);
 // Value variables
 
 // Getter functions of each Value variable
-int SenseRadarStatus() { return (int)digitalRead(kradarPin); }
+int SenseRadarStatus() {
+  static int time_window[WINDOW_SIZE] = {0};
+  static int index = 0;
+  int window_sum = 0;
+
+  if (index > WINDOW_SIZE - 1) {
+    index = 0;
+  }
+
+  if (digitalRead(kRadarPin) == 0) {
+    time_window[index] = 1;
+  } else {
+    time_window[index] = 0;
+  }
+
+  for (int i = 0; i < WINDOW_SIZE; i++) {
+    window_sum += time_window[i];
+  }
+
+  if (window_sum > 0) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
 
 // Value declarations
 // Value(name, sense_function, min, max, period(ms));
-Value radar_value((const char *)"radar_value", SenseRadarStatus, 0, 2,
-                     1000);
+Value radar_value((const char *)"radar_value", SenseRadarStatus, 0, 2, 200);
 
 //----------------------------------------
 // Functions
@@ -51,7 +76,7 @@ void SetupSerial() { SafeSerial.begin(9600); }
 
 void SetupModules() {
   // Setup Pin mode
-  pinMode(kradarPin, INPUT);
+  pinMode(kRadarPin, INPUT);
 
   // Attach modules
 }
@@ -77,4 +102,3 @@ void setup() {
 }
 
 void loop() { radar_thing.Loop(); }
-
