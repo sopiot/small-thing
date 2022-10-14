@@ -374,9 +374,9 @@ void Thing::XbeeOff() {
   delay(10);
 }
 void Thing::XbeeOn() {
-  delay(10);
   // pinMode(12, OUTPUT);
   digitalWrite(12, LOW);
+  delay(10);
 }
 
 // TODO: pub_period is needed?

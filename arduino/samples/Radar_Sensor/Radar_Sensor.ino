@@ -72,11 +72,12 @@ Value radar_value((const char *)"radar_value", SenseRadarStatus, 0, 2, 200);
 // Setup
 //----------------------------------------
 
-void SetupSerial() { SafeSerial.begin(9600); }
+void SetupSerial() { SafeSerial.begin(115200); }
 
 void SetupModules() {
   // Setup Pin mode
   pinMode(kRadarPin, INPUT);
+  pinMode(12, OUTPUT);
 
   // Attach modules
 }
